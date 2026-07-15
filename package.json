@@ -16,7 +16,8 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db --network-id torrance-yachts-local",
     "db:lint": "supabase db lint --local --schema public --level warning --fail-on warning",
-    "db:status": "supabase status"
+    "db:status": "supabase status",
+    "db:types": "supabase gen types typescript --local --schema public --network-id torrance-yachts-local"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

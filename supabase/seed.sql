@@ -51,4 +51,98 @@ values
     null,
     'maintenance',
     'Synthetic record used to exercise operational-status filtering.'
-  );
+  )
+on conflict do nothing;
+
+insert into public.companies (id, name, email, phone, website, notes)
+values
+  (
+    '30000000-0000-4000-8000-000000000001',
+    'Aegean Charter Partners (Synthetic)',
+    'operations@aegean-charter.example.test',
+    '+44 1632 960001',
+    'https://aegean-charter.example.test',
+    'Synthetic broker company used only for local demonstrations.'
+  ),
+  (
+    '30000000-0000-4000-8000-000000000002',
+    'Meridian Marine Services (Synthetic)',
+    'office@meridian-marine.example.test',
+    '+44 1632 960002',
+    'https://meridian-marine.example.test',
+    'Synthetic yacht-operations company.'
+  )
+on conflict do nothing;
+
+insert into public.contacts (id, full_name, email, phone, roles, notes)
+values
+  (
+    '40000000-0000-4000-8000-000000000001',
+    'Sofia Mercer (Synthetic)',
+    'sofia.mercer@example.test',
+    '+44 1632 960011',
+    array['broker']::public.contact_role[],
+    'Synthetic charter-broker contact.'
+  ),
+  (
+    '40000000-0000-4000-8000-000000000002',
+    'Elias North (Synthetic)',
+    'elias.north@example.test',
+    '+44 1632 960012',
+    array['captain', 'operations']::public.contact_role[],
+    'Synthetic captain and yacht-operations contact.'
+  ),
+  (
+    '40000000-0000-4000-8000-000000000003',
+    'Mira Vale (Synthetic)',
+    'mira.vale@example.test',
+    '+44 1632 960013',
+    array['customer', 'charterer']::public.contact_role[],
+    'Synthetic prospective-charterer contact.'
+  )
+on conflict do nothing;
+
+insert into public.company_contacts (
+  id,
+  company_id,
+  contact_id,
+  job_title,
+  is_primary
+)
+values
+  (
+    '50000000-0000-4000-8000-000000000001',
+    '30000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    'Charter broker',
+    true
+  ),
+  (
+    '50000000-0000-4000-8000-000000000002',
+    '30000000-0000-4000-8000-000000000002',
+    '40000000-0000-4000-8000-000000000002',
+    'Captain and operations lead',
+    true
+  )
+on conflict do nothing;
+
+insert into public.yacht_contacts (
+  id,
+  yacht_id,
+  contact_id,
+  responsibility,
+  is_primary,
+  notifications_enabled,
+  notes
+)
+select
+  '60000000-0000-4000-8000-000000000001',
+  yachts.id,
+  '40000000-0000-4000-8000-000000000002',
+  'captain'::public.yacht_contact_responsibility,
+  true,
+  true,
+  'Synthetic primary captain assignment.'
+from public.yachts
+where yachts.name = 'M/Y Asteria'
+on conflict do nothing;

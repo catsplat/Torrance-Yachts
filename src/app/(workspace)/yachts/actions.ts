@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
-import { createClient } from "@/lib/supabase/server"
+import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 import { parseYachtFormData } from "@/lib/yachts/validation"
 
 export type YachtActionState = {
@@ -12,14 +12,6 @@ export type YachtActionState = {
 }
 
 const initialError = "The yacht could not be saved. Check the fields and try again."
-
-async function requireAuthenticatedClient() {
-  const supabase = await createClient()
-  const { data: verifiedToken } = await supabase.auth.getClaims()
-  const claims = verifiedToken?.claims
-
-  return claims?.sub ? supabase : null
-}
 
 export async function createYachtAction(
   _previousState: YachtActionState,
@@ -34,10 +26,10 @@ export async function createYachtAction(
     }
   }
 
-  const supabase = await requireAuthenticatedClient()
-  if (!supabase) return { message: "Your session has expired. Sign in again." }
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return { message: "Your session has expired. Sign in again." }
 
-  const { data, error } = await supabase
+  const { data, error } = await context.supabase
     .from("yachts")
     .insert(parsed.data)
     .select("id")
@@ -70,10 +62,10 @@ export async function updateYachtAction(
     }
   }
 
-  const supabase = await requireAuthenticatedClient()
-  if (!supabase) return { message: "Your session has expired. Sign in again." }
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return { message: "Your session has expired. Sign in again." }
 
-  const { data, error } = await supabase
+  const { data, error } = await context.supabase
     .from("yachts")
     .update(parsed.data)
     .eq("id", yachtId)

@@ -2,21 +2,25 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Version `0.2.0` provides authentication and the first secured database-backed yacht-management slice locally. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
+> **Development status:** Version `0.2.0` provides authentication and secured yacht management. The unreleased Phase 3 candidate adds the local contact, company, and yacht-responsibility directory. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
 
 ## Current milestone
 
-Version `0.2.0` adds the secured Phase 2 vertical slice to the application foundation:
+The Phase 3 release candidate builds the operational master-data layer on the secured Phase 2 foundation:
 
 - local Supabase/PostgreSQL development infrastructure;
 - individual email/password identities with public registration disabled;
 - protected workspace routes and verified server-side sessions;
 - `administrator` and `staff` profiles with active-user controls;
 - a database-backed yacht register with create, list, view, and edit operations;
+- one canonical record per external person with several validated roles;
+- company records and explicit person-to-company relationships;
+- yacht-specific captain, manager, operations, crew, and notification responsibilities;
 - yacht-specific operational notification phone numbers;
-- PostgreSQL Row Level Security and append-only yacht audit events;
+- search and role/status filtering for the internal directory;
+- PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
-- unit tests, 14 database permission tests, database linting, and matching CI gates.
+- unit tests, 42 database permission tests, database linting, and matching CI gates.
 
 ## Technology foundation
 
@@ -64,16 +68,22 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Original sketch interpretation](docs/planning/ORIGINAL_SKETCH_NOTES.md)
 - [Foundation architecture](docs/architecture/FOUNDATION.md)
 - [Authentication and yacht-slice architecture](docs/architecture/AUTHENTICATION_AND_YACHT_SLICE.md)
+- [Contact-directory architecture](docs/architecture/CONTACT_DIRECTORY_SLICE.md)
 - [Phase 2 database schema](docs/database/PHASE_2_SCHEMA.md)
+- [Phase 3 contact-directory schema](docs/database/PHASE_3_CONTACT_DIRECTORY_SCHEMA.md)
 - [Architecture decisions](docs/decisions/0001-application-foundation.md)
 - [Supabase identity and RLS decision](docs/decisions/0002-supabase-identity-and-rls.md)
+- [Contact-directory modelling decision](docs/decisions/0003-contact-directory-model.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)
 - [Phase 2 development diary](docs/development/2026-07-15-auth-yacht-slice.md)
+- [Phase 3 development diary](docs/development/2026-07-15-contact-directory-slice.md)
 - [Foundation verification record](docs/audit/2026-07-15-foundation-verification.md)
 - [Phase 2 verification record](docs/audit/2026-07-15-phase-2-verification.md)
+- [Phase 3 verification record](docs/audit/2026-07-15-phase-3-verification.md)
 - [Portfolio case study](docs/portfolio/FOUNDATION_CASE_STUDY.md)
 - [Phase 2 portfolio case study](docs/portfolio/AUTH_YACHT_CASE_STUDY.md)
+- [Phase 3 portfolio case study](docs/portfolio/CONTACT_DIRECTORY_CASE_STUDY.md)
 - [Security policy](SECURITY.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [GitHub configuration record](docs/audit/GITHUB_CONFIGURATION.md)
