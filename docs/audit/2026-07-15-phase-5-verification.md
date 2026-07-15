@@ -20,16 +20,20 @@
 
 ## Browser acceptance evidence
 
-The initial authenticated browser attempt exposed a stale-session loop after the local Auth database had been rebuilt. The middleware was corrected so `/login` remains reachable even when a browser holds claims for a removed development identity. Fresh HTTP checks now show unauthenticated `/` redirects once to `/login` and `/login` returns 200.
+The initial authenticated browser attempt exposed a stale-session loop after the local Auth database had been rebuilt. The middleware was corrected so `/login` remains reachable even when a browser holds claims for a removed development identity. Fresh HTTP checks show unauthenticated `/` redirects once to `/login` and `/login` returns 200.
 
-The browser had already moved into its protected internal redirect-error document and correctly blocked subsequent local navigation. The following clean-session checks therefore remain pending and must be completed before Phase 5 is tagged or merged:
+A fresh authenticated acceptance run then passed the complete synthetic workflow:
 
-- approve the synthetic yacht template;
-- create, edit, approve, and record one synthetic offer as sent;
-- verify offer, enquiry, workflow-event, and audit histories;
-- verify dashboard and list counts;
-- verify mobile navigation and horizontal overflow;
-- verify logout/protected-route behaviour and browser console output.
+- approved the synthetic M/Y Asteria offer template;
+- verified the seven-day, 168,000 EUR deterministic suggestion and approved public material links;
+- created and edited offer `OFF-2026-0007`;
+- recorded a human approval and separately recorded an external send while confirming the application sent no email;
+- verified immutable offer history, three durable offer events, enquiry transition/history, and the linked offer version;
+- verified live dashboard and offer-register counts;
+- verified the 390 by 844 mobile layout, navigation drawer, and no horizontal overflow;
+- verified sign-out, protected-route redirection, and an empty warning/error console.
+
+The browser run also found a misleading persisted “Draft changes saved” query notice after approval/sent transitions. The notice is now limited to draft records and the sent-record URL was rechecked successfully. A one-off Turbopack stale-module overlay after development recompilation cleared on reload and did not recur.
 
 ## Release boundary
 

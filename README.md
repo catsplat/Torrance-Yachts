@@ -2,11 +2,11 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Version `0.4.0` is released. Phase 5 is implemented as a local release candidate with yacht commercial profiles and reviewable offer preparation; final clean-browser acceptance and pull-request review remain. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
+> **Development status:** Version `0.5.0` is ready for release with yacht commercial profiles and human-reviewed offer preparation. Phase 6 adds confirmed bookings and buffered availability. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
 
 ## Current milestone
 
-Version `0.4.0` provides the secured operational master-data and manual enquiry layers:
+Version `0.5.0` provides the secured operational master-data, enquiry, and offer layers:
 
 - local Supabase/PostgreSQL development infrastructure;
 - individual email/password identities with public registration disabled;
@@ -26,7 +26,7 @@ Version `0.4.0` provides the secured operational master-data and manual enquiry 
 - Zod validation, a recoverable error boundary, and synthetic seed records;
 - unit tests, 79 database permission/behaviour tests, database linting, and matching CI gates.
 
-The Phase 5 candidate adds dated yacht rates, approved public sales materials, versioned templates, deterministic fee suggestions, immutable numbered offer snapshots, explicit approval/sent recording, and live offer approval counts. It does not send email or reserve availability.
+Phase 5 adds dated yacht rates, approved public sales materials, versioned templates, deterministic fee suggestions, immutable numbered offer snapshots, explicit approval/sent recording, and live offer approval counts. It does not send email or reserve availability.
 
 ## Technology foundation
 

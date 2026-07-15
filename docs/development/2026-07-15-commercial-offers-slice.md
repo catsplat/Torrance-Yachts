@@ -31,4 +31,4 @@ Phase 5 is complete only when commercial records and offer versions are protecte
 
 ## Verification outcome
 
-All application, database, build, lint, and dependency gates pass. The first browser attempt found the stale-session redirect problem, which was corrected. The browser then entered its protected internal error document and correctly refused further local navigation, so the final clean-session interaction remains an explicit release-candidate gate rather than being misreported as passed.
+All application, database, build, lint, dependency, and clean-session browser gates pass. The browser acceptance run verified the full template-to-sent-offer path, histories, live counts, responsive layout, access control, and console state. It also found and prompted fixes for stale-session login recovery and a misleading persisted draft-success notice before release.

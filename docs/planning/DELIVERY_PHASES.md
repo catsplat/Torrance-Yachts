@@ -10,7 +10,7 @@ The first complete production release is divided into twelve dependency-aware ve
 | 2 | Individual authentication, database-authorised users, yacht register, and yacht audit history | Released as `v0.2.0` |
 | 3 | Canonical contacts, companies, and yacht-specific operational/notification responsibilities | Released as `v0.3.0` |
 | 4 | Manual enquiry pipeline with linked contacts/yachts, controlled states, notes, history, events, search, and real dashboard counts | Released as `v0.4.0` |
-| 5 | Yacht commercial profiles, seasonal rates, approved sales materials, versioned offer templates, and reviewable offers | In progress |
+| 5 | Yacht commercial profiles, seasonal rates, approved sales materials, versioned offer templates, and reviewable offers | Released as `v0.5.0` |
 | 6 | Human-confirmed bookings, charter periods, 24-hour availability buffers, conflict detection, and Yachtfolio action tracking | Planned |
 | 7 | Configurable task templates, dependencies, generated booking checklists, reminders, assignees, and completion/reopening audit | Planned |
 | 8 | Private document storage, booking document requirements, contract-field review, payment schedules, and deterministic commission calculations | Planned |
@@ -22,7 +22,7 @@ The first complete production release is divided into twelve dependency-aware ve
 ## Interpretation
 
 - Phase count is a delivery map, not a claim that every phase has equal effort.
-- Completing Phase 3 means 25% of the phase gates are released, but the remaining booking, document, automation, integration, and production work contains more of the programme's operational complexity.
+- Completing Phase 5 means five of twelve phase gates are released, but the remaining booking, document, automation, integration, and production work contains more of the programme's operational complexity.
 - The dashboard is upgraded incrementally as real records become available; final operational reporting and polish are completed in Phase 12.
 - No later integration becomes a source of truth. PostgreSQL remains authoritative throughout.
 - AI is deliberately Phase 10: it assists a workflow that is already functional and testable without AI.

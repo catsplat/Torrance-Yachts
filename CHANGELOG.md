@@ -4,6 +4,8 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-15
+
 ### Added
 
 - Yacht commercial profiles with editable positioning, VAT, port guidance, fuel guidance, specifications, features, and other offer source facts.
@@ -26,7 +28,7 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Known limitations
 
-- Phase 5 remains a local, synthetic-only release candidate pending final clean-browser acceptance and pull-request review.
+- Version 0.5.0 remains local-only, synthetic-only, and unapproved for production or live commercial data.
 - Recording an offer as sent does not send email; it records a human-confirmed external action.
 - Offers do not reserve yacht dates. Authoritative bookings and buffered availability arrive in Phase 6.
 - Production commercial terms and the supplied BOJI wording must be entered as protected business data, never committed to the repository.
