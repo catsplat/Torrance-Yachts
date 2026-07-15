@@ -4,11 +4,40 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
-### Planned
+No unreleased changes.
 
-- Local Supabase development environment and initial database migrations.
-- Authentication boundary and protected workspace routes.
-- First real vertical slice for yacht records using synthetic data.
+## [0.2.0] - 2026-07-15
+
+### Added
+
+- Reproducible local Supabase development configuration, migration, and synthetic seed data.
+- Individual email/password authentication with public registration disabled.
+- Verified server-side workspace protection and responsive sign-out controls.
+- Internal profiles with `administrator` and `staff` roles and active-user status.
+- Database-backed yacht list, detail, create, and edit experiences.
+- Yacht specifications, operational status, preferred ports, and per-yacht notification phone numbers.
+- Append-only database audit events for yacht inserts, updates, and deletions.
+- Zod yacht-form validation, unit coverage, loading UI, and a recoverable error boundary.
+- A dedicated CI job for migrations, 14 PostgreSQL permission/behaviour tests, and database linting.
+- Authentication, schema, development, audit, and portfolio documentation for the slice.
+
+### Security
+
+- Enabled Row Level Security on every Phase 2 application table.
+- Removed all anonymous table privileges.
+- Limited yacht deletion to active administrators at the database boundary.
+- Prevented users from promoting or reactivating themselves.
+- Derived application identity from verified Supabase claims rather than unverified session data.
+- Kept local credentials and generated environment values outside version control.
+
+### Known limitations
+
+- The implementation is local-only until a production Supabase project and deployment review are approved.
+- Password recovery, invitations, and administrator user-management screens are not yet implemented.
+- The dashboard still contains labelled synthetic preview metrics.
+- Yacht deletion is intentionally database-authorised but has no user-interface control yet.
+- Yacht charter availability will be derived from future booking records and is not stored as a manual yacht flag.
+- Documents and all external integrations remain disconnected.
 
 ## [0.1.0] - 2026-07-15
 
