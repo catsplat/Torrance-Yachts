@@ -6,6 +6,37 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 No unreleased changes.
 
+## [0.3.0] - 2026-07-15
+
+### Added
+
+- Canonical contact records with multiple validated operational roles.
+- Company records and explicit primary/job-title contact relationships.
+- Yacht contact assignments for captains, managers, operations, notification recipients, crew, and other responsibilities.
+- Contact and company list, create, detail, and edit interfaces with active/inactive lifecycle controls.
+- Search plus contact role and lifecycle filters.
+- Operational-contact summaries on yacht detail records.
+- Synthetic contact, company, membership, and yacht-responsibility seed fixtures.
+- Contact-directory validation tests and 28 additional database permission/behaviour assertions.
+- Phase 3 architecture, decision, schema, development, audit, and portfolio records.
+
+### Security
+
+- Enabled Row Level Security and removed anonymous access for all Phase 3 tables.
+- Enforced active internal profiles for every directory read and mutation.
+- Restricted contact and company hard deletion to administrators while retaining deactivation for normal lifecycle management.
+- Enforced one primary company per contact and one primary contact per yacht responsibility in PostgreSQL.
+- Added database-owned actor attribution and audit events for master records and relationship changes.
+- Kept all development fixtures explicitly synthetic and all integrations disconnected.
+
+### Known limitations
+
+- Version 0.3.0 remains local-only and is not approved for live contact data.
+- Communication history begins with the enquiry/email slice and is not part of the master directory.
+- Notification eligibility is recorded but no Telegram, email, SMS, or WhatsApp message is sent yet.
+- Search is intentionally bounded to 500 authorised rows; database-backed search is required before that becomes insufficient.
+- Hard deletion has no user-interface control by design; staff deactivate durable master records instead.
+
 ## [0.2.0] - 2026-07-15
 
 ### Added
