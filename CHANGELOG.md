@@ -4,6 +4,10 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [0.3.0] - 2026-07-15
+
 ### Added
 
 - Canonical contact records with multiple validated operational roles.
@@ -27,7 +31,7 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Known limitations
 
-- Phase 3 remains local-only and is not approved for live contact data.
+- Version 0.3.0 remains local-only and is not approved for live contact data.
 - Communication history begins with the enquiry/email slice and is not part of the master directory.
 - Notification eligibility is recorded but no Telegram, email, SMS, or WhatsApp message is sent yet.
 - Search is intentionally bounded to 500 authorised rows; database-backed search is required before that becomes insufficient.
