@@ -2,11 +2,11 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Version `0.3.0` provides authentication, secured yacht management, and the local contact, company, and yacht-responsibility directory. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
+> **Development status:** Version `0.3.0` is released. Phase 4 is adding the secured manual enquiry pipeline on a review branch. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
 
 ## Current milestone
 
-Version `0.3.0` builds the operational master-data layer on the secured Phase 2 foundation:
+Version `0.3.0` provides the secured operational master-data layer. The Phase 4 candidate adds:
 
 - local Supabase/PostgreSQL development infrastructure;
 - individual email/password identities with public registration disabled;
@@ -18,9 +18,13 @@ Version `0.3.0` builds the operational master-data layer on the secured Phase 2 
 - yacht-specific captain, manager, operations, crew, and notification responsibilities;
 - yacht-specific operational notification phone numbers;
 - search and role/status filtering for the internal directory;
+- structured manual enquiries linked to customers/charterers, brokers, companies, yachts, and internal owners;
+- enquiry dates, guests, ports, budget, priority, notes, search, and filters;
+- database-enforced lifecycle transitions with mandatory reasons, immutable history, durable events, and audit attribution;
+- live enquiry and pipeline dashboard counts while unfinished modules remain visibly labelled synthetic;
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
-- unit tests, 42 database permission tests, database linting, and matching CI gates.
+- unit tests, 79 database permission/behaviour tests, database linting, and matching CI gates.
 
 ## Technology foundation
 
@@ -66,24 +70,32 @@ Use a short-lived branch and pull request for every product change. The current 
 
 - [Authoritative project brief](docs/PROJECT_BRIEF.md)
 - [Original sketch interpretation](docs/planning/ORIGINAL_SKETCH_NOTES.md)
+- [Twelve-phase delivery map](docs/planning/DELIVERY_PHASES.md)
+- [Current client progress summary](docs/client/2026-07-15-project-status.md)
 - [Foundation architecture](docs/architecture/FOUNDATION.md)
 - [Authentication and yacht-slice architecture](docs/architecture/AUTHENTICATION_AND_YACHT_SLICE.md)
 - [Contact-directory architecture](docs/architecture/CONTACT_DIRECTORY_SLICE.md)
+- [Enquiry-pipeline architecture](docs/architecture/ENQUIRY_PIPELINE_SLICE.md)
 - [Phase 2 database schema](docs/database/PHASE_2_SCHEMA.md)
 - [Phase 3 contact-directory schema](docs/database/PHASE_3_CONTACT_DIRECTORY_SCHEMA.md)
+- [Phase 4 enquiry schema](docs/database/PHASE_4_ENQUIRY_SCHEMA.md)
 - [Architecture decisions](docs/decisions/0001-application-foundation.md)
 - [Supabase identity and RLS decision](docs/decisions/0002-supabase-identity-and-rls.md)
 - [Contact-directory modelling decision](docs/decisions/0003-contact-directory-model.md)
+- [Enquiry state-machine decision](docs/decisions/0004-enquiry-state-machine.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)
 - [Phase 2 development diary](docs/development/2026-07-15-auth-yacht-slice.md)
 - [Phase 3 development diary](docs/development/2026-07-15-contact-directory-slice.md)
+- [Phase 4 development diary](docs/development/2026-07-15-enquiry-pipeline-slice.md)
 - [Foundation verification record](docs/audit/2026-07-15-foundation-verification.md)
 - [Phase 2 verification record](docs/audit/2026-07-15-phase-2-verification.md)
 - [Phase 3 verification record](docs/audit/2026-07-15-phase-3-verification.md)
+- [Phase 4 verification record](docs/audit/2026-07-15-phase-4-verification.md)
 - [Portfolio case study](docs/portfolio/FOUNDATION_CASE_STUDY.md)
 - [Phase 2 portfolio case study](docs/portfolio/AUTH_YACHT_CASE_STUDY.md)
 - [Phase 3 portfolio case study](docs/portfolio/CONTACT_DIRECTORY_CASE_STUDY.md)
+- [Phase 4 portfolio case study](docs/portfolio/ENQUIRY_PIPELINE_CASE_STUDY.md)
 - [Security policy](SECURITY.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [GitHub configuration record](docs/audit/GITHUB_CONFIGURATION.md)

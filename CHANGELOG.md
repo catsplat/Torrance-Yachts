@@ -4,7 +4,35 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
-No unreleased changes.
+### Added
+
+- Manual enquiry list, creation, detail, and editing workflows linked to authoritative contacts, companies, yachts, and internal owners.
+- Structured charter dates, guest count, ports, budget, currency, priority, stable enquiry references, and manual source provenance.
+- Search plus state, priority, and yacht filters for the enquiry pipeline.
+- Append-only internal, requirement, and follow-up notes.
+- Database-enforced enquiry state transitions with mandatory reasons and immutable lifecycle history.
+- Durable `EnquiryCreated` and `EnquiryStatusChanged` workflow events for later idempotent automation.
+- Live dashboard enquiry count and pipeline while later modules remain visibly labelled synthetic.
+- Synthetic enquiry fixtures, 10 additional application tests, and 37 additional database permission/behaviour assertions.
+- A twelve-phase delivery map, client status report, and Phase 4 architecture, decision, schema, development, audit, and portfolio records.
+
+### Security
+
+- Enabled Row Level Security and removed anonymous access for all Phase 4 tables.
+- Restricted enquiry reads and mutations to active internal profiles.
+- Validated that newly assigned contacts, companies, yachts, and owners are active and hold the required operational role.
+- Blocked direct state updates, invalid transitions, state changes without reasons, and every Phase 4 path to `booked`.
+- Made notes append-only, lifecycle history and workflow events read-only to the application, and enquiries non-deletable.
+- Kept actor attribution, lifecycle records, workflow events, and audit events database-owned.
+
+### Known limitations
+
+- The Phase 4 candidate remains local-only, synthetic-only, and not approved for live enquiries.
+- Requested enquiry dates do not reserve yacht availability; confirmed booking reservations arrive in Phase 6.
+- Offer versions and yacht commercial templates arrive in Phase 5.
+- Gmail, AI, notifications, documents, tasks, and external integrations remain disconnected.
+- Workflow events are recorded but are not yet consumed or retried.
+- Enquiry search is intentionally bounded to 500 authorised records.
 
 ## [0.3.0] - 2026-07-15
 
