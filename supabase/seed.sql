@@ -225,3 +225,106 @@ where id = '70000000-0000-4000-8000-000000000002'
 
 select set_config('app.enquiry_transition_authorised', '', false);
 select set_config('app.enquiry_transition_reason', '', false);
+
+insert into public.yacht_commercial_profiles (
+  id,
+  yacht_id,
+  overview,
+  port_guidance,
+  fuel_consumption_lph,
+  fuel_consumption_speed_knots,
+  short_charter_divisor,
+  default_currency,
+  default_tax_rate,
+  key_features,
+  reference_notes
+)
+select
+  '80000000-0000-4000-8000-000000000001',
+  yachts.id,
+  'A contemporary synthetic motor yacht configured solely for local workflow demonstrations.',
+  'Athens round trips are preferred for the synthetic demonstration, with alternatives subject to review.',
+  210.00,
+  12.00,
+  6.00,
+  'EUR',
+  5.00,
+  array[
+    'Expansive beam and bright interior',
+    'Experienced synthetic demonstration crew',
+    'Flexible outdoor dining areas'
+  ],
+  'Synthetic references are available for local demonstrations. No real broker or guest is represented.'
+from public.yachts
+where yachts.name = 'M/Y Asteria'
+on conflict do nothing;
+
+insert into public.yacht_rate_periods (
+  id, yacht_id, name, valid_from, valid_to, weekly_rate, currency, tax_rate
+)
+select
+  '81000000-0000-4000-8000-000000000001',
+  yachts.id,
+  'Synthetic high season 2026',
+  '2026-07-01',
+  '2026-08-31',
+  168000.00,
+  'EUR',
+  5.00
+from public.yachts where yachts.name = 'M/Y Asteria'
+on conflict do nothing;
+
+insert into public.yacht_rate_periods (
+  id, yacht_id, name, valid_from, valid_to, weekly_rate, currency, tax_rate
+)
+select
+  '81000000-0000-4000-8000-000000000002',
+  yachts.id,
+  'Synthetic autumn 2026',
+  '2026-09-01',
+  '2026-10-31',
+  142000.00,
+  'EUR',
+  5.00
+from public.yachts where yachts.name = 'M/Y Asteria'
+on conflict do nothing;
+
+insert into public.yacht_sales_materials (
+  id, yacht_id, material_type, label, public_url, approved_for_offers, sort_order
+)
+select
+  '82000000-0000-4000-8000-000000000001',
+  yachts.id,
+  'brochure'::public.sales_material_type,
+  'M/Y Asteria synthetic brochure',
+  'https://materials.example.test/asteria-brochure',
+  true,
+  10
+from public.yachts where yachts.name = 'M/Y Asteria'
+on conflict do nothing;
+
+insert into public.yacht_sales_materials (
+  id, yacht_id, material_type, label, public_url, approved_for_offers, sort_order
+)
+select
+  '82000000-0000-4000-8000-000000000002',
+  yachts.id,
+  'sample_menu'::public.sales_material_type,
+  'M/Y Asteria synthetic sample menu',
+  'https://materials.example.test/asteria-menu',
+  true,
+  20
+from public.yachts where yachts.name = 'M/Y Asteria'
+on conflict do nothing;
+
+insert into public.yacht_offer_templates (
+  id, yacht_id, name, subject_template, body_template
+)
+select
+  '83000000-0000-4000-8000-000000000001',
+  yachts.id,
+  'Synthetic charter response',
+  '{{yacht_name}} charter proposal — {{charter_start_date}}',
+  E'Dear {{customer_name}},\n\nMany thanks for the enquiry. Please find our reviewed proposal for {{yacht_name}} below.\n\nCharter dates: {{charter_start_date}} to {{charter_end_date}}\nRoute: {{embarkation_port}} to {{disembarkation_port}}\nGuests: {{guest_count}}\nWeekly rate: {{weekly_rate}} {{currency}} plus {{tax_rate}}% tax\nProposed charter fee: {{proposed_charter_fee}} {{currency}}\n\n{{port_guidance}}\n\n{{yacht_overview}}\n\nKEY specifications:\n{{yacht_specifications}}\n\nKEY features:\n{{key_features}}\n\nApproved materials:\n{{sales_materials}}\n\nReferences:\n{{references}}\n\nPlease let me know if you have any questions.'
+from public.yachts where yachts.name = 'M/Y Asteria'
+on conflict do nothing;

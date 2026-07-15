@@ -3,6 +3,7 @@ import {
   CalendarDays,
   CheckCircle2,
   CircleDot,
+  FileText,
   History,
   MessageSquareText,
   Ship,
@@ -16,6 +17,7 @@ import { EnquiryForm } from "@/components/enquiries/enquiry-form"
 import { EnquiryNoteForm } from "@/components/enquiries/enquiry-note-form"
 import { EnquiryTransitionForm } from "@/components/enquiries/enquiry-transition-form"
 import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -73,6 +75,7 @@ export default async function EnquiryDetailPage({
     historyResult,
     auditResult,
     workflowResult,
+    offersResult,
     options,
   ] = await Promise.all([
     supabase
@@ -111,11 +114,16 @@ export default async function EnquiryDetailPage({
       .select("id", { count: "exact", head: true })
       .eq("aggregate_type", "enquiry")
       .eq("aggregate_id", id),
+    supabase
+      .from("offers")
+      .select("id, reference, version_number, status, proposed_charter_fee, currency, updated_at")
+      .eq("enquiry_id", id)
+      .order("version_number", { ascending: false }),
     getEnquiryFormOptions(),
   ])
 
   if (enquiryResult.error || !enquiryResult.data) notFound()
-  if (notesResult.error || historyResult.error || auditResult.error || workflowResult.error) {
+  if (notesResult.error || historyResult.error || auditResult.error || workflowResult.error || offersResult.error) {
     throw new Error("Unable to load the enquiry history.")
   }
 
@@ -160,7 +168,11 @@ export default async function EnquiryDetailPage({
                 <Badge variant="outline">{enquiry.source} source</Badge>
               </div>
             </div>
-            <div className="grid gap-1 text-xs text-muted-foreground sm:grid-cols-2 lg:text-right">
+            <div className="flex flex-col items-start gap-3 lg:items-end">
+              {enquiry.requested_yacht_id && enquiry.charter_start_date && enquiry.charter_end_date && ["new", "waiting_for_reply", "offer_sent", "negotiating"].includes(enquiry.status) ? (
+                <Link className={cn(buttonVariants())} href={`/offers/new?enquiry=${enquiry.id}`}><FileText aria-hidden="true" />Prepare offer</Link>
+              ) : null}
+              <div className="grid gap-1 text-xs text-muted-foreground sm:grid-cols-2 lg:text-right">
               <span className="flex items-center gap-1.5 lg:justify-end">
                 <History aria-hidden="true" className="size-3.5" />
                 {auditResult.count ?? 0} audited record change{auditResult.count === 1 ? "" : "s"}
@@ -169,6 +181,7 @@ export default async function EnquiryDetailPage({
                 <Workflow aria-hidden="true" className="size-3.5" />
                 {workflowResult.count ?? 0} durable event{workflowResult.count === 1 ? "" : "s"}
               </span>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -230,6 +243,16 @@ export default async function EnquiryDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle className="flex items-center gap-2"><FileText aria-hidden="true" className="size-4 text-primary" />Offer versions</CardTitle>
+          <CardDescription>Every proposal is a separate historical snapshot. Approval and sent recording happen in the offer workspace.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          {offersResult.data.length ? <div className="divide-y">{offersResult.data.map((offer) => <Link className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 hover:bg-muted/40" href={`/offers/${offer.id}`} key={offer.id}><div><p className="font-medium">{offer.reference} · version {offer.version_number}</p><p className="mt-1 text-xs text-muted-foreground">Updated {formatDateTime(offer.updated_at)}</p></div><div className="flex items-center gap-3"><p className="text-sm font-medium">{new Intl.NumberFormat("en-GB", { minimumFractionDigits: 2 }).format(offer.proposed_charter_fee)} {offer.currency}</p><Badge variant="outline">{offer.status}</Badge></div></Link>)}</div> : <div className="px-5 py-9 text-center text-sm text-muted-foreground">No offer snapshots prepared yet.</div>}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-5 xl:grid-cols-2">
         <Card>

@@ -4,6 +4,36 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-15
+
+### Added
+
+- Yacht commercial profiles with editable positioning, VAT, port guidance, fuel guidance, specifications, features, and other offer source facts.
+- Exact, dated, non-overlapping weekly rate periods and deterministic short-charter fee calculation.
+- Approved public sales-material records separated from future private document storage.
+- Versioned yacht offer templates with allow-listed placeholders and an explicit approval lifecycle.
+- Immutable numbered offer snapshots linked to enquiries, rates, templates, and preceding offer revisions.
+- Separate human actions for draft creation, editing, approval, and recording an externally sent offer.
+- Offer search, status filters, enquiry links, commercial configuration screens, dashboard approval counts, lifecycle history, workflow events, and audit attribution.
+- Phase 5 architecture, database, decision, development, verification, automation, and portfolio documentation.
+
+### Security
+
+- Enabled Row Level Security and removed anonymous access for every commercial and offer table.
+- Prevented direct offer-state changes, direct lifecycle-history/event insertion, offer deletion, and mutation of approved or sent snapshots.
+- Required active internal identities for reads and mutations, with actor fields derived inside PostgreSQL.
+- Restricted offer material to explicitly active, approved HTTPS links and kept sensitive documents out of this slice.
+- Added a database command boundary for recording an offer as sent before the enquiry may enter `offer_sent`.
+- Made stale local sessions recoverable at the login form after an Auth reset.
+
+### Known limitations
+
+- Version 0.5.0 remains local-only, synthetic-only, and unapproved for production or live commercial data.
+- Recording an offer as sent does not send email; it records a human-confirmed external action.
+- Offers do not reserve yacht dates. Authoritative bookings and buffered availability arrive in Phase 6.
+- Production commercial terms and the supplied BOJI wording must be entered as protected business data, never committed to the repository.
+- n8n, Gmail, Telegram, AI, documents, and all external integrations remain disconnected.
+
 ## [0.4.0] - 2026-07-15
 
 ### Added

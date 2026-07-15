@@ -9,12 +9,13 @@ export default async function DashboardPage() {
   if (!currentUser) redirect("/login");
 
   const supabase = await createClient();
-  const { data: openEnquiries, error } = await supabase
-    .from("enquiries")
-    .select("status")
-    .in("status", phaseFourOpenStatuses);
+  const [enquiriesResult, offersResult] = await Promise.all([
+    supabase.from("enquiries").select("status").in("status", phaseFourOpenStatuses),
+    supabase.from("offers").select("status").in("status", ["draft", "approved"]),
+  ]);
+  const { data: openEnquiries, error } = enquiriesResult;
 
-  if (error) throw new Error("Unable to load the live enquiry dashboard summary.");
+  if (error || offersResult.error) throw new Error("Unable to load the live dashboard summary.");
 
   const countStatus = (status: (typeof phaseFourOpenStatuses)[number]) =>
     openEnquiries.filter((enquiry) => enquiry.status === status).length;
@@ -54,6 +55,10 @@ export default async function DashboardPage() {
             value: countStatus("awaiting_signatures"),
           },
         ],
+      }}
+      offerSummary={{
+        awaitingApproval: offersResult.data.filter((offer) => offer.status === "draft").length,
+        approvedNotSent: offersResult.data.filter((offer) => offer.status === "approved").length,
       }}
     />
   );

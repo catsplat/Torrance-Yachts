@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -457,6 +457,211 @@ export type Database = {
           },
         ]
       }
+      offer_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["offer_status"] | null
+          id: number
+          offer_id: string
+          reason: string
+          to_status: Database["public"]["Enums"]["offer_status"]
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["offer_status"] | null
+          id?: never
+          offer_id: string
+          reason: string
+          to_status: Database["public"]["Enums"]["offer_status"]
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["offer_status"] | null
+          id?: never
+          offer_id?: string
+          reason?: string
+          to_status?: Database["public"]["Enums"]["offer_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_status_history_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          body_snapshot: string
+          charter_days: number
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          enquiry_id: string
+          id: string
+          pricing_basis: Database["public"]["Enums"]["offer_pricing_basis"]
+          proposed_charter_fee: number
+          rate_period_id: string | null
+          recipient_name: string
+          reference: string
+          sent_at: string | null
+          sent_by: string | null
+          short_charter_divisor_snapshot: number
+          source_offer_id: string | null
+          status: Database["public"]["Enums"]["offer_status"]
+          subject_snapshot: string
+          tax_rate_snapshot: number
+          template_version_id: string
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+          weekly_rate_snapshot: number
+          yacht_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          body_snapshot: string
+          charter_days: number
+          charter_end_date: string
+          charter_start_date: string
+          created_at?: string
+          created_by?: string | null
+          currency: string
+          enquiry_id: string
+          id?: string
+          pricing_basis?: Database["public"]["Enums"]["offer_pricing_basis"]
+          proposed_charter_fee: number
+          rate_period_id?: string | null
+          recipient_name: string
+          reference?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          short_charter_divisor_snapshot: number
+          source_offer_id?: string | null
+          status?: Database["public"]["Enums"]["offer_status"]
+          subject_snapshot: string
+          tax_rate_snapshot: number
+          template_version_id: string
+          updated_at?: string
+          updated_by?: string | null
+          version_number: number
+          weekly_rate_snapshot: number
+          yacht_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          body_snapshot?: string
+          charter_days?: number
+          charter_end_date?: string
+          charter_start_date?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          enquiry_id?: string
+          id?: string
+          pricing_basis?: Database["public"]["Enums"]["offer_pricing_basis"]
+          proposed_charter_fee?: number
+          rate_period_id?: string | null
+          recipient_name?: string
+          reference?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          short_charter_divisor_snapshot?: number
+          source_offer_id?: string | null
+          status?: Database["public"]["Enums"]["offer_status"]
+          subject_snapshot?: string
+          tax_rate_snapshot?: number
+          template_version_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version_number?: number
+          weekly_rate_snapshot?: number
+          yacht_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_rate_period_id_fkey"
+            columns: ["rate_period_id"]
+            isOneToOne: false
+            referencedRelation: "yacht_rate_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_sent_by_fkey"
+            columns: ["sent_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_source_offer_id_fkey"
+            columns: ["source_offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_template_version_id_fkey"
+            columns: ["template_version_id"]
+            isOneToOne: false
+            referencedRelation: "yacht_offer_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_yacht_id_fkey"
+            columns: ["yacht_id"]
+            isOneToOne: false
+            referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           active: boolean
@@ -534,6 +739,82 @@ export type Database = {
           },
         ]
       }
+      yacht_commercial_profiles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          default_currency: string
+          default_tax_rate: number
+          fuel_consumption_lph: number | null
+          fuel_consumption_speed_knots: number | null
+          id: string
+          key_features: string[]
+          overview: string
+          port_guidance: string | null
+          reference_notes: string | null
+          short_charter_divisor: number
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          default_currency?: string
+          default_tax_rate?: number
+          fuel_consumption_lph?: number | null
+          fuel_consumption_speed_knots?: number | null
+          id?: string
+          key_features?: string[]
+          overview: string
+          port_guidance?: string | null
+          reference_notes?: string | null
+          short_charter_divisor?: number
+          updated_at?: string
+          updated_by?: string | null
+          yacht_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          default_currency?: string
+          default_tax_rate?: number
+          fuel_consumption_lph?: number | null
+          fuel_consumption_speed_knots?: number | null
+          id?: string
+          key_features?: string[]
+          overview?: string
+          port_guidance?: string | null
+          reference_notes?: string | null
+          short_charter_divisor?: number
+          updated_at?: string
+          updated_by?: string | null
+          yacht_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yacht_commercial_profiles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_commercial_profiles_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_commercial_profiles_yacht_id_fkey"
+            columns: ["yacht_id"]
+            isOneToOne: true
+            referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       yacht_contacts: {
         Row: {
           contact_id: string
@@ -598,6 +879,220 @@ export type Database = {
           },
           {
             foreignKeyName: "yacht_contacts_yacht_id_fkey"
+            columns: ["yacht_id"]
+            isOneToOne: false
+            referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      yacht_offer_templates: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          body_template: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["offer_template_status"]
+          subject_template: string
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+          yacht_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          body_template: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["offer_template_status"]
+          subject_template: string
+          updated_at?: string
+          updated_by?: string | null
+          version_number: number
+          yacht_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          body_template?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["offer_template_status"]
+          subject_template?: string
+          updated_at?: string
+          updated_by?: string | null
+          version_number?: number
+          yacht_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yacht_offer_templates_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_offer_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_offer_templates_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_offer_templates_yacht_id_fkey"
+            columns: ["yacht_id"]
+            isOneToOne: false
+            referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      yacht_rate_periods: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          name: string
+          tax_rate: number
+          updated_at: string
+          updated_by: string | null
+          valid_from: string
+          valid_to: string
+          weekly_rate: number
+          yacht_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          currency: string
+          id?: string
+          name: string
+          tax_rate: number
+          updated_at?: string
+          updated_by?: string | null
+          valid_from: string
+          valid_to: string
+          weekly_rate: number
+          yacht_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          name?: string
+          tax_rate?: number
+          updated_at?: string
+          updated_by?: string | null
+          valid_from?: string
+          valid_to?: string
+          weekly_rate?: number
+          yacht_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yacht_rate_periods_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_rate_periods_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_rate_periods_yacht_id_fkey"
+            columns: ["yacht_id"]
+            isOneToOne: false
+            referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      yacht_sales_materials: {
+        Row: {
+          active: boolean
+          approved_for_offers: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string
+          material_type: Database["public"]["Enums"]["sales_material_type"]
+          public_url: string
+          sort_order: number
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        Insert: {
+          active?: boolean
+          approved_for_offers?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label: string
+          material_type: Database["public"]["Enums"]["sales_material_type"]
+          public_url: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+          yacht_id: string
+        }
+        Update: {
+          active?: boolean
+          approved_for_offers?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string
+          material_type?: Database["public"]["Enums"]["sales_material_type"]
+          public_url?: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+          yacht_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yacht_sales_materials_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_sales_materials_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_sales_materials_yacht_id_fkey"
             columns: ["yacht_id"]
             isOneToOne: false
             referencedRelation: "yachts"
@@ -694,6 +1189,127 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_offer: {
+        Args: { p_offer_id: string; p_reason: string }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          body_snapshot: string
+          charter_days: number
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          enquiry_id: string
+          id: string
+          pricing_basis: Database["public"]["Enums"]["offer_pricing_basis"]
+          proposed_charter_fee: number
+          rate_period_id: string | null
+          recipient_name: string
+          reference: string
+          sent_at: string | null
+          sent_by: string | null
+          short_charter_divisor_snapshot: number
+          source_offer_id: string | null
+          status: Database["public"]["Enums"]["offer_status"]
+          subject_snapshot: string
+          tax_rate_snapshot: number
+          template_version_id: string
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+          weekly_rate_snapshot: number
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "offers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      approve_yacht_offer_template: {
+        Args: { p_template_id: string }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          body_template: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["offer_template_status"]
+          subject_template: string
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "yacht_offer_templates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      calculate_charter_fee: {
+        Args: {
+          p_charter_days: number
+          p_short_charter_divisor: number
+          p_weekly_rate: number
+        }
+        Returns: number
+      }
+      create_offer_draft: {
+        Args: {
+          p_body_snapshot: string
+          p_enquiry_id: string
+          p_proposed_charter_fee?: number
+          p_rate_period_id: string
+          p_recipient_name: string
+          p_source_offer_id: string
+          p_subject_snapshot: string
+          p_template_version_id: string
+        }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          body_snapshot: string
+          charter_days: number
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          enquiry_id: string
+          id: string
+          pricing_basis: Database["public"]["Enums"]["offer_pricing_basis"]
+          proposed_charter_fee: number
+          rate_period_id: string | null
+          recipient_name: string
+          reference: string
+          sent_at: string | null
+          sent_by: string | null
+          short_charter_divisor_snapshot: number
+          source_offer_id: string | null
+          status: Database["public"]["Enums"]["offer_status"]
+          subject_snapshot: string
+          tax_rate_snapshot: number
+          template_version_id: string
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+          weekly_rate_snapshot: number
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "offers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       is_active_staff: { Args: never; Returns: boolean }
       is_administrator: { Args: never; Returns: boolean }
       is_valid_enquiry_transition: {
@@ -702,6 +1318,46 @@ export type Database = {
           target_status: Database["public"]["Enums"]["enquiry_status"]
         }
         Returns: boolean
+      }
+      mark_offer_sent: {
+        Args: { p_offer_id: string; p_reason: string }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          body_snapshot: string
+          charter_days: number
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          enquiry_id: string
+          id: string
+          pricing_basis: Database["public"]["Enums"]["offer_pricing_basis"]
+          proposed_charter_fee: number
+          rate_period_id: string | null
+          recipient_name: string
+          reference: string
+          sent_at: string | null
+          sent_by: string | null
+          short_charter_divisor_snapshot: number
+          source_offer_id: string | null
+          status: Database["public"]["Enums"]["offer_status"]
+          subject_snapshot: string
+          tax_rate_snapshot: number
+          template_version_id: string
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+          weekly_rate_snapshot: number
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "offers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       transition_enquiry_status: {
         Args: {
@@ -740,6 +1396,52 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_offer_draft: {
+        Args: {
+          p_body_snapshot: string
+          p_offer_id: string
+          p_proposed_charter_fee: number
+          p_recipient_name: string
+          p_subject_snapshot: string
+        }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          body_snapshot: string
+          charter_days: number
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          enquiry_id: string
+          id: string
+          pricing_basis: Database["public"]["Enums"]["offer_pricing_basis"]
+          proposed_charter_fee: number
+          rate_period_id: string | null
+          recipient_name: string
+          reference: string
+          sent_at: string | null
+          sent_by: string | null
+          short_charter_divisor_snapshot: number
+          source_offer_id: string | null
+          status: Database["public"]["Enums"]["offer_status"]
+          subject_snapshot: string
+          tax_rate_snapshot: number
+          template_version_id: string
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+          weekly_rate_snapshot: number
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "offers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       contact_role:
@@ -766,6 +1468,16 @@ export type Database = {
         | "completed"
         | "archived"
         | "cancelled"
+      offer_pricing_basis: "seasonal_rate" | "manually_adjusted"
+      offer_status: "draft" | "approved" | "sent" | "withdrawn" | "superseded"
+      offer_template_status: "draft" | "approved" | "retired"
+      sales_material_type:
+        | "brochure"
+        | "crew_profiles"
+        | "sample_menu"
+        | "specifications"
+        | "deck_plan"
+        | "other"
       user_role: "administrator" | "staff"
       yacht_contact_responsibility:
         | "captain"
@@ -927,6 +1639,17 @@ export const Constants = {
         "completed",
         "archived",
         "cancelled",
+      ],
+      offer_pricing_basis: ["seasonal_rate", "manually_adjusted"],
+      offer_status: ["draft", "approved", "sent", "withdrawn", "superseded"],
+      offer_template_status: ["draft", "approved", "retired"],
+      sales_material_type: [
+        "brochure",
+        "crew_profiles",
+        "sample_menu",
+        "specifications",
+        "deck_plan",
+        "other",
       ],
       user_role: ["administrator", "staff"],
       yacht_contact_responsibility: [
