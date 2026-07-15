@@ -2,7 +2,7 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Version `0.4.0` is released with the secured manual enquiry pipeline. Phase 5 adds yacht commercial profiles and reviewable offer preparation. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
+> **Development status:** Version `0.4.0` is released. Phase 5 is implemented as a local release candidate with yacht commercial profiles and reviewable offer preparation; final clean-browser acceptance and pull-request review remain. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
 
 ## Current milestone
 
@@ -25,6 +25,8 @@ Version `0.4.0` provides the secured operational master-data and manual enquiry 
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
 - unit tests, 79 database permission/behaviour tests, database linting, and matching CI gates.
+
+The Phase 5 candidate adds dated yacht rates, approved public sales materials, versioned templates, deterministic fee suggestions, immutable numbered offer snapshots, explicit approval/sent recording, and live offer approval counts. It does not send email or reserve availability.
 
 ## Technology foundation
 
@@ -76,26 +78,33 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Authentication and yacht-slice architecture](docs/architecture/AUTHENTICATION_AND_YACHT_SLICE.md)
 - [Contact-directory architecture](docs/architecture/CONTACT_DIRECTORY_SLICE.md)
 - [Enquiry-pipeline architecture](docs/architecture/ENQUIRY_PIPELINE_SLICE.md)
+- [Commercial-offers architecture](docs/architecture/COMMERCIAL_OFFERS_SLICE.md)
+- [Automation and n8n boundary](docs/architecture/AUTOMATION_AND_N8N.md)
 - [Phase 2 database schema](docs/database/PHASE_2_SCHEMA.md)
 - [Phase 3 contact-directory schema](docs/database/PHASE_3_CONTACT_DIRECTORY_SCHEMA.md)
 - [Phase 4 enquiry schema](docs/database/PHASE_4_ENQUIRY_SCHEMA.md)
+- [Phase 5 commercial-offers schema](docs/database/PHASE_5_COMMERCIAL_OFFERS_SCHEMA.md)
 - [Architecture decisions](docs/decisions/0001-application-foundation.md)
 - [Supabase identity and RLS decision](docs/decisions/0002-supabase-identity-and-rls.md)
 - [Contact-directory modelling decision](docs/decisions/0003-contact-directory-model.md)
 - [Enquiry state-machine decision](docs/decisions/0004-enquiry-state-machine.md)
+- [Human-reviewed offer snapshots decision](docs/decisions/0005-human-reviewed-offer-snapshots.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)
 - [Phase 2 development diary](docs/development/2026-07-15-auth-yacht-slice.md)
 - [Phase 3 development diary](docs/development/2026-07-15-contact-directory-slice.md)
 - [Phase 4 development diary](docs/development/2026-07-15-enquiry-pipeline-slice.md)
+- [Phase 5 development diary](docs/development/2026-07-15-commercial-offers-slice.md)
 - [Foundation verification record](docs/audit/2026-07-15-foundation-verification.md)
 - [Phase 2 verification record](docs/audit/2026-07-15-phase-2-verification.md)
 - [Phase 3 verification record](docs/audit/2026-07-15-phase-3-verification.md)
 - [Phase 4 verification record](docs/audit/2026-07-15-phase-4-verification.md)
+- [Phase 5 verification record](docs/audit/2026-07-15-phase-5-verification.md)
 - [Portfolio case study](docs/portfolio/FOUNDATION_CASE_STUDY.md)
 - [Phase 2 portfolio case study](docs/portfolio/AUTH_YACHT_CASE_STUDY.md)
 - [Phase 3 portfolio case study](docs/portfolio/CONTACT_DIRECTORY_CASE_STUDY.md)
 - [Phase 4 portfolio case study](docs/portfolio/ENQUIRY_PIPELINE_CASE_STUDY.md)
+- [Phase 5 portfolio case study](docs/portfolio/COMMERCIAL_OFFERS_CASE_STUDY.md)
 - [Security policy](SECURITY.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [GitHub configuration record](docs/audit/GITHUB_CONFIGURATION.md)

@@ -3,7 +3,6 @@ import {
   ArrowRight,
   CalendarCheck2,
   CheckCircle2,
-  CircleAlert,
   Clock3,
   FileWarning,
   Inbox,
@@ -26,7 +25,6 @@ import { Separator } from "@/components/ui/separator";
 import {
   dashboardMetrics,
   priorityTasks,
-  recentActivity,
   upcomingSchedule,
 } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
@@ -61,12 +59,19 @@ type DashboardEnquirySummary = {
   pipeline: Array<{ label: string; tone: string; value: number }>;
 };
 
+type DashboardOfferSummary = {
+  approvedNotSent: number;
+  awaitingApproval: number;
+};
+
 export function DashboardOverview({
   displayName,
   enquirySummary,
+  offerSummary,
 }: {
   displayName: string;
   enquirySummary: DashboardEnquirySummary;
+  offerSummary: DashboardOfferSummary;
 }) {
   const liveMetrics = dashboardMetrics.map((metric) =>
     metric.key === "enquiries"
@@ -122,7 +127,7 @@ export function DashboardOverview({
             At a glance
           </h2>
           <span className="text-xs text-muted-foreground">
-            Enquiries live · later modules synthetic
+            Enquiries and offers live · later modules synthetic
           </span>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -293,39 +298,35 @@ export function DashboardOverview({
 
         <Card className="shadow-none">
           <CardHeader className="border-b">
-            <CardTitle>Recent activity</CardTitle>
+            <CardTitle>Offer approvals</CardTitle>
             <CardDescription>
-              A preview of the audit-focused activity feed.
+              Human review gates from the live offer register.
             </CardDescription>
+            <CardAction>
+              <Link
+                href="/offers"
+                className={buttonVariants({ variant: "ghost", size: "sm" })}
+              >
+                Open offers
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </CardAction>
           </CardHeader>
-          <CardContent className="space-y-0 px-0">
-            {recentActivity.map((item, index) => (
-              <div key={`${item.action}-${item.time}`}>
-                <div className="flex gap-3 px-4 py-4">
-                  <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-700">
-                    {index === 0 ? (
-                      <Inbox aria-hidden="true" className="size-4" />
-                    ) : index === 1 ? (
-                      <CheckCircle2 aria-hidden="true" className="size-4" />
-                    ) : (
-                      <CircleAlert aria-hidden="true" className="size-4" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-sm font-medium">{item.action}</p>
-                      <span className="text-xs text-muted-foreground">
-                        {item.time}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {item.actor}
-                    </p>
-                  </div>
-                </div>
-                {index < recentActivity.length - 1 && <Separator />}
-              </div>
-            ))}
+          <CardContent className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border bg-amber-50 p-4 text-amber-950">
+              <p className="text-3xl font-semibold">{offerSummary.awaitingApproval}</p>
+              <p className="mt-1 text-sm font-medium">Drafts awaiting approval</p>
+              <p className="mt-2 text-xs leading-5 text-amber-800">
+                Review wording and commercial terms before locking the snapshot.
+              </p>
+            </div>
+            <div className="rounded-xl border bg-teal-50 p-4 text-teal-950">
+              <p className="text-3xl font-semibold">{offerSummary.approvedNotSent}</p>
+              <p className="mt-1 text-sm font-medium">Approved, not recorded sent</p>
+              <p className="mt-2 text-xs leading-5 text-teal-800">
+                The application never sends these automatically.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </section>

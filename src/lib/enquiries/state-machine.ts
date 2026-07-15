@@ -3,8 +3,8 @@ import type { Enums } from "@/types/database"
 type EnquiryStatus = Enums<"enquiry_status">
 
 export const enquiryTransitionTargets: Record<EnquiryStatus, EnquiryStatus[]> = {
-  new: ["waiting_for_reply", "offer_sent", "cancelled", "archived"],
-  waiting_for_reply: ["new", "offer_sent", "cancelled", "archived"],
+  new: ["waiting_for_reply", "cancelled", "archived"],
+  waiting_for_reply: ["new", "cancelled", "archived"],
   offer_sent: [
     "waiting_for_reply",
     "negotiating",

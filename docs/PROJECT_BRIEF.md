@@ -2,7 +2,7 @@
 
 ## Project brief and source of truth
 
-**Status:** Phases 1-4 released; Phase 5 implementation authorised
+**Status:** Phases 1-4 released; Phase 5 implemented as a local release candidate pending final acceptance
 
 **Owner/developer:** Thom, working with Codex
 

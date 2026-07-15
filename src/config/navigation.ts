@@ -4,6 +4,7 @@ import {
   ClipboardCheck,
   ContactRound,
   FolderLock,
+  FileText,
   Inbox,
   LayoutDashboard,
   Settings,
@@ -13,6 +14,7 @@ import {
 
 export type ModuleKey =
   | "enquiries"
+  | "offers"
   | "bookings"
   | "tasks"
   | "yachts"
@@ -40,6 +42,12 @@ export const primaryNavigation: NavigationItem[] = [
     href: "/enquiries",
     icon: Inbox,
     description: "New enquiries, follow-ups, offers, and email history.",
+  },
+  {
+    label: "Offers",
+    href: "/offers",
+    icon: FileText,
+    description: "Reviewable yacht proposals, approvals, and sent history.",
   },
   {
     label: "Bookings",

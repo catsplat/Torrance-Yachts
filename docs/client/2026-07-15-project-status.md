@@ -2,7 +2,7 @@
 
 **Date:** 15 July 2026
 
-The project has moved from planning into a working, secured internal application. Four of twelve planned delivery phases have been completed and released.
+The project has moved from planning into a working, secured internal application. Four of twelve planned delivery phases are released, and Phase 5 is implemented as a local release candidate.
 
 ## Completed
 
@@ -17,13 +17,13 @@ The project has moved from planning into a working, secured internal application
 
 All development and demonstrations currently use synthetic information. No live client, broker, captain, contract, identity-document, banking, or confidential commercial data has been entered.
 
-## Now in progress
+## Phase 5 release candidate
 
-Phase 5 adds editable yacht commercial profiles, seasonal rates, approved sales-material links, versioned response templates, and reviewable offers. Staff will be able to assemble an offer from current yacht data and enquiry requirements, review every term, and explicitly approve it before recording it as sent.
+Phase 5 now adds editable yacht commercial profiles, exact dated rates, approved sales-material links, versioned response templates, and reviewable offer snapshots. Staff can assemble an offer from current yacht data and enquiry requirements, review every term, approve it separately, and record an external send without the software sending anything automatically. Automated application, database, security, build, and dependency checks pass; final clean-browser acceptance and pull-request review remain before release.
 
 ## Still to come
 
-The later phases add yacht commercial profiles and offers, booking and availability controls, the full booking-task workflow, private document and payment handling, email ingestion, AI-assisted classification and drafting, notifications and calendar/Google integrations, followed by production security, backups, staff acceptance, training, and launch.
+The later phases add booking and buffered availability controls, the full booking-task workflow, private document and payment handling, email ingestion, AI-assisted classification and drafting, notifications and calendar/Google integrations, followed by production security, backups, staff acceptance, training, and launch.
 
 ## Current status
 

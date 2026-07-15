@@ -33,12 +33,5 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (claims?.sub && isLoginRoute) {
-    const workspaceUrl = request.nextUrl.clone()
-    workspaceUrl.pathname = "/"
-    workspaceUrl.search = ""
-    return NextResponse.redirect(workspaceUrl)
-  }
-
   return response
 }

@@ -1,12 +1,14 @@
-import { ArrowLeft, BellRing, CheckCircle2, History, UserRound } from "lucide-react"
+import { ArrowLeft, BellRing, CheckCircle2, FileText, History, UserRound } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { YachtForm } from "@/components/yachts/yacht-form"
 import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { yachtResponsibilityLabels } from "@/lib/contacts/options"
 import { createClient } from "@/lib/supabase/server"
+import { cn } from "@/lib/utils"
 
 type YachtDetailPageProps = {
   params: Promise<{ id: string }>
@@ -51,7 +53,10 @@ export default async function YachtDetailPage({ params, searchParams }: YachtDet
         <CardHeader className="border-b">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div><div className="flex flex-wrap items-center gap-2"><CardTitle>{yacht.name}</CardTitle><Badge variant="outline">{yacht.status}</Badge></div><CardDescription className="mt-2">Edit the source-of-truth operational record.</CardDescription></div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground"><History className="size-4" aria-hidden="true" />{auditCount ?? 0} recorded change{auditCount === 1 ? "" : "s"}</div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link className={cn(buttonVariants({ variant: "outline" }))} href={`/yachts/${id}/commercial`}><FileText aria-hidden="true" />Commercial & offers</Link>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground"><History className="size-4" aria-hidden="true" />{auditCount ?? 0} recorded change{auditCount === 1 ? "" : "s"}</div>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="pt-6"><YachtForm mode="edit" yacht={yacht} /></CardContent>
