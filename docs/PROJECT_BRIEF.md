@@ -2,7 +2,7 @@
 
 ## Project brief and source of truth
 
-**Status:** Foundation released; implementation in progress
+**Status:** Phases 1-4 released; Phase 5 implementation authorised
 
 **Owner/developer:** Thom, working with Codex
 
@@ -34,7 +34,7 @@ The project is successful when the full workflow described in this brief can be 
 
 ## 3. Delivery constraints
 
-- Current state: planning only; no application code or required services have been set up.
+- Baseline at project inception: planning only, with no application code or required services set up. The current implemented state is tracked in `README.md`, `CHANGELOG.md`, and `docs/planning/DELIVERY_PHASES.md`.
 - Desired delivery: as soon as possible, with an aspirational one-month target.
 - The architecture must account for the whole workflow from the beginning, but implementation will use dependency-aware vertical slices so each milestone works end to end.
 - Simplicity, reliability, maintainability, and recoverability take priority over scale.

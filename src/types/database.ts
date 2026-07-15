@@ -232,6 +232,231 @@ export type Database = {
           },
         ]
       }
+      enquiries: {
+        Row: {
+          broker_company_id: string | null
+          broker_contact_id: string | null
+          budget_amount: number | null
+          charter_end_date: string | null
+          charter_start_date: string | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          customer_contact_id: string | null
+          disembarkation_port: string | null
+          embarkation_port: string | null
+          guest_count: number | null
+          id: string
+          owner_user_id: string | null
+          priority: Database["public"]["Enums"]["enquiry_priority"]
+          reference: string
+          requested_yacht_id: string | null
+          source: Database["public"]["Enums"]["enquiry_source"]
+          status: Database["public"]["Enums"]["enquiry_status"]
+          summary: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          broker_company_id?: string | null
+          broker_contact_id?: string | null
+          budget_amount?: number | null
+          charter_end_date?: string | null
+          charter_start_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          customer_contact_id?: string | null
+          disembarkation_port?: string | null
+          embarkation_port?: string | null
+          guest_count?: number | null
+          id?: string
+          owner_user_id?: string | null
+          priority?: Database["public"]["Enums"]["enquiry_priority"]
+          reference?: string
+          requested_yacht_id?: string | null
+          source?: Database["public"]["Enums"]["enquiry_source"]
+          status?: Database["public"]["Enums"]["enquiry_status"]
+          summary: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          broker_company_id?: string | null
+          broker_contact_id?: string | null
+          budget_amount?: number | null
+          charter_end_date?: string | null
+          charter_start_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          customer_contact_id?: string | null
+          disembarkation_port?: string | null
+          embarkation_port?: string | null
+          guest_count?: number | null
+          id?: string
+          owner_user_id?: string | null
+          priority?: Database["public"]["Enums"]["enquiry_priority"]
+          reference?: string
+          requested_yacht_id?: string | null
+          source?: Database["public"]["Enums"]["enquiry_source"]
+          status?: Database["public"]["Enums"]["enquiry_status"]
+          summary?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enquiries_broker_company_id_fkey"
+            columns: ["broker_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquiries_broker_contact_id_fkey"
+            columns: ["broker_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquiries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquiries_customer_contact_id_fkey"
+            columns: ["customer_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquiries_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquiries_requested_yacht_id_fkey"
+            columns: ["requested_yacht_id"]
+            isOneToOne: false
+            referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquiries_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enquiry_notes: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          enquiry_id: string
+          id: string
+          kind: Database["public"]["Enums"]["enquiry_note_kind"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          enquiry_id: string
+          id?: string
+          kind?: Database["public"]["Enums"]["enquiry_note_kind"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          enquiry_id?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["enquiry_note_kind"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enquiry_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquiry_notes_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquiry_notes_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enquiry_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          enquiry_id: string
+          from_status: Database["public"]["Enums"]["enquiry_status"] | null
+          id: number
+          reason: string
+          to_status: Database["public"]["Enums"]["enquiry_status"]
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          enquiry_id: string
+          from_status?: Database["public"]["Enums"]["enquiry_status"] | null
+          id?: never
+          reason: string
+          to_status: Database["public"]["Enums"]["enquiry_status"]
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          enquiry_id?: string
+          from_status?: Database["public"]["Enums"]["enquiry_status"] | null
+          id?: never
+          reason?: string
+          to_status?: Database["public"]["Enums"]["enquiry_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enquiry_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enquiry_status_history_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           active: boolean
@@ -267,6 +492,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      workflow_events: {
+        Row: {
+          actor_user_id: string | null
+          aggregate_id: string
+          aggregate_type: string
+          event_type: string
+          event_version: number
+          id: string
+          occurred_at: string
+          payload: Json
+        }
+        Insert: {
+          actor_user_id?: string | null
+          aggregate_id: string
+          aggregate_type: string
+          event_type: string
+          event_version?: number
+          id?: string
+          occurred_at?: string
+          payload?: Json
+        }
+        Update: {
+          actor_user_id?: string | null
+          aggregate_id?: string
+          aggregate_type?: string
+          event_type?: string
+          event_version?: number
+          id?: string
+          occurred_at?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_events_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       yacht_contacts: {
         Row: {
@@ -430,6 +696,50 @@ export type Database = {
     Functions: {
       is_active_staff: { Args: never; Returns: boolean }
       is_administrator: { Args: never; Returns: boolean }
+      is_valid_enquiry_transition: {
+        Args: {
+          current_status: Database["public"]["Enums"]["enquiry_status"]
+          target_status: Database["public"]["Enums"]["enquiry_status"]
+        }
+        Returns: boolean
+      }
+      transition_enquiry_status: {
+        Args: {
+          p_enquiry_id: string
+          p_new_status: Database["public"]["Enums"]["enquiry_status"]
+          p_reason: string
+        }
+        Returns: {
+          broker_company_id: string | null
+          broker_contact_id: string | null
+          budget_amount: number | null
+          charter_end_date: string | null
+          charter_start_date: string | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          customer_contact_id: string | null
+          disembarkation_port: string | null
+          embarkation_port: string | null
+          guest_count: number | null
+          id: string
+          owner_user_id: string | null
+          priority: Database["public"]["Enums"]["enquiry_priority"]
+          reference: string
+          requested_yacht_id: string | null
+          source: Database["public"]["Enums"]["enquiry_source"]
+          status: Database["public"]["Enums"]["enquiry_status"]
+          summary: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "enquiries"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       contact_role:
@@ -441,6 +751,21 @@ export type Database = {
         | "operations"
         | "supplier"
         | "other"
+      enquiry_note_kind: "internal" | "requirement" | "follow_up"
+      enquiry_priority: "low" | "normal" | "high" | "urgent"
+      enquiry_source: "manual" | "email" | "import"
+      enquiry_status:
+        | "new"
+        | "waiting_for_reply"
+        | "offer_sent"
+        | "negotiating"
+        | "contract_issued"
+        | "awaiting_signatures"
+        | "booked"
+        | "charter_active"
+        | "completed"
+        | "archived"
+        | "cancelled"
       user_role: "administrator" | "staff"
       yacht_contact_responsibility:
         | "captain"
@@ -586,6 +911,22 @@ export const Constants = {
         "operations",
         "supplier",
         "other",
+      ],
+      enquiry_note_kind: ["internal", "requirement", "follow_up"],
+      enquiry_priority: ["low", "normal", "high", "urgent"],
+      enquiry_source: ["manual", "email", "import"],
+      enquiry_status: [
+        "new",
+        "waiting_for_reply",
+        "offer_sent",
+        "negotiating",
+        "contract_issued",
+        "awaiting_signatures",
+        "booked",
+        "charter_active",
+        "completed",
+        "archived",
+        "cancelled",
       ],
       user_role: ["administrator", "staff"],
       yacht_contact_responsibility: [

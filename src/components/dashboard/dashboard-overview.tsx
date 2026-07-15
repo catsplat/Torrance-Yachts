@@ -25,7 +25,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import {
   dashboardMetrics,
-  enquiryPipeline,
   priorityTasks,
   recentActivity,
   upcomingSchedule,
@@ -56,7 +55,34 @@ function formatToday() {
   }).format(new Date());
 }
 
-export function DashboardOverview({ displayName }: { displayName: string }) {
+type DashboardEnquirySummary = {
+  needsResponse: number;
+  openCount: number;
+  pipeline: Array<{ label: string; tone: string; value: number }>;
+};
+
+export function DashboardOverview({
+  displayName,
+  enquirySummary,
+}: {
+  displayName: string;
+  enquirySummary: DashboardEnquirySummary;
+}) {
+  const liveMetrics = dashboardMetrics.map((metric) =>
+    metric.key === "enquiries"
+      ? {
+          ...metric,
+          detail: `${enquirySummary.needsResponse} need response action`,
+          trend: "Live database",
+          value: String(enquirySummary.openCount),
+        }
+      : metric,
+  );
+  const largestPipelineStage = Math.max(
+    1,
+    ...enquirySummary.pipeline.map((stage) => stage.value),
+  );
+
   return (
     <div className="mx-auto max-w-[96rem] space-y-6">
       <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -81,7 +107,7 @@ export function DashboardOverview({ displayName }: { displayName: string }) {
             View tasks
           </Link>
           <Link
-            href="/enquiries"
+            href="/enquiries/new"
             className={buttonVariants({ size: "lg" })}
           >
             <Plus aria-hidden="true" />
@@ -96,11 +122,11 @@ export function DashboardOverview({ displayName }: { displayName: string }) {
             At a glance
           </h2>
           <span className="text-xs text-muted-foreground">
-            Synthetic foundation data
+            Enquiries live · later modules synthetic
           </span>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {dashboardMetrics.map((metric) => {
+          {liveMetrics.map((metric) => {
             const Icon = metricIcons[metric.key];
 
             return (
@@ -246,7 +272,7 @@ export function DashboardOverview({ displayName }: { displayName: string }) {
             </CardAction>
           </CardHeader>
           <CardContent className="space-y-4">
-            {enquiryPipeline.map((stage) => (
+            {enquirySummary.pipeline.map((stage) => (
               <div key={stage.label}>
                 <div className="mb-1.5 flex items-center justify-between text-sm">
                   <span className="font-medium">{stage.label}</span>
@@ -255,7 +281,9 @@ export function DashboardOverview({ displayName }: { displayName: string }) {
                 <div className="h-2 overflow-hidden rounded-full bg-muted">
                   <div
                     className={cn("h-full rounded-full", stage.tone)}
-                    style={{ width: stage.width }}
+                    style={{
+                      width: `${Math.round((stage.value / largestPipelineStage) * 100)}%`,
+                    }}
                   />
                 </div>
               </div>

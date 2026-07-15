@@ -2,7 +2,7 @@
 
 ## Current deployment status
 
-This repository is in development and is not approved for production deployment or live Torrance Yachts data. Phase 3 extends the tested local authentication and database-authorisation baseline to contacts, companies, and yacht responsibilities; it is not a production security approval.
+This repository is in development and is not approved for production deployment or live Torrance Yachts data. Phase 4 extends the tested local authentication and database-authorisation baseline to enquiries, lifecycle history, notes, and workflow events; it is not a production security approval.
 
 ## Reporting a concern
 
@@ -29,7 +29,7 @@ Before production, the project requires reviewed authentication, database Row Le
 
 - public registration is disabled;
 - protected routes verify Supabase authentication claims on the server;
-- all Phase 2 and Phase 3 tables use PostgreSQL Row Level Security;
+- all Phase 2, Phase 3, and Phase 4 tables use PostgreSQL Row Level Security;
 - anonymous roles have no application-table privileges;
 - active staff can read and maintain yacht records, while deletion is administrator-only;
 - role and active-status changes are protected against self-escalation;
@@ -37,6 +37,10 @@ Before production, the project requires reviewed authentication, database Row Le
 - contacts support controlled multi-role membership without duplicating personal details;
 - primary company and yacht-responsibility relationships are protected by database uniqueness rules;
 - contact and company hard deletion is administrator-only; normal lifecycle management uses deactivation;
+- enquiry references are checked for active, role-appropriate contacts, companies, yachts, and internal owners;
+- enquiry state changes use a database-enforced transition command with a required reason;
+- enquiries cannot be deleted, notes are append-only, and lifecycle history/workflow events are application read-only;
+- Phase 4 cannot move an enquiry to `booked`; that state requires the future human-confirmed booking operation;
 - form input is validated on the server before database access;
 - environment files and local credentials are ignored by Git.
 
