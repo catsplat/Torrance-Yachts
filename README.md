@@ -16,6 +16,7 @@ Version `0.1.0` establishes:
 - placeholder routes for every planned primary module;
 - linting, strict TypeScript checking, production builds, and dependency auditing;
 - audit, architecture, decision, security, development, and portfolio records.
+- GitHub Actions quality checks, code ownership, contribution templates, and dependency maintenance.
 
 ## Technology foundation
 
@@ -30,7 +31,7 @@ Supabase, n8n, Gmail, Telegram, Google Drive, Google Calendar, Google Sheets, an
 
 ## Run locally
 
-Requirements: Node.js 20.9 or newer and npm.
+Requirements: Node.js 24 (see `.nvmrc`) and npm.
 
 ```powershell
 npm install
@@ -57,6 +58,8 @@ npm audit
 - [Foundation verification record](docs/audit/2026-07-15-foundation-verification.md)
 - [Portfolio case study](docs/portfolio/FOUNDATION_CASE_STUDY.md)
 - [Security policy](SECURITY.md)
+- [Contribution guide](CONTRIBUTING.md)
+- [GitHub configuration record](docs/audit/GITHUB_CONFIGURATION.md)
 - [Changelog](CHANGELOG.md)
 
 ## Data safety

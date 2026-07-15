@@ -25,6 +25,8 @@ All notable project changes are recorded here. The format follows Keep a Changel
 - Responsive application icon and verified semantic navigation links.
 - Architecture, decision, audit, development, security, and portfolio documentation.
 - Project-specific coding-agent rules in `AGENTS.md`.
+- GitHub Actions quality checks, code ownership, contribution guidance, structured issue and pull-request templates, and Dependabot configuration.
+- Repository configuration audit record and consistent Node/editor/line-ending settings.
 
 ### Security
 
