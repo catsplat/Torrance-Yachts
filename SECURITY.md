@@ -2,7 +2,7 @@
 
 ## Current deployment status
 
-This repository is in development and is not approved for production deployment or live Torrance Yachts data.
+This repository is in development and is not approved for production deployment or live Torrance Yachts data. Phase 2 provides a tested local authentication and database-authorisation baseline; it is not a production security approval.
 
 ## Reporting a concern
 
@@ -24,6 +24,24 @@ Use synthetic test data. Example environment files may contain variable names on
 ## Production gate
 
 Before production, the project requires reviewed authentication, database Row Level Security, private object storage, server-side validation, least-privilege integration scopes, rate controls, audit logging, backup and restore tests, monitoring, retention rules, and an incident runbook. The full requirements are maintained in `docs/PROJECT_BRIEF.md`.
+
+## Implemented local controls
+
+- public registration is disabled;
+- protected routes verify Supabase authentication claims on the server;
+- all Phase 2 tables use PostgreSQL Row Level Security;
+- anonymous roles have no application-table privileges;
+- active staff can read and maintain yacht records, while deletion is administrator-only;
+- role and active-status changes are protected against self-escalation;
+- yacht mutations create database-owned audit events;
+- form input is validated on the server before database access;
+- environment files and local credentials are ignored by Git.
+
+These controls are defence in depth. Production still requires environment-specific URL configuration, invitation and recovery policy, MFA consideration, private storage policies, backups, monitoring, and an independent access review.
+
+## Local service exposure
+
+Supabase's local stack uses shared development keys and is never a production service. The project uses Supabase's recommended custom Docker network, but verification on Windows Docker Desktop showed that published API/database ports can still appear on `0.0.0.0`. Develop only on a trusted/private network with the host firewall enabled, verify Docker port mappings after startup, stop the stack when finished, and keep local data synthetic. See `docs/development/LOCAL_SETUP.md`.
 
 ## Dependency policy
 

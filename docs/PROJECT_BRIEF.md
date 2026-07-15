@@ -2,7 +2,7 @@
 
 ## Project brief and source of truth
 
-**Status:** Planning and foundation
+**Status:** Foundation released; implementation in progress
 
 **Owner/developer:** Thom, working with Codex
 
