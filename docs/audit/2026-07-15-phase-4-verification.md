@@ -18,7 +18,7 @@
 | Supabase schema lint at warning level | No findings |
 | Next.js production build | Passed with Next.js 16.2.10 |
 
-Pull-request CI remains the authoritative clean-run evidence for the committed candidate.
+Pull-request CI is the authoritative clean-run evidence for the released candidate.
 
 ## Database security and behaviour evidence
 

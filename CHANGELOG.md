@@ -4,6 +4,8 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-15
+
 ### Added
 
 - Manual enquiry list, creation, detail, and editing workflows linked to authoritative contacts, companies, yachts, and internal owners.
@@ -27,7 +29,7 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Known limitations
 
-- The Phase 4 candidate remains local-only, synthetic-only, and not approved for live enquiries.
+- Version 0.4.0 remains local-only, synthetic-only, and not approved for live enquiries.
 - Requested enquiry dates do not reserve yacht availability; confirmed booking reservations arrive in Phase 6.
 - Offer versions and yacht commercial templates arrive in Phase 5.
 - Gmail, AI, notifications, documents, tasks, and external integrations remain disconnected.

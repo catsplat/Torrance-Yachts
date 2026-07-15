@@ -9,7 +9,7 @@ The first complete production release is divided into twelve dependency-aware ve
 | 1 | Application foundation, responsive internal dashboard shell, repository standards, CI, and portfolio/audit structure | Released as `v0.1.0` |
 | 2 | Individual authentication, database-authorised users, yacht register, and yacht audit history | Released as `v0.2.0` |
 | 3 | Canonical contacts, companies, and yacht-specific operational/notification responsibilities | Released as `v0.3.0` |
-| 4 | Manual enquiry pipeline with linked contacts/yachts, controlled states, notes, history, events, search, and real dashboard counts | In progress |
+| 4 | Manual enquiry pipeline with linked contacts/yachts, controlled states, notes, history, events, search, and real dashboard counts | Released as `v0.4.0` |
 | 5 | Yacht commercial profiles, seasonal rates, approved sales materials, versioned offer templates, and reviewable offers | Planned |
 | 6 | Human-confirmed bookings, charter periods, 24-hour availability buffers, conflict detection, and Yachtfolio action tracking | Planned |
 | 7 | Configurable task templates, dependencies, generated booking checklists, reminders, assignees, and completion/reopening audit | Planned |
