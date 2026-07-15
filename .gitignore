@@ -77,6 +77,13 @@ web_modules/
 # Next.js build output
 .next
 out
+.vercel
+next-env.d.ts
+
+# Operating system and IDE files
+.DS_Store
+Thumbs.db
+.idea/
 
 # Nuxt.js build / generate output
 .nuxt
