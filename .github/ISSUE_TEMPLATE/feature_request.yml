@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a scoped improvement tied to the project brief.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Operational problem
+      description: Which manual step, risk, or user need should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable behaviour, not a preferred implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - [ ] Given ..., when ..., then ...
+    validations:
+      required: true
+  - type: dropdown
+    id: approval
+    attributes:
+      label: Consequential action
+      description: Could this send, book, disclose, invoice, block dates, or change a material state?
+      options:
+        - No
+        - Yes - human approval must be designed explicitly
+        - Unsure - security/design review required
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and risks
+      description: Note integrations, personal data, cost, security, or workflow dependencies.
