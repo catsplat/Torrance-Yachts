@@ -48,6 +48,8 @@ npm run build
 npm audit
 ```
 
+Use a short-lived branch and pull request for every product change. The current private GitHub Free repository cannot technically enforce branch protection, so this workflow is a documented owner responsibility until GitHub Pro is approved.
+
 ## Documentation
 
 - [Authoritative project brief](docs/PROJECT_BRIEF.md)

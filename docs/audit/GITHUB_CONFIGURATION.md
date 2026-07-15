@@ -26,6 +26,18 @@ This record describes the repository controls required for the project. It conta
 - Branch protection should require the quality check, block force pushes/deletion, require linear history, and require pull requests when supported by the repository plan.
 - GitHub secret scanning and push protection were requested but returned `422` because they are unavailable for this private repository on its current plan. Secret exclusion and review remain mandatory, and this control should be enabled if plan support changes.
 
+### Current plan limitations
+
+An attempt to protect `main` through GitHub's branch-protection API returned `403`: private-repository branch protection requires GitHub Pro for this personal account. The repository was not made public and no paid upgrade was initiated.
+
+Until the plan supports enforcement:
+
+- all product work still uses short-lived branches and pull requests by project policy;
+- the quality workflow runs on pull requests and also on any push to `main`;
+- squash-only merging and automatic head-branch deletion remain enabled;
+- force pushes and direct pushes cannot be technically blocked by GitHub, so the owner must avoid them;
+- branch protection and GitHub secret scanning should be enabled immediately if GitHub Pro is later approved.
+
 ## Content and disclosure controls
 
 - The repository has no licence. Private ownership is retained while the boundary between the Torrance product and any future portfolio/open-source edition is decided.
@@ -41,6 +53,6 @@ After meaningful configuration changes:
 2. Confirm GitHub Pages is absent.
 3. Confirm the quality workflow succeeds on a pull request.
 4. Confirm merge settings and default branch through the GitHub API.
-5. Confirm branch protection after the initial quality workflow exists on `main`.
+5. Confirm whether branch protection and secret scanning have become available on the repository plan.
 
 Any setting that cannot be enforced by the current GitHub plan must be recorded as a limitation rather than assumed.
