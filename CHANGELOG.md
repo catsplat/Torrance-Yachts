@@ -4,6 +4,10 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [0.2.0] - 2026-07-15
+
 ### Added
 
 - Reproducible local Supabase development configuration, migration, and synthetic seed data.

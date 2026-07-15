@@ -2,11 +2,11 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Phase 2 is under review. Authentication and the first secured database-backed yacht-management slice run locally. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
+> **Development status:** Version `0.2.0` provides authentication and the first secured database-backed yacht-management slice locally. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
 
 ## Current milestone
 
-Released version `0.1.0` established the application foundation. The current Phase 2 branch adds:
+Version `0.2.0` adds the secured Phase 2 vertical slice to the application foundation:
 
 - local Supabase/PostgreSQL development infrastructure;
 - individual email/password identities with public registration disabled;
