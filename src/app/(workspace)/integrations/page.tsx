@@ -43,7 +43,7 @@ export default async function IntegrationsPage() {
 
       {user?.role === "administrator" ? <AutomationControls /> : null}
 
-      <Card>
+      <Card data-tutorial-anchor="integration-approvals">
         <CardHeader className="border-b"><CardTitle>Create controlled notification</CardTitle><CardDescription>Telegram and Gmail drafts are held for a separate approval. Gmail creates a draft only and never sends automatically.</CardDescription></CardHeader>
         <CardContent className="pt-5"><NotificationDraftForm contacts={workspace.contacts} users={workspace.users} /></CardContent>
       </Card>

@@ -3,7 +3,26 @@ import { Anchor, LockKeyhole, ShieldCheck, ShipWheel } from "lucide-react"
 import { LoginForm } from "@/components/auth/login-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{
+    recovery?: string | string[]
+  }>
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const recovery = (await searchParams).recovery
+  const recoveryMessage = recovery === "complete"
+    ? {
+        className: "border-emerald-200 bg-emerald-50 text-emerald-900",
+        text: "Your password has been updated. Sign in with the new password.",
+      }
+    : recovery === "invalid"
+      ? {
+          className: "border-destructive/20 bg-destructive/5 text-destructive",
+          text: "That recovery link is invalid or has expired. Ask an administrator to send a new one.",
+        }
+      : null
+
   return (
     <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-slate-950 px-4 py-10 text-slate-950">
       <div className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle_at_15%_20%,rgba(20,184,166,.24),transparent_32%),radial-gradient(circle_at_85%_80%,rgba(14,116,144,.22),transparent_36%)]" />
@@ -49,6 +68,15 @@ export default function LoginPage() {
             </div>
           </CardHeader>
           <CardContent>
+            {recoveryMessage ? (
+              <p
+                aria-live="polite"
+                className={`mb-5 rounded-lg border px-3 py-2.5 text-sm ${recoveryMessage.className}`}
+                role="status"
+              >
+                {recoveryMessage.text}
+              </p>
+            ) : null}
             <LoginForm />
             <div className="mt-6 flex gap-2 border-t pt-5 text-xs leading-5 text-muted-foreground">
               <LockKeyhole aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />

@@ -1,8 +1,16 @@
 # Local n8n automation
 
-Phase 11 pins n8n Community Edition `2.30.5` for reproducible local development.
+The current release pins the verified n8n Community Edition `2.30.5` image for
+reproducible local development and production. Patch `2.30.6` was reviewed on
+16 July 2026 and contains one non-breaking MCP execution-mode fix, but remains a
+maintenance upgrade until its container image passes the same workflow import
+and audit gates in this environment.
 The editor binds only to `127.0.0.1:5678`; its data and encrypted credentials live
 in the `n8n_data` Docker volume.
+
+The Compose project has the explicit identity `torrance-yachts-automation`, so
+its encrypted volume is stable and cannot collide with another folder named
+`automation`.
 
 ## Start
 
@@ -10,12 +18,27 @@ in the `n8n_data` Docker volume.
 2. Generate a long random `N8N_ENCRYPTION_KEY`.
 3. Set the same random `AUTOMATION_SHARED_SECRET` in the application and n8n
    environments.
-4. Run `npm run automation:start`.
-5. Open `http://127.0.0.1:5678`, create the local owner, then run
+4. Set the same independent `MONITORING_SHARED_SECRET` in both environments.
+5. Run `npm run automation:start`.
+6. Open `http://127.0.0.1:5678`, create the local owner, then run
    `npm run automation:import`.
+
+The `N8N_ENCRYPTION_KEY` must remain unchanged for the lifetime of the data
+volume. If the ignored `.env` file is lost, do not guess a replacement and do not
+delete the volume. Preserve it for recovery and start a separately named clean
+development project only after confirming that it contains no required
+credentials or execution history.
 
 The imported workflows are inactive by design. The development simulator must
 never be enabled on real data.
+
+The readiness workflow calls the authenticated readiness endpoint every five
+minutes. A non-ready application makes the workflow fail visibly; production must
+attach the approved internal alert/error workflow before activation.
+
+Community packages, the public n8n API/playground, workflow templates, telemetry,
+personalisation, and unverified packages are disabled. Built-in provider nodes
+remain available for the approved adapters.
 
 ## Provider adapters
 

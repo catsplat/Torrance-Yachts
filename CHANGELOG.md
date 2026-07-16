@@ -4,6 +4,50 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-07-16
+
+### Added
+
+- Evidence-based launch-readiness register with administrator review, required
+  acceptance gates, configuration presence reporting, and backup/restore records.
+- Settings-launched guided tutorial with real-interface spotlights, pause/resume,
+  permanent training history, and an isolated resettable synthetic
+  enquiry-to-follow-up practice workflow.
+- Administrator user management for invitations, roles, active access, phone and
+  Telegram details, plus secure password-recovery and password-update flows.
+- Public minimal liveness and bearer-protected readiness endpoints covering
+  database access, configuration, delivery failures, and recent restore evidence.
+- Reproducible production Compose package for standalone Next.js, pinned n8n
+  Community Edition, and Caddy HTTPS on a protected Linux VPS.
+- Reviewed n8n `2.30.6`; retained the verified `2.30.5` image because the new
+  container could not be fetched and validated, and the upstream patch contains
+  no declared security fix or breaking change.
+- Encrypted logical database/private-storage backup tooling, documented recovery,
+  and a successful disposable local restore drill with checksum evidence.
+- Deployment, incident response, retention/privacy, maintenance, acceptance,
+  staff quick-start, desktop-direction, architecture, audit, and portfolio records.
+
+### Security
+
+- Added a per-request nonce Content Security Policy, production HSTS, restrictive
+  browser permissions, cross-origin controls, bounded Server Actions, and
+  authenticated operational monitoring.
+- Added twelve-hour absolute and two-hour inactivity session limits.
+- Kept tutorial data separate from operational records and proved that practice
+  actions cannot create notifications or external deliveries.
+- Protected launch/backup evidence and user administration with RLS,
+  database-owned commands, last-administrator safeguards, and durable audit events.
+
+### Known limitations
+
+- `v0.12.0` is a technically verified release candidate, not evidence that the
+  production system is live.
+- Client-owned Supabase, domain/VPS, mailbox, Telegram/Google credentials,
+  off-site backup destination, policies, macOS acceptance, training, and final
+  launch sign-off remain required before live data is permitted.
+- The downloadable local desktop distribution is documented for later work and
+  is not part of this hosted release.
+
 ## [0.11.0] - 2026-07-16
 
 ### Added

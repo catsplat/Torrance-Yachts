@@ -15,7 +15,7 @@ function formatBytes(value: number) {
 export default async function DocumentsPage() {
   const documents = await getDocumentRegister()
   return (
-    <div className="mx-auto max-w-7xl space-y-5">
+    <div className="mx-auto max-w-7xl space-y-5" data-tutorial-anchor="document-register">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Protected records</p>
         <h1 className="mt-1 text-3xl font-semibold">Documents</h1>

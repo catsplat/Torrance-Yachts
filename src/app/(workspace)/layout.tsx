@@ -16,6 +16,13 @@ export default async function WorkspaceLayout({
   return (
     <AppShell
       currentUser={currentUser}
+      environmentLabel={
+        process.env.APP_ENVIRONMENT === "production"
+          ? "Production"
+          : process.env.APP_ENVIRONMENT === "staging"
+            ? "Staging"
+            : "Local development"
+      }
     >
       {children}
     </AppShell>

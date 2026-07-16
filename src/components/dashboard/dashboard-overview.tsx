@@ -134,7 +134,7 @@ export function DashboardOverview({
   );
 
   return (
-    <div className="mx-auto max-w-[96rem] space-y-6">
+    <div className="mx-auto max-w-[96rem] space-y-6" data-tutorial-anchor="dashboard-overview">
       <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2">

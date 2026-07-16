@@ -3,6 +3,7 @@ import { Bell, LockKeyhole, LogOut, Search, ShieldCheck, ShipWheel } from "lucid
 import { signOutAction } from "@/app/actions/auth";
 import { MobileNavigation } from "@/components/layout/mobile-navigation";
 import { PrimaryNavigation } from "@/components/layout/primary-navigation";
+import { TutorialSpotlight } from "@/components/tutorial/tutorial-spotlight";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ type AppShellProps = {
     displayName: string;
     role: "administrator" | "staff";
   };
+  environmentLabel: string;
 };
 
 function getInitials(displayName: string) {
@@ -25,7 +27,7 @@ function getInitials(displayName: string) {
     .join("") || "TY";
 }
 
-export function AppShell({ children, currentUser }: AppShellProps) {
+export function AppShell({ children, currentUser, environmentLabel }: AppShellProps) {
   return (
     <div className="min-h-svh lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-svh flex-col border-r border-sidebar-border bg-sidebar px-3 py-5 text-sidebar-foreground lg:flex">
@@ -52,7 +54,7 @@ export function AppShell({ children, currentUser }: AppShellProps) {
             Private workspace
           </div>
           <p className="mt-1.5 text-xs leading-5 text-sidebar-foreground/55">
-            Authenticated development workspace. Synthetic data only.
+            Authenticated {environmentLabel.toLowerCase()} workspace.
           </p>
         </div>
       </aside>
@@ -80,7 +82,7 @@ export function AppShell({ children, currentUser }: AppShellProps) {
               variant="outline"
               className="hidden border-teal-700/20 bg-teal-50 text-teal-800 sm:inline-flex"
             >
-              Local data
+              {environmentLabel}
             </Badge>
             <Button
               variant="ghost"
@@ -123,6 +125,7 @@ export function AppShell({ children, currentUser }: AppShellProps) {
 
         <main className="px-4 py-6 md:px-6 lg:px-8 lg:py-8">{children}</main>
       </div>
+      <TutorialSpotlight />
     </div>
   );
 }

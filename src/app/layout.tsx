@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { connection } from "next/server";
 
 import { cn } from "@/lib/utils";
 
@@ -23,11 +24,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  await connection();
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className="min-h-svh bg-background text-foreground antialiased">

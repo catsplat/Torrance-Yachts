@@ -53,18 +53,18 @@ worker can therefore be retried without losing the work or changing authoritativ
 business records.
 
 Real Gmail, Telegram, Google Calendar, Drive, and Sheets credentials remain
-deliberately disconnected until Phase 12 acceptance. Phase 11 proves the
+deliberately disconnected until client launch acceptance. Phase 11 proves the
 application-to-worker contract with synthetic delivery data; it does not claim
 that live provider accounts have been commissioned.
 
 ## Production topology
 
-Phase 12 will select and verify one of the documented deployment forms:
+Phase 12 selected managed Supabase Pro plus a protected Linux VPS running the
+standalone Next.js application, pinned n8n Community Edition, and Caddy as the
+primary hosted release. PostgreSQL remains authoritative and provider credentials
+remain outside the application database and source control.
 
-- the primary internet-hosted version, using a protected Linux service for n8n
-  and the application background worker; or
-- the separately planned local packaged version, where the same database and
-  adapter contracts run on the client machine.
-
-Whichever topology is chosen, PostgreSQL remains authoritative and provider
-credentials remain outside the application database and source control.
+The separately requested local packaged version remains documented as a future
+secondary distribution. It requires Windows and macOS packaging, signing,
+upgrades, backups, and a reliable strategy for scheduled work while the client
+computer is off, so it is not represented as a one-file conversion.

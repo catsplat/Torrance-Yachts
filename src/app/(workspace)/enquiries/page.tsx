@@ -133,7 +133,7 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
             automation is connected.
           </p>
         </div>
-        <Link className={cn(buttonVariants({ size: "lg" }))} href="/enquiries/new">
+        <Link className={cn(buttonVariants({ size: "lg" }))} data-tutorial-anchor="enquiry-create" href="/enquiries/new">
           <Plus aria-hidden="true" /> New enquiry
         </Link>
       </div>

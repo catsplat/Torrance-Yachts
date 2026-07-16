@@ -36,7 +36,7 @@ export default async function OffersPage({ searchParams }: OffersPageProps) {
   const approvedNotSent = visibleOffers.filter((offer) => offer.status === "approved").length
 
   return <div className="mx-auto max-w-6xl space-y-5">
-    <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Commercial workflow</p><h1 className="mt-1 text-3xl font-semibold tracking-tight">Offers</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Review exact yacht-specific commercial snapshots, approve them, and record external sending without giving the application autonomous send authority.</p></div><Link className={cn(buttonVariants())} href="/offers/new"><Plus aria-hidden="true" />Prepare offer</Link></div>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Commercial workflow</p><h1 className="mt-1 text-3xl font-semibold tracking-tight">Offers</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Review exact yacht-specific commercial snapshots, approve them, and record external sending without giving the application autonomous send authority.</p></div><Link className={cn(buttonVariants())} data-tutorial-anchor="offer-create" href="/offers/new"><Plus aria-hidden="true" />Prepare offer</Link></div>
 
     <div className="grid gap-3 sm:grid-cols-3"><Metric icon={FileText} label="Matching offers" value={visibleOffers.length} /><Metric icon={Clock3} label="Awaiting approval" value={awaitingApproval} /><Metric icon={CheckCircle2} label="Approved, not sent" value={approvedNotSent} /></div>
 

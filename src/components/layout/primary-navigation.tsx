@@ -26,6 +26,7 @@ export function PrimaryNavigation({ onNavigate }: PrimaryNavigationProps) {
           <Link
             key={item.href}
             href={item.href}
+            data-tutorial-anchor={`nav-${item.href === "/" ? "dashboard" : item.href.slice(1).replaceAll("/", "-")}`}
             aria-current={isActive ? "page" : undefined}
             onClick={onNavigate}
             className={cn(

@@ -24,6 +24,11 @@ consequential actions remain subject to human approval.
 | Captain contact source per yacht | Phase 3 canonical contacts and yacht responsibilities; optional Phase 11 Sheet view |
 | Remove irrelevant dead-end enquiries from normal pages | Phase 9 configurable inactivity settings archive rather than delete them |
 | Help the client learn the complete service through the real workflow | Phase 12 Settings tutorial plus an isolated synthetic email-to-follow-up practice scenario after all operational interfaces are stable |
+| Keep the internal service private and resistant to attack | Individual accounts, server-verified sessions, RLS, private signed document access, audit history, nonce CSP, HSTS, least-privilege adapters, and an evidence-based Phase 12 production gate |
+| Retain phone/notification ownership per yacht | Phase 3 yacht responsibilities and notification phone; Phase 11 central recipient/channel routing |
+| Operate n8n without a paid n8n Cloud subscription | Pinned self-hosted n8n Community Edition in both local development and the Phase 12 Linux deployment package |
+| Provide hosted and future downloadable/local forms | Phase 12 makes the hosted Linux/Supabase form the supported first release and preserves the cross-platform local package as a separate documented delivery |
+| Avoid missed operations and prove recoverability | Phase 11 observable retries plus Phase 12 readiness monitoring, encrypted exports, restore evidence, incident response, maintenance, and launch acceptance |
 
 ## Supplied booking sequence
 

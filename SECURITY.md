@@ -2,7 +2,10 @@
 
 ## Current deployment status
 
-This repository is in development and is not approved for production deployment or live Torrance Yachts data. Phase 4 extends the tested local authentication and database-authorisation baseline to enquiries, lifecycle history, notes, and workflow events; it is not a production security approval.
+This repository contains the technically verified `v0.12.0` release candidate but
+is not yet approved for live Torrance Yachts data. Production approval requires
+all required evidence in `/settings/launch`, client-owned infrastructure and
+credentials, policy acceptance, staff acceptance, and recorded go-live sign-off.
 
 ## Reporting a concern
 
@@ -25,11 +28,12 @@ Use synthetic test data. Example environment files may contain variable names on
 
 Before production, the project requires reviewed authentication, database Row Level Security, private object storage, server-side validation, least-privilege integration scopes, rate controls, audit logging, backup and restore tests, monitoring, retention rules, and an incident runbook. The full requirements are maintained in `docs/PROJECT_BRIEF.md`.
 
-## Implemented local controls
+## Implemented controls
 
 - public registration is disabled;
 - protected routes verify Supabase authentication claims on the server;
-- all Phase 2, Phase 3, and Phase 4 tables use PostgreSQL Row Level Security;
+- every operational, integration, tutorial, launch, and backup-evidence table uses
+  PostgreSQL Row Level Security and least-privilege grants;
 - anonymous roles have no application-table privileges;
 - active staff can read and maintain yacht records, while deletion is administrator-only;
 - role and active-status changes are protected against self-escalation;
@@ -43,8 +47,26 @@ Before production, the project requires reviewed authentication, database Row Le
 - Phase 4 cannot move an enquiry to `booked`; that state requires the future human-confirmed booking operation;
 - form input is validated on the server before database access;
 - environment files and local credentials are ignored by Git.
+- consequential actions use reviewed database commands; AI and integrations cannot
+  independently confirm bookings, alter authoritative records, or send unapproved
+  communications;
+- identity documents and contracts use private Storage paths and short-lived
+  signed access rather than public object URLs;
+- production responses use a nonce-based Content Security Policy, frame/MIME/
+  referrer/permissions controls, cross-origin restrictions, and HSTS;
+- sessions have absolute and inactivity time limits, and administrator changes
+  protect the current and final administrator;
+- liveness exposes no internal state; readiness requires a timing-safe bearer
+  secret and checks configuration, database access, failures, and restore age;
+- encrypted backup/export and documented restore tooling have passed a disposable
+  local recovery drill;
+- tutorial practice is isolated from operational records and cannot queue external
+  work.
 
-These controls are defence in depth. Production still requires environment-specific URL configuration, invitation and recovery policy, MFA consideration, private storage policies, backups, monitoring, and an independent access review.
+These controls are defence in depth. Production still requires environment-
+specific URL and redirect configuration, scoped provider credentials, an off-site
+encrypted backup destination, malware/quarantine acceptance, MFA consideration,
+an independent access review, and a production restore test.
 
 ## Local service exposure
 

@@ -15,3 +15,8 @@ This version has breaking changes. APIs, conventions, and file structure may dif
 - Keep business rules outside presentation components and add tests when business logic is introduced.
 - Record meaningful decisions in `docs/decisions/`, user-visible changes in `CHANGELOG.md`, and implementation milestones in `docs/development/`.
 - Do not add dependencies without a clear, documented benefit.
+- On Windows, `supabase db reset` may apply every migration and seed successfully
+  before Storage becomes unhealthy because Docker DNS temporarily cannot resolve
+  the recreated database container. When the migration/seed output is complete,
+  recover with `npm run db:stop` followed by `npm run db:start`, wait for health,
+  then run database tests separately; do not misclassify this as a schema failure.
