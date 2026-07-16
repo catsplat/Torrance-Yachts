@@ -31,13 +31,21 @@ export async function classifyEmailAction(
   if (!parsed.success) return validationState(parsed.error)
   const context = await contextOrMessage()
   if ("message" in context) return context
-  const { error } = await context.supabase.rpc("classify_email_message", {
+  const { error } = await context.supabase.rpc("classify_email_message_with_details", {
+    p_budget_amount: parsed.data.budgetAmount === "" ? undefined : parsed.data.budgetAmount,
+    p_charter_end_date: parsed.data.charterEndDate || undefined,
+    p_charter_start_date: parsed.data.charterStartDate || undefined,
     p_message_id: parsed.data.messageId,
     p_classification: parsed.data.classification,
     p_reason: parsed.data.reason,
     p_enquiry_id: parsed.data.enquiryId || undefined,
     p_contact_id: parsed.data.contactId || undefined,
     p_enquiry_summary: parsed.data.enquirySummary || undefined,
+    p_currency: parsed.data.currency || undefined,
+    p_disembarkation_port: parsed.data.disembarkationPort || undefined,
+    p_embarkation_port: parsed.data.embarkationPort || undefined,
+    p_guest_count: parsed.data.guestCount === "" ? undefined : parsed.data.guestCount,
+    p_requested_yacht_id: parsed.data.requestedYachtId || undefined,
   })
   if (error) {
     return { message: "The classification could not be applied. Check the selected contact or enquiry." }

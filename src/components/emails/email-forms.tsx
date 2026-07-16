@@ -10,6 +10,7 @@ import {
 } from "@/app/(workspace)/emails/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import type { EmailAiSuggestion } from "@/lib/ai/schemas"
 import { emailClassificationLabels } from "@/lib/emails/options"
 import type { Tables } from "@/types/database"
 
@@ -24,17 +25,32 @@ export function EmailClassificationForm({
   contacts,
   enquiries,
   message,
+  reviewedSuggestion,
+  yachts,
 }: {
   contacts: Array<Pick<Tables<"contacts">, "id" | "full_name" | "email" | "roles">>
   enquiries: Array<Pick<Tables<"enquiries">, "id" | "reference" | "summary" | "status">>
   message: Pick<Tables<"email_messages">, "id" | "classification" | "subject" | "snippet">
+  reviewedSuggestion?: EmailAiSuggestion | null
+  yachts: Array<Pick<Tables<"yachts">, "id" | "name">>
 }) {
   const [state, action, pending] = useActionState(classifyEmailAction, initialState)
+  const suggestedYachtId = yachts.find((yacht) =>
+    yacht.name.toLocaleLowerCase() ===
+      reviewedSuggestion?.extracted.requested_yacht_name?.toLocaleLowerCase()
+  )?.id ?? ""
+  const defaultClassification =
+    reviewedSuggestion?.classification && reviewedSuggestion.classification !== "unclassified"
+      ? reviewedSuggestion.classification
+      : message.classification === "unclassified"
+        ? "new_enquiry"
+        : message.classification
+
   return (
     <form action={action} className="grid gap-4">
       <input name="messageId" type="hidden" value={message.id} />
       <label className="grid gap-1 text-sm">Classification
-        <select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue={message.classification === "unclassified" ? "new_enquiry" : message.classification} name="classification">
+        <select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue={defaultClassification} name="classification">
           {Object.entries(emailClassificationLabels).filter(([value]) => value !== "unclassified").map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
       </label>
@@ -45,8 +61,24 @@ export function EmailClassificationForm({
         </select>
       </label>
       <label className="grid gap-1 text-sm">New-enquiry summary
-        <textarea className="min-h-20 rounded-md border bg-background p-3 text-sm" defaultValue={`${message.subject}${message.snippet ? ` — ${message.snippet}` : ""}`} name="enquirySummary" />
+        <textarea className="min-h-20 rounded-md border bg-background p-3 text-sm" defaultValue={reviewedSuggestion?.summary ?? `${message.subject}${message.snippet ? ` — ${message.snippet}` : ""}`} name="enquirySummary" />
       </label>
+      <div className="grid gap-3 rounded-lg border bg-muted/20 p-4 md:grid-cols-2">
+        <p className="text-sm font-medium md:col-span-2">Reviewed new-enquiry details</p>
+        <label className="grid gap-1 text-sm">Requested yacht
+          <select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue={suggestedYachtId} name="requestedYachtId">
+            <option value="">Not identified</option>
+            {yachts.map((yacht) => <option key={yacht.id} value={yacht.id}>{yacht.name}</option>)}
+          </select>
+        </label>
+        <label className="grid gap-1 text-sm">Guests<Input defaultValue={reviewedSuggestion?.extracted.guest_count ?? ""} max="36" min="1" name="guestCount" type="number" /></label>
+        <label className="grid gap-1 text-sm">Charter start<Input defaultValue={reviewedSuggestion?.extracted.charter_start_date ?? ""} name="charterStartDate" type="date" /></label>
+        <label className="grid gap-1 text-sm">Charter end<Input defaultValue={reviewedSuggestion?.extracted.charter_end_date ?? ""} name="charterEndDate" type="date" /></label>
+        <label className="grid gap-1 text-sm">Embarkation port<Input defaultValue={reviewedSuggestion?.extracted.embarkation_port ?? ""} name="embarkationPort" /></label>
+        <label className="grid gap-1 text-sm">Disembarkation port<Input defaultValue={reviewedSuggestion?.extracted.disembarkation_port ?? ""} name="disembarkationPort" /></label>
+        <label className="grid gap-1 text-sm">Budget<Input defaultValue={reviewedSuggestion?.extracted.budget_amount ?? ""} min="0" name="budgetAmount" step="0.01" type="number" /></label>
+        <label className="grid gap-1 text-sm">Currency<Input defaultValue={reviewedSuggestion?.extracted.currency ?? ""} maxLength={3} name="currency" /></label>
+      </div>
       <label className="grid gap-1 text-sm">Existing enquiry for a follow-up
         <select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue="" name="enquiryId">
           <option value="">Not linking as a follow-up</option>

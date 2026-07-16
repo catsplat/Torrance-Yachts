@@ -13,6 +13,7 @@ import {
 } from "@/app/(workspace)/documents/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import type { ContractAiSuggestion } from "@/lib/ai/schemas"
 import {
   documentTypeLabels,
   retentionClassLabels,
@@ -90,24 +91,27 @@ export function RequirementWaiverForm({ bookingId, requirementId }: { bookingId:
 
 export function ContractReviewForm({
   booking,
+  reviewedSuggestion,
   sourceDocumentId,
 }: {
   booking: Pick<Tables<"bookings">, "id" | "charter_start_date" | "charter_end_date" | "charter_fee" | "currency" | "tax_rate" | "embarkation_port" | "disembarkation_port">
+  reviewedSuggestion?: ContractAiSuggestion | null
   sourceDocumentId: string
 }) {
+  const extracted = reviewedSuggestion?.extracted
   const [state, action, pending] = useActionState(saveContractReviewAction, initialState)
   return (
     <form action={action} className="grid gap-3 md:grid-cols-2">
       <input name="bookingId" type="hidden" value={booking.id} />
       <input name="sourceDocumentId" type="hidden" value={sourceDocumentId} />
-      <label className="grid gap-1 text-sm">Charter start<Input defaultValue={booking.charter_start_date} name="charterStartDate" required type="date" /></label>
-      <label className="grid gap-1 text-sm">Charter end<Input defaultValue={booking.charter_end_date} name="charterEndDate" required type="date" /></label>
-      <label className="grid gap-1 text-sm">Embarkation port<Input defaultValue={booking.embarkation_port ?? ""} name="embarkationPort" /></label>
-      <label className="grid gap-1 text-sm">Disembarkation port<Input defaultValue={booking.disembarkation_port ?? ""} name="disembarkationPort" /></label>
-      <label className="grid gap-1 text-sm">Charter fee<Input defaultValue={booking.charter_fee} min="0.01" name="charterFee" required step="0.01" type="number" /></label>
-      <label className="grid gap-1 text-sm">Currency<Input defaultValue={booking.currency} maxLength={3} name="currency" required /></label>
-      <label className="grid gap-1 text-sm">Tax rate %<Input defaultValue={booking.tax_rate} min="0" name="taxRate" required step="0.01" type="number" /></label>
-      <label className="grid gap-1 text-sm">Commission rate %<Input defaultValue="2" min="0" name="commissionRate" required step="0.01" type="number" /></label>
+      <label className="grid gap-1 text-sm">Charter start<Input defaultValue={extracted?.charter_start_date ?? booking.charter_start_date} name="charterStartDate" required type="date" /></label>
+      <label className="grid gap-1 text-sm">Charter end<Input defaultValue={extracted?.charter_end_date ?? booking.charter_end_date} name="charterEndDate" required type="date" /></label>
+      <label className="grid gap-1 text-sm">Embarkation port<Input defaultValue={extracted?.embarkation_port ?? booking.embarkation_port ?? ""} name="embarkationPort" /></label>
+      <label className="grid gap-1 text-sm">Disembarkation port<Input defaultValue={extracted?.disembarkation_port ?? booking.disembarkation_port ?? ""} name="disembarkationPort" /></label>
+      <label className="grid gap-1 text-sm">Charter fee<Input defaultValue={extracted?.charter_fee ?? booking.charter_fee} min="0.01" name="charterFee" required step="0.01" type="number" /></label>
+      <label className="grid gap-1 text-sm">Currency<Input defaultValue={extracted?.currency ?? booking.currency} maxLength={3} name="currency" required /></label>
+      <label className="grid gap-1 text-sm">Tax rate %<Input defaultValue={extracted?.tax_rate ?? booking.tax_rate} min="0" name="taxRate" required step="0.01" type="number" /></label>
+      <label className="grid gap-1 text-sm">Commission rate %<Input defaultValue={extracted?.commission_rate ?? 2} min="0" name="commissionRate" required step="0.01" type="number" /></label>
       <label className="grid gap-1 text-sm md:col-span-2">Human review notes<textarea className="min-h-24 rounded-md border bg-background p-3 text-sm" name="reviewNotes" required /></label>
       <div><Button disabled={pending} type="submit">Save reviewed fields</Button></div>
       <Feedback state={state} />
@@ -115,7 +119,15 @@ export function ContractReviewForm({
   )
 }
 
-export function ContractApprovalForm({ bookingId, reviewId }: { bookingId: string; reviewId: string }) {
+export function ContractApprovalForm({
+  bookingId,
+  reviewId,
+  suggestedInstalments = [],
+}: {
+  bookingId: string
+  reviewId: string
+  suggestedInstalments?: ContractAiSuggestion["extracted"]["instalments"]
+}) {
   const action = approveContractReviewAction.bind(null, bookingId)
   const [state, formAction, pending] = useActionState(action, initialState)
   return (
@@ -123,8 +135,8 @@ export function ContractApprovalForm({ bookingId, reviewId }: { bookingId: strin
       <input name="reviewId" type="hidden" value={reviewId} />
       {[1, 2, 3].map((number) => (
         <div className="contents" key={number}>
-          <label className="grid gap-1 text-sm">Instalment {number} date<Input name={`payment${number}Date`} required={number === 1} type="date" /></label>
-          <label className="grid gap-1 text-sm">Instalment {number} amount<Input min="0.01" name={`payment${number}Amount`} required={number === 1} step="0.01" type="number" /></label>
+          <label className="grid gap-1 text-sm">Instalment {number} date<Input defaultValue={suggestedInstalments[number - 1]?.due_date ?? ""} name={`payment${number}Date`} required={number === 1} type="date" /></label>
+          <label className="grid gap-1 text-sm">Instalment {number} amount<Input defaultValue={suggestedInstalments[number - 1]?.amount ?? ""} min="0.01" name={`payment${number}Amount`} required={number === 1} step="0.01" type="number" /></label>
         </div>
       ))}
       <div className="md:col-span-2"><Button disabled={pending} type="submit">Approve contract and schedule</Button></div>

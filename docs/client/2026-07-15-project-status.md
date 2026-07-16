@@ -2,7 +2,7 @@
 
 **Updated:** 16 July 2026
 
-The project has moved from planning into a working, secured internal application. Nine of twelve planned delivery phases are released through version 0.9.0.
+The project has moved from planning into a working, secured internal application. Ten of twelve planned delivery phases are released through version 0.10.0.
 
 ## Completed
 
@@ -31,11 +31,33 @@ The application now accepts authenticated, retry-safe email deliveries; stores i
 
 Configurable inactivity settings automatically archive low-conversion pre-contract enquiries after different periods for New, Waiting for reply, Offer sent, and Negotiating. Records remain searchable and auditable.
 
-Current verification includes 49 application tests and 349 database security/behaviour assertions.
+## Released Phase 10
+
+The application can now generate structured suggestions for uncertain emails,
+including category, summary, customer and charter facts, confidence, exact source
+evidence, and a draft response. Staff can correct the result, record why, and
+approve or reject it. A separate human action is still required before any
+classification or enquiry data changes.
+
+For verified charter agreements, staff can paste only the relevant clauses and
+receive a reviewable extraction of dates, parties, ports, fees, tax, commission,
+and instalments. The suggestion cannot approve contract data or calculate
+financial obligations. Versioned communication templates now support KYC
+requests, captain-contact drafts, and broker follow-up wording.
+
+The default local assistant works without a paid AI service. OpenAI can be enabled
+later through server-only configuration after the production data policy is
+approved.
+
+Current verification includes 55 application tests and 411 database
+security/behaviour assertions.
 
 ## Still to come
 
-The later phases add AI-assisted extraction and drafting, notifications and calendar/Google integrations, local n8n automation, invoice generation, optional desktop packaging, followed by production security, backups, staff acceptance, training, and launch.
+The remaining phases add notifications and calendar/Google integrations, local
+n8n automation, invoice generation, optional desktop packaging, followed by
+production security, backups, the guided synthetic tutorial, staff acceptance,
+training, and launch.
 
 ## Current status
 
