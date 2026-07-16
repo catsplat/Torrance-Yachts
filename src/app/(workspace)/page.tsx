@@ -9,13 +9,14 @@ export default async function DashboardPage() {
   if (!currentUser) redirect("/login");
 
   const supabase = await createClient();
-  const [enquiriesResult, offersResult] = await Promise.all([
+  const [enquiriesResult, offersResult, bookingsResult] = await Promise.all([
     supabase.from("enquiries").select("status").in("status", phaseFourOpenStatuses),
     supabase.from("offers").select("status").in("status", ["draft", "approved"]),
+    supabase.from("bookings").select("id,reference,status,charter_start_date,charter_end_date,yacht:yachts!bookings_yacht_id_fkey(name),yachtfolio:yachtfolio_booking_actions!yachtfolio_booking_actions_booking_id_fkey(status)").in("status", ["confirmed", "charter_active"]).order("charter_start_date").limit(5),
   ]);
   const { data: openEnquiries, error } = enquiriesResult;
 
-  if (error || offersResult.error) throw new Error("Unable to load the live dashboard summary.");
+  if (error || offersResult.error || bookingsResult.error) throw new Error("Unable to load the live dashboard summary.");
 
   const countStatus = (status: (typeof phaseFourOpenStatuses)[number]) =>
     openEnquiries.filter((enquiry) => enquiry.status === status).length;
@@ -59,6 +60,18 @@ export default async function DashboardPage() {
       offerSummary={{
         awaitingApproval: offersResult.data.filter((offer) => offer.status === "draft").length,
         approvedNotSent: offersResult.data.filter((offer) => offer.status === "approved").length,
+      }}
+      bookingSummary={{
+        activeCount: bookingsResult.data.length,
+        yachtfolioPending: bookingsResult.data.filter((booking) => booking.yachtfolio?.status === "pending").length,
+        upcoming: bookingsResult.data.map((booking) => ({
+          id: booking.id,
+          reference: booking.reference,
+          yacht: booking.yacht.name,
+          startDate: booking.charter_start_date,
+          endDate: booking.charter_end_date,
+          status: booking.status,
+        })),
       }}
     />
   );

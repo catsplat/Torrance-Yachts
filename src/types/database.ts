@@ -53,6 +53,247 @@ export type Database = {
           },
         ]
       }
+      booking_reservations: {
+        Row: {
+          active: boolean
+          booking_id: string
+          created_at: string
+          id: string
+          reservation_period: unknown
+          reserved_from: string
+          reserved_through: string
+          updated_at: string
+          yacht_id: string
+        }
+        Insert: {
+          active?: boolean
+          booking_id: string
+          created_at?: string
+          id?: string
+          reservation_period?: unknown
+          reserved_from: string
+          reserved_through: string
+          updated_at?: string
+          yacht_id: string
+        }
+        Update: {
+          active?: boolean
+          booking_id?: string
+          created_at?: string
+          id?: string
+          reservation_period?: unknown
+          reserved_from?: string
+          reserved_through?: string
+          updated_at?: string
+          yacht_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_reservations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_reservations_yacht_id_fkey"
+            columns: ["yacht_id"]
+            isOneToOne: false
+            referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_status_history: {
+        Row: {
+          booking_id: string
+          changed_by: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["booking_status"] | null
+          id: number
+          reason: string
+          to_status: Database["public"]["Enums"]["booking_status"]
+        }
+        Insert: {
+          booking_id: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["booking_status"] | null
+          id?: never
+          reason: string
+          to_status: Database["public"]["Enums"]["booking_status"]
+        }
+        Update: {
+          booking_id?: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["booking_status"] | null
+          id?: never
+          reason?: string
+          to_status?: Database["public"]["Enums"]["booking_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_status_history_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          broker_company_id: string | null
+          broker_contact_id: string | null
+          charter_end_date: string
+          charter_fee: number
+          charter_start_date: string
+          confirmation_reason: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          customer_contact_id: string | null
+          disembarkation_port: string | null
+          embarkation_port: string | null
+          enquiry_id: string
+          guest_count: number | null
+          id: string
+          reference: string
+          signed_agreement_confirmed_at: string
+          signed_agreement_confirmed_by: string
+          source_offer_id: string
+          status: Database["public"]["Enums"]["booking_status"]
+          tax_rate: number
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        Insert: {
+          broker_company_id?: string | null
+          broker_contact_id?: string | null
+          charter_end_date: string
+          charter_fee: number
+          charter_start_date: string
+          confirmation_reason: string
+          created_at?: string
+          created_by?: string | null
+          currency: string
+          customer_contact_id?: string | null
+          disembarkation_port?: string | null
+          embarkation_port?: string | null
+          enquiry_id: string
+          guest_count?: number | null
+          id?: string
+          reference?: string
+          signed_agreement_confirmed_at?: string
+          signed_agreement_confirmed_by: string
+          source_offer_id: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          tax_rate: number
+          updated_at?: string
+          updated_by?: string | null
+          yacht_id: string
+        }
+        Update: {
+          broker_company_id?: string | null
+          broker_contact_id?: string | null
+          charter_end_date?: string
+          charter_fee?: number
+          charter_start_date?: string
+          confirmation_reason?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          customer_contact_id?: string | null
+          disembarkation_port?: string | null
+          embarkation_port?: string | null
+          enquiry_id?: string
+          guest_count?: number | null
+          id?: string
+          reference?: string
+          signed_agreement_confirmed_at?: string
+          signed_agreement_confirmed_by?: string
+          source_offer_id?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          tax_rate?: number
+          updated_at?: string
+          updated_by?: string | null
+          yacht_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_broker_company_id_fkey"
+            columns: ["broker_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_broker_contact_id_fkey"
+            columns: ["broker_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_customer_contact_id_fkey"
+            columns: ["customer_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_signed_agreement_confirmed_by_fkey"
+            columns: ["signed_agreement_confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_source_offer_id_fkey"
+            columns: ["source_offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_yacht_id_fkey"
+            columns: ["yacht_id"]
+            isOneToOne: false
+            referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           active: boolean
@@ -1100,6 +1341,125 @@ export type Database = {
           },
         ]
       }
+      yachtfolio_action_history: {
+        Row: {
+          action_id: string
+          changed_by: string | null
+          created_at: string
+          from_status:
+            | Database["public"]["Enums"]["yachtfolio_action_status"]
+            | null
+          id: number
+          reason: string
+          to_status: Database["public"]["Enums"]["yachtfolio_action_status"]
+        }
+        Insert: {
+          action_id: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?:
+            | Database["public"]["Enums"]["yachtfolio_action_status"]
+            | null
+          id?: never
+          reason: string
+          to_status: Database["public"]["Enums"]["yachtfolio_action_status"]
+        }
+        Update: {
+          action_id?: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?:
+            | Database["public"]["Enums"]["yachtfolio_action_status"]
+            | null
+          id?: never
+          reason?: string
+          to_status?: Database["public"]["Enums"]["yachtfolio_action_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yachtfolio_action_history_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "yachtfolio_booking_actions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yachtfolio_action_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      yachtfolio_booking_actions: {
+        Row: {
+          booking_id: string
+          completed_at: string | null
+          completed_by: string | null
+          completion_notes: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          status: Database["public"]["Enums"]["yachtfolio_action_status"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          booking_id: string
+          completed_at?: string | null
+          completed_by?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["yachtfolio_action_status"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          booking_id?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["yachtfolio_action_status"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yachtfolio_booking_actions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yachtfolio_booking_actions_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yachtfolio_booking_actions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yachtfolio_booking_actions_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       yachts: {
         Row: {
           beam_metres: number | null
@@ -1189,6 +1549,53 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      amend_confirmed_booking: {
+        Args: {
+          p_booking_id: string
+          p_charter_end_date: string
+          p_charter_fee: number
+          p_charter_start_date: string
+          p_currency: string
+          p_disembarkation_port: string
+          p_embarkation_port: string
+          p_guest_count: number
+          p_reason: string
+          p_tax_rate: number
+          p_yacht_id: string
+        }
+        Returns: {
+          broker_company_id: string | null
+          broker_contact_id: string | null
+          charter_end_date: string
+          charter_fee: number
+          charter_start_date: string
+          confirmation_reason: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          customer_contact_id: string | null
+          disembarkation_port: string | null
+          embarkation_port: string | null
+          enquiry_id: string
+          guest_count: number | null
+          id: string
+          reference: string
+          signed_agreement_confirmed_at: string
+          signed_agreement_confirmed_by: string
+          source_offer_id: string
+          status: Database["public"]["Enums"]["booking_status"]
+          tax_rate: number
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       approve_offer: {
         Args: { p_offer_id: string; p_reason: string }
         Returns: {
@@ -1260,6 +1667,70 @@ export type Database = {
           p_weekly_rate: number
         }
         Returns: number
+      }
+      check_yacht_availability: {
+        Args: {
+          p_charter_end_date: string
+          p_charter_start_date: string
+          p_exclude_booking_id?: string
+          p_yacht_id: string
+        }
+        Returns: {
+          available: boolean
+          conflicting_booking_id: string
+          conflicting_reference: string
+          reserved_from: string
+          reserved_through: string
+        }[]
+      }
+      confirm_booking: {
+        Args: {
+          p_charter_end_date: string
+          p_charter_fee: number
+          p_charter_start_date: string
+          p_confirmation_reason: string
+          p_currency: string
+          p_disembarkation_port: string
+          p_embarkation_port: string
+          p_enquiry_id: string
+          p_guest_count: number
+          p_signed_agreement_confirmed: boolean
+          p_source_offer_id: string
+          p_tax_rate: number
+          p_yacht_id: string
+        }
+        Returns: {
+          broker_company_id: string | null
+          broker_contact_id: string | null
+          charter_end_date: string
+          charter_fee: number
+          charter_start_date: string
+          confirmation_reason: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          customer_contact_id: string | null
+          disembarkation_port: string | null
+          embarkation_port: string | null
+          enquiry_id: string
+          guest_count: number | null
+          id: string
+          reference: string
+          signed_agreement_confirmed_at: string
+          signed_agreement_confirmed_by: string
+          source_offer_id: string
+          status: Database["public"]["Enums"]["booking_status"]
+          tax_rate: number
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       create_offer_draft: {
         Args: {
@@ -1359,6 +1830,70 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      set_yachtfolio_action_status: {
+        Args: {
+          p_action_id: string
+          p_new_status: Database["public"]["Enums"]["yachtfolio_action_status"]
+          p_reason: string
+        }
+        Returns: {
+          booking_id: string
+          completed_at: string | null
+          completed_by: string | null
+          completion_notes: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          status: Database["public"]["Enums"]["yachtfolio_action_status"]
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "yachtfolio_booking_actions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      transition_booking_status: {
+        Args: {
+          p_booking_id: string
+          p_new_status: Database["public"]["Enums"]["booking_status"]
+          p_reason: string
+        }
+        Returns: {
+          broker_company_id: string | null
+          broker_contact_id: string | null
+          charter_end_date: string
+          charter_fee: number
+          charter_start_date: string
+          confirmation_reason: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          customer_contact_id: string | null
+          disembarkation_port: string | null
+          embarkation_port: string | null
+          enquiry_id: string
+          guest_count: number | null
+          id: string
+          reference: string
+          signed_agreement_confirmed_at: string
+          signed_agreement_confirmed_by: string
+          source_offer_id: string
+          status: Database["public"]["Enums"]["booking_status"]
+          tax_rate: number
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       transition_enquiry_status: {
         Args: {
           p_enquiry_id: string
@@ -1444,6 +1979,7 @@ export type Database = {
       }
     }
     Enums: {
+      booking_status: "confirmed" | "charter_active" | "completed" | "cancelled"
       contact_role:
         | "customer"
         | "charterer"
@@ -1487,6 +2023,7 @@ export type Database = {
         | "crew"
         | "other"
       yacht_operational_status: "active" | "inactive" | "maintenance"
+      yachtfolio_action_status: "pending" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1614,6 +2151,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      booking_status: ["confirmed", "charter_active", "completed", "cancelled"],
       contact_role: [
         "customer",
         "charterer",
@@ -1661,6 +2199,7 @@ export const Constants = {
         "other",
       ],
       yacht_operational_status: ["active", "inactive", "maintenance"],
+      yachtfolio_action_status: ["pending", "completed"],
     },
   },
 } as const

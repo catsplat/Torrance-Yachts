@@ -25,7 +25,6 @@ import { Separator } from "@/components/ui/separator";
 import {
   dashboardMetrics,
   priorityTasks,
-  upcomingSchedule,
 } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 
@@ -64,14 +63,22 @@ type DashboardOfferSummary = {
   awaitingApproval: number;
 };
 
+type DashboardBookingSummary = {
+  activeCount: number;
+  yachtfolioPending: number;
+  upcoming: Array<{ id: string; reference: string; yacht: string; startDate: string; endDate: string; status: string }>;
+};
+
 export function DashboardOverview({
   displayName,
   enquirySummary,
   offerSummary,
+  bookingSummary,
 }: {
   displayName: string;
   enquirySummary: DashboardEnquirySummary;
   offerSummary: DashboardOfferSummary;
+  bookingSummary: DashboardBookingSummary;
 }) {
   const liveMetrics = dashboardMetrics.map((metric) =>
     metric.key === "enquiries"
@@ -81,7 +88,9 @@ export function DashboardOverview({
           trend: "Live database",
           value: String(enquirySummary.openCount),
         }
-      : metric,
+      : metric.key === "bookings"
+        ? { ...metric, value: String(bookingSummary.activeCount), detail: `${bookingSummary.yachtfolioPending} Yachtfolio actions pending`, trend: "Live database" }
+        : metric,
   );
   const largestPipelineStage = Math.max(
     1,
@@ -127,7 +136,7 @@ export function DashboardOverview({
             At a glance
           </h2>
           <span className="text-xs text-muted-foreground">
-            Enquiries and offers live · later modules synthetic
+            Enquiries, offers and bookings live · later modules synthetic
           </span>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -233,12 +242,12 @@ export function DashboardOverview({
             </CardAction>
           </CardHeader>
           <CardContent className="space-y-1 px-0">
-            {upcomingSchedule.map((item, index) => (
-              <div key={`${item.date}-${item.event}`}>
+            {bookingSummary.upcoming.length ? bookingSummary.upcoming.map((item, index) => (
+              <div key={item.id}>
                 <div className="grid grid-cols-[3.75rem_minmax(0,1fr)] gap-3 px-4 py-3.5">
                   <div>
                     <p className="text-sm font-semibold text-teal-800">
-                      {item.date}
+                      {new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${item.startDate}T00:00:00Z`))}
                     </p>
                   </div>
                   <div className="min-w-0">
@@ -246,15 +255,15 @@ export function DashboardOverview({
                       <Ship aria-hidden="true" className="size-3.5 text-muted-foreground" />
                       <p className="truncate text-sm font-medium">{item.yacht}</p>
                     </div>
-                    <p className="mt-1 text-sm">{item.event}</p>
+                    <p className="mt-1 text-sm">{item.reference}</p>
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {item.detail}
+                      {item.startDate} to {item.endDate} · {item.status}
                     </p>
                   </div>
                 </div>
-                {index < upcomingSchedule.length - 1 && <Separator />}
+                {index < bookingSummary.upcoming.length - 1 && <Separator />}
               </div>
-            ))}
+            )) : <p className="px-4 py-8 text-center text-sm text-muted-foreground">No upcoming confirmed charters.</p>}
           </CardContent>
         </Card>
       </section>
