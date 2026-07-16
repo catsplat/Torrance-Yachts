@@ -2,7 +2,7 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Version `0.6.0` is released. Version `0.7.0` is a release candidate with a configurable dependency-aware booking task engine, live checklists, assignments, schedules, reminders, and permanent completion/reopening evidence. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
+> **Development status:** Version `0.7.0` is released with the configurable dependency-aware booking task engine. Version `0.8.0` is a release candidate with private document storage, booking document requirements, reviewed contract fields, payment schedules, and deterministic commission calculations. Do not enter real client data yet.
 
 ## Current milestone
 
@@ -32,7 +32,7 @@ The current candidate provides the secured operational master-data, enquiry, off
 - Zod validation, a recoverable error boundary, and synthetic seed records;
 - 42 unit tests, 235 database permission/behaviour tests, database linting, and matching CI gates.
 
-Phase 6 does not yet generate booking tasks, documents, payment schedules, reminders, calendar entries, or notifications. Those arrive in the next dependency-aware phases. It does not send email or update Yachtfolio automatically.
+Confirmed bookings now generate their dependency-aware operational task workflow. Phase 8 adds private documents, reviewed contract data, and payments. Email, notifications, calendar synchronisation, and external adapters remain deliberately scheduled for later phases. The application does not send consequential communications or update Yachtfolio automatically.
 
 ## Technology foundation
 

@@ -6,6 +6,17 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- Phase 8 private booking-document storage with booking-scoped paths, controlled
+  MIME types, a 20 MB limit, and five-minute signed access links.
+- Automatically generated booking document requirements, human verification,
+  versioned metadata, and append-only document history.
+- Reviewed contract-field drafts, explicit approval, one-to-three instalment
+  payment schedules, deterministic commission calculations, and task due-date
+  synchronisation.
+- Live document/payment dashboard counts and protected booking workspaces.
+
+### Added
+
 - Versioned configurable booking-task templates with editable draft steps, dependency graphs, reminders, escalation settings, due-date anchors, optionality, and administrator approval.
 - Atomic and idempotent generation of the supplied sixteen-record booking workflow when a signed booking is confirmed.
 - Dependency-aware task blocking, completion, reopening, assignment, priority, schedule changes, append-only notes, and permanent history.
