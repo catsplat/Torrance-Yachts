@@ -12,7 +12,7 @@ export default function YachtsError({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error("The yacht workspace failed to load", error)
+    void error
   }, [error])
 
   return (

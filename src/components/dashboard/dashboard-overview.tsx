@@ -22,10 +22,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  dashboardMetrics,
-  priorityTasks,
-} from "@/lib/demo-data";
+import { dashboardMetrics } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 
 const metricIcons = {
@@ -69,16 +66,31 @@ type DashboardBookingSummary = {
   upcoming: Array<{ id: string; reference: string; yacht: string; startDate: string; endDate: string; status: string }>;
 };
 
+type DashboardTaskSummary = {
+  openCount: number;
+  overdueCount: number;
+  priorities: Array<{
+    id: string;
+    title: string;
+    context: string;
+    due: string;
+    status: string;
+    tone: keyof typeof taskTones;
+  }>;
+};
+
 export function DashboardOverview({
   displayName,
   enquirySummary,
   offerSummary,
   bookingSummary,
+  taskSummary,
 }: {
   displayName: string;
   enquirySummary: DashboardEnquirySummary;
   offerSummary: DashboardOfferSummary;
   bookingSummary: DashboardBookingSummary;
+  taskSummary: DashboardTaskSummary;
 }) {
   const liveMetrics = dashboardMetrics.map((metric) =>
     metric.key === "enquiries"
@@ -90,6 +102,8 @@ export function DashboardOverview({
         }
       : metric.key === "bookings"
         ? { ...metric, value: String(bookingSummary.activeCount), detail: `${bookingSummary.yachtfolioPending} Yachtfolio actions pending`, trend: "Live database" }
+        : metric.key === "tasks"
+          ? { ...metric, value: String(taskSummary.openCount), detail: `${taskSummary.overdueCount} overdue`, trend: "Live database" }
         : metric,
   );
   const largestPipelineStage = Math.max(
@@ -136,7 +150,7 @@ export function DashboardOverview({
             At a glance
           </h2>
           <span className="text-xs text-muted-foreground">
-            Enquiries, offers and bookings live · later modules synthetic
+            Enquiries, offers, bookings and tasks live · later modules synthetic
           </span>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -188,19 +202,15 @@ export function DashboardOverview({
             </CardAction>
           </CardHeader>
           <CardContent className="divide-y px-0">
-            {priorityTasks.map((task) => (
-              <div
+            {taskSummary.priorities.length ? taskSummary.priorities.map((task) => (
+              <Link
+                href={`/tasks/${task.id}`}
                 key={task.id}
                 className="flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center"
               >
-                <button
-                  type="button"
-                  aria-label={`Mark ${task.title} complete`}
-                  title="Completion will be connected to the task engine"
-                  className="flex size-8 shrink-0 items-center justify-center rounded-full border bg-card text-muted-foreground hover:border-teal-500 hover:text-teal-700"
-                >
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-full border bg-card text-muted-foreground">
                   <CheckCircle2 aria-hidden="true" className="size-4" />
-                </button>
+                </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{task.title}</p>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
@@ -219,8 +229,8 @@ export function DashboardOverview({
                     {task.status}
                   </Badge>
                 </div>
-              </div>
-            ))}
+              </Link>
+            )) : <p className="px-4 py-8 text-center text-sm text-muted-foreground">No active task priorities.</p>}
           </CardContent>
         </Card>
 

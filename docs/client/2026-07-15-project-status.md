@@ -1,8 +1,8 @@
 # Torrance Yachts platform: client progress summary
 
-**Date:** 15 July 2026
+**Updated:** 16 July 2026
 
-The project has moved from planning into a working, secured internal application. Five of twelve planned delivery phases are released and Phase 6 has passed release-candidate acceptance.
+The project has moved from planning into a working, secured internal application. Six of twelve planned delivery phases are released and Phase 7 is in release-candidate verification.
 
 ## Completed
 
@@ -17,20 +17,20 @@ The project has moved from planning into a working, secured internal application
 
 All development and demonstrations currently use synthetic information. No live client, broker, captain, contract, identity-document, banking, or confidential commercial data has been entered.
 
-## Latest completed phase
-
-Phase 5 adds editable yacht commercial profiles, exact dated rates, approved sales-material links, versioned response templates, and reviewable offer snapshots. Staff can assemble an offer from current yacht data and enquiry requirements, review every term, approve it separately, and record an external send without the software sending anything automatically. The full synthetic browser workflow and all automated application, database, security, build, and dependency checks pass.
-
-## Phase 6 candidate
+## Released through Phase 6
 
 The application can now create a booking only after a staff member confirms that the charter agreement is signed by all required parties and records what they reviewed. It links the booking to its enquiry and sent offer, blocks the yacht from 24 hours before until 24 hours after the charter, prevents overlapping reservations at database level, and creates a visible manual action to add the dates and Booked status in Yachtfolio. Booking amendments, charter start/completion/cancellation, Yachtfolio completion/reopening, the live register, availability checker, yacht view, enquiry link, and dashboard are all audited and verified with synthetic data.
 
-The complete Phase 6 browser scenario and 166 database security/behaviour assertions pass. The candidate is awaiting pull-request CI and merge before becoming the `v0.6.0` release.
+## Phase 7 candidate
+
+The booking now receives the complete operational checklist automatically. Tasks follow the supplied numbered sequence, remain blocked until prerequisites are complete, unlock automatically, carry reviewed dates, priorities and assignees, and retain evidence when completed or reopened. Administrators can clone and edit versioned workflow templates, including steps and dependencies, without changing historical bookings.
+
+The task register, booking checklist, dashboard priorities, notes, reminders, escalation settings, and permitted ad-hoc work are implemented. Booking date amendments reschedule relevant tasks and booking cancellation closes remaining open work. Current verification includes 42 application tests and 235 database security/behaviour assertions.
 
 ## Still to come
 
-The later phases add the full booking-task workflow, private document and payment handling, email ingestion, AI-assisted classification and drafting, notifications and calendar/Google integrations, followed by production security, backups, staff acceptance, training, and launch.
+The later phases add private document and payment handling, email ingestion, AI-assisted classification and drafting, notifications and calendar/Google integrations, followed by production security, backups, staff acceptance, training, and launch.
 
 ## Current status
 
-The technical foundation and the first operational workflow from manual enquiry through human-confirmed booking is working and verified with synthetic data. The system is not yet approved for production or live data, and it does not yet process real documents, emails, payments, tasks, or notifications. Development remains on the agreed dependency-safe path toward the complete enquiry-to-charter workflow.
+The technical foundation and operational workflow from manual enquiry through human-confirmed booking and generated task execution is working with synthetic data. The system is not yet approved for production or live data, and it does not yet process real documents, emails, payments, or notifications. Development remains on the agreed dependency-safe path toward the complete enquiry-to-charter workflow.

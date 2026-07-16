@@ -90,7 +90,9 @@ export async function amendBookingAction(
   if (error) return { message: error.code === "23P01" ? "The amended buffered dates conflict with another booking." : "Only a confirmed booking can be amended after review." }
   revalidatePath("/")
   revalidatePath("/bookings")
+  revalidatePath("/tasks")
   revalidatePath(`/bookings/${validId.data}`)
+  revalidatePath(`/bookings/${validId.data}/tasks`)
   return { message: "Booking amended, rechecked for conflicts, and audited.", success: true }
 }
 
@@ -113,7 +115,9 @@ export async function transitionBookingAction(
   if (error) return { message: "The booking changed elsewhere or this lifecycle move is not allowed." }
   revalidatePath("/")
   revalidatePath("/bookings")
+  revalidatePath("/tasks")
   revalidatePath(`/bookings/${validId.data}`)
+  revalidatePath(`/bookings/${validId.data}/tasks`)
   return { message: "Booking lifecycle updated and audited.", success: true }
 }
 

@@ -12,7 +12,7 @@ export default function ContactsError({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error("The contact directory failed to load", error)
+    void error
   }, [error])
 
   return (

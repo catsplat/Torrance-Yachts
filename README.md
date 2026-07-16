@@ -2,7 +2,7 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Version `0.6.0` is release-ready with human-confirmed bookings, conflict-safe buffered availability, lifecycle controls, and explicit Yachtfolio action tracking. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
+> **Development status:** Version `0.6.0` is released. Version `0.7.0` is a release candidate with a configurable dependency-aware booking task engine, live checklists, assignments, schedules, reminders, and permanent completion/reopening evidence. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
 
 ## Current milestone
 
@@ -25,10 +25,12 @@ The current candidate provides the secured operational master-data, enquiry, off
 - one-day yacht availability buffers on both sides, database-enforced overlap prevention, and live availability checking;
 - controlled booking amendments and lifecycle changes with reasons, history, durable events, and enquiry synchronisation;
 - explicit pending/completed/reopened Yachtfolio manual actions;
+- configurable versioned task templates and dependency graphs;
+- generated booking checklists, assignees, reviewed schedules, reminders, notes, and completion/reopening audit;
 - live enquiry, offer, booking, and upcoming-charter dashboard counts while unfinished modules remain visibly labelled synthetic;
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
-- 37 unit tests, 167 database permission/behaviour tests, database linting, and matching CI gates.
+- 42 unit tests, 235 database permission/behaviour tests, database linting, and matching CI gates.
 
 Phase 6 does not yet generate booking tasks, documents, payment schedules, reminders, calendar entries, or notifications. Those arrive in the next dependency-aware phases. It does not send email or update Yachtfolio automatically.
 
@@ -84,18 +86,21 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Enquiry-pipeline architecture](docs/architecture/ENQUIRY_PIPELINE_SLICE.md)
 - [Commercial-offers architecture](docs/architecture/COMMERCIAL_OFFERS_SLICE.md)
 - [Booking and availability architecture](docs/architecture/BOOKING_AVAILABILITY_SLICE.md)
+- [Task-engine architecture](docs/architecture/TASK_ENGINE_SLICE.md)
 - [Automation and n8n boundary](docs/architecture/AUTOMATION_AND_N8N.md)
 - [Phase 2 database schema](docs/database/PHASE_2_SCHEMA.md)
 - [Phase 3 contact-directory schema](docs/database/PHASE_3_CONTACT_DIRECTORY_SCHEMA.md)
 - [Phase 4 enquiry schema](docs/database/PHASE_4_ENQUIRY_SCHEMA.md)
 - [Phase 5 commercial-offers schema](docs/database/PHASE_5_COMMERCIAL_OFFERS_SCHEMA.md)
 - [Phase 6 booking and availability schema](docs/database/PHASE_6_BOOKING_AVAILABILITY_SCHEMA.md)
+- [Phase 7 task-engine schema](docs/database/PHASE_7_TASK_ENGINE_SCHEMA.md)
 - [Architecture decisions](docs/decisions/0001-application-foundation.md)
 - [Supabase identity and RLS decision](docs/decisions/0002-supabase-identity-and-rls.md)
 - [Contact-directory modelling decision](docs/decisions/0003-contact-directory-model.md)
 - [Enquiry state-machine decision](docs/decisions/0004-enquiry-state-machine.md)
 - [Human-reviewed offer snapshots decision](docs/decisions/0005-human-reviewed-offer-snapshots.md)
 - [Transactional booking reservations decision](docs/decisions/0006-transactional-booking-reservations.md)
+- [Versioned dependency-aware task engine decision](docs/decisions/0007-versioned-dependency-aware-task-engine.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)
 - [Phase 2 development diary](docs/development/2026-07-15-auth-yacht-slice.md)
@@ -103,6 +108,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 4 development diary](docs/development/2026-07-15-enquiry-pipeline-slice.md)
 - [Phase 5 development diary](docs/development/2026-07-15-commercial-offers-slice.md)
 - [Phase 6 development diary](docs/development/2026-07-15-booking-availability-slice.md)
+- [Phase 7 development diary](docs/development/2026-07-16-task-engine-slice.md)
 - [Foundation verification record](docs/audit/2026-07-15-foundation-verification.md)
 - [Phase 2 verification record](docs/audit/2026-07-15-phase-2-verification.md)
 - [Phase 3 verification record](docs/audit/2026-07-15-phase-3-verification.md)
