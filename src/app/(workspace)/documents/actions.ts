@@ -211,4 +211,3 @@ export async function markPaymentPaidAction(
   refreshBookingDocuments(bookingId)
   return { message: "Payment recorded as paid.", success: true }
 }
-

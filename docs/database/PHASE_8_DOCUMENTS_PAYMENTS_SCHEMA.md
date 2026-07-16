@@ -16,4 +16,3 @@ active internal identity. Direct table mutation is not granted.
 The `booking-private` storage bucket is non-public, accepts PDF/JPEG/PNG only, and
 limits files to 20 MB. Object policies require an active staff identity and a valid
 booking-scoped path.
-

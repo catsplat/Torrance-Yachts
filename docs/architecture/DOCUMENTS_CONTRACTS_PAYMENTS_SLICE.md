@@ -19,4 +19,3 @@ stores a public URL.
 The first booking checklist contains six document requirements: signed charter
 agreement, broker KYC statement, client passport, CDD check, Kylian commission
 invoice, and an optional broker commission invoice.
-

@@ -24,4 +24,3 @@ export const acceptedDocumentMimeTypes = [
 ] as const
 
 export const maxDocumentBytes = 20 * 1024 * 1024
-

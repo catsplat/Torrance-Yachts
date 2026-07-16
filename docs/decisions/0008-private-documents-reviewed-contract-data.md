@@ -20,4 +20,3 @@ database constraint.
 - AI extraction can later populate a draft, but cannot approve it.
 - Payment tasks receive dates only from approved reviewed contract data.
 - Storage and metadata failures are compensated so orphan uploads are removed.
-

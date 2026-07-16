@@ -8,4 +8,3 @@ Payment schedules are created only at approval time and must reconcile exactly t
 the reviewed charter fee. The 2% commission uses deterministic database arithmetic,
 not an AI response. Approved dates update the booking, buffered reservation, and
 the existing task engine together.
-

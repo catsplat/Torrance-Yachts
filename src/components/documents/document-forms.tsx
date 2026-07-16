@@ -145,4 +145,3 @@ export function PaymentPaidForm({ bookingId, paymentId }: { bookingId: string; p
     </form>
   )
 }
-

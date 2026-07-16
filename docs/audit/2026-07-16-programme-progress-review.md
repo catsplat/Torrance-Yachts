@@ -27,4 +27,3 @@ estimate. Functionally the programme is on plan; calendar delivery depends on
 available development hours. Production hosting, macOS staff acceptance, backup
 restoration, and live integration credentials remain correctly scheduled for
 Phases 11–12.
-
