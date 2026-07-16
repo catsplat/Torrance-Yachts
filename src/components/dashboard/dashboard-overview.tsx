@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BrainCircuit,
   CalendarCheck2,
   CheckCircle2,
   Clock3,
@@ -91,6 +92,7 @@ type DashboardEmailSummary = {
 };
 
 export function DashboardOverview({
+  aiSummary,
   displayName,
   enquirySummary,
   offerSummary,
@@ -99,6 +101,7 @@ export function DashboardOverview({
   documentSummary,
   emailSummary,
 }: {
+  aiSummary: { pendingReview: number };
   displayName: string;
   enquirySummary: DashboardEnquirySummary;
   offerSummary: DashboardOfferSummary;
@@ -145,6 +148,13 @@ export function DashboardOverview({
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
+            href="/ai/review"
+            className={buttonVariants({ variant: "outline", size: "lg" })}
+          >
+            <BrainCircuit aria-hidden="true" />
+            AI review ({aiSummary.pendingReview})
+          </Link>
+          <Link
             href="/emails"
             className={buttonVariants({ variant: "outline", size: "lg" })}
           >
@@ -169,10 +179,14 @@ export function DashboardOverview({
       </section>
 
       <section className="rounded-xl border bg-card px-4 py-3 text-sm">
-        <Link className="flex flex-wrap items-center justify-between gap-3" href="/emails">
-          <span><strong>{emailSummary.reviewRequired}</strong> imported emails need human review</span>
-          <span className="text-muted-foreground">{emailSummary.relevantReceived} relevant messages retained in the operational register →</span>
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link href="/emails">
+            <strong>{emailSummary.reviewRequired}</strong> imported emails need human review
+          </Link>
+          <Link className="text-muted-foreground" href="/ai/review">
+            <strong>{aiSummary.pendingReview}</strong> AI proposals await evidence review →
+          </Link>
+        </div>
       </section>
 
       <section aria-labelledby="attention-heading" className="space-y-3">

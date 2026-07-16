@@ -1,4 +1,6 @@
-import { ArrowLeft, CheckCircle2, ExternalLink, ShieldCheck } from "lucide-react"
+import { randomUUID } from "node:crypto"
+
+import { ArrowLeft, BrainCircuit, CheckCircle2, ExternalLink, ShieldCheck } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
@@ -10,9 +12,15 @@ import {
   PaymentPaidForm,
   RequirementWaiverForm,
 } from "@/components/documents/document-forms"
+import {
+  ContractAiSuggestionReview,
+  GenerateContractAiSuggestionForm,
+} from "@/components/ai/ai-forms"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getCurrentUser } from "@/lib/auth/current-user"
+import { getLatestAiSuggestion } from "@/lib/ai/data"
+import { contractAiSuggestionSchema } from "@/lib/ai/schemas"
 import { formatBookingDate, formatBookingMoney } from "@/lib/bookings/options"
 import { getBookingDocumentWorkspace } from "@/lib/documents/data"
 import { documentTypeLabels } from "@/lib/documents/options"
@@ -29,6 +37,16 @@ export default async function BookingDocumentsPage({ params }: Props) {
   const verifiedAgreement = workspace.documents.find((document) =>
     document.document_type === "charter_agreement" && document.verification_status === "verified"
   )
+  const aiRecord = verifiedAgreement
+    ? await getLatestAiSuggestion("document", verifiedAgreement.id).catch(() => null)
+    : null
+  const parsedAiSuggestion = aiRecord
+    ? contractAiSuggestionSchema.safeParse(aiRecord.suggestion.reviewed_payload)
+    : null
+  const aiSuggestion = parsedAiSuggestion?.success ? parsedAiSuggestion.data : null
+  const reviewedAiSuggestion = aiRecord?.suggestion.status === "approved"
+    ? aiSuggestion
+    : null
   const draftReview = workspace.reviews.find((review) => review.status === "draft")
   const approvedReview = workspace.reviews.find((review) => review.status === "approved")
 
@@ -49,6 +67,77 @@ export default async function BookingDocumentsPage({ params }: Props) {
       </Card>
 
       <Card>
+        <CardHeader className="border-b">
+          <CardTitle className="flex items-center gap-2">
+            <BrainCircuit className="size-5 text-primary" />
+            AI-assisted contract extraction
+          </CardTitle>
+          <CardDescription>
+            Paste only relevant clauses from the verified agreement. Suggestions remain separate
+            from the reviewed contract and payment commands.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5 pt-5">
+          {verifiedAgreement ? (
+            <>
+              {!aiRecord || aiRecord.suggestion.status !== "pending_review" ? (
+                <GenerateContractAiSuggestionForm
+                  bookingId={id}
+                  documentId={verifiedAgreement.id}
+                  requestToken={randomUUID()}
+                />
+              ) : null}
+              {aiRecord && aiSuggestion ? (
+                <>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <Badge variant="outline">{aiRecord.suggestion.status.replace("_", " ")}</Badge>
+                    <Badge variant="secondary">
+                      {aiRecord.suggestion.run.provider} · {aiRecord.suggestion.run.model}
+                    </Badge>
+                    <Badge variant="secondary">
+                      {Math.round(Number(aiRecord.suggestion.confidence) * 100)}% confidence
+                    </Badge>
+                  </div>
+                  <ContractAiSuggestionReview
+                    bookingId={id}
+                    output={aiSuggestion}
+                    status={aiRecord.suggestion.status}
+                    suggestionId={aiRecord.suggestion.id}
+                  />
+                  <div className="border-t pt-4">
+                    <p className="text-sm font-medium">Source evidence</p>
+                    <div className="mt-3 grid gap-2 md:grid-cols-2">
+                      {aiRecord.evidence.length ? aiRecord.evidence.map((entry) => (
+                        <div className="rounded-lg border p-3 text-sm" key={entry.id}>
+                          <p className="font-mono text-xs text-primary">{entry.field_path}</p>
+                          <p className="mt-2">“{entry.excerpt}”</p>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            {Math.round(Number(entry.confidence) * 100)}% field confidence
+                          </p>
+                        </div>
+                      )) : (
+                        <p className="text-sm text-muted-foreground">
+                          No exact excerpt survived validation. Review the signed agreement manually.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : aiRecord ? (
+                <p className="text-sm text-destructive">
+                  The stored provider payload is invalid and cannot prefill reviewed fields.
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Verify the signed charter agreement before requesting extraction.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader className="border-b"><CardTitle>Uploaded private files</CardTitle><CardDescription>Links expire after five minutes. Review the actual file before verifying it.</CardDescription></CardHeader>
         <CardContent className="divide-y p-0">{workspace.documents.length ? workspace.documents.map((document) => (
           <div className="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_10rem_minmax(18rem,.8fr)]" key={document.id}>
@@ -62,8 +151,8 @@ export default async function BookingDocumentsPage({ params }: Props) {
       <Card>
         <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><ShieldCheck className="size-5 text-primary" />Human-reviewed contract fields</CardTitle><CardDescription>No AI output can create payment obligations. A verified agreement and explicit approval are required.</CardDescription></CardHeader>
         <CardContent className="space-y-5 pt-5">
-          {verifiedAgreement ? <ContractReviewForm booking={workspace.booking} sourceDocumentId={verifiedAgreement.id} /> : <p className="text-sm text-muted-foreground">Upload and verify the signed charter agreement before recording contract fields.</p>}
-          {draftReview ? <div className="border-t pt-5"><p className="mb-3 font-medium">Approve payment schedule for {formatBookingMoney(draftReview.charter_fee, draftReview.currency)}</p><ContractApprovalForm bookingId={id} reviewId={draftReview.id} /></div> : null}
+          {verifiedAgreement ? <ContractReviewForm booking={workspace.booking} reviewedSuggestion={reviewedAiSuggestion} sourceDocumentId={verifiedAgreement.id} /> : <p className="text-sm text-muted-foreground">Upload and verify the signed charter agreement before recording contract fields.</p>}
+          {draftReview ? <div className="border-t pt-5"><p className="mb-3 font-medium">Approve payment schedule for {formatBookingMoney(draftReview.charter_fee, draftReview.currency)}</p><ContractApprovalForm bookingId={id} reviewId={draftReview.id} suggestedInstalments={reviewedAiSuggestion?.extracted.instalments} /></div> : null}
           {approvedReview ? <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900"><CheckCircle2 className="size-4" />Approved contract review recorded. New edits create another reviewed draft.</div> : null}
         </CardContent>
       </Card>

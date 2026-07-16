@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -9,6 +9,241 @@
 export type Database = {
   public: {
     Tables: {
+      ai_runs: {
+        Row: {
+          analysis_kind: Database["public"]["Enums"]["ai_analysis_kind"]
+          completed_at: string | null
+          error_code: string | null
+          error_message: string | null
+          id: string
+          input_sha256: string
+          input_tokens: number | null
+          model: string
+          output_tokens: number | null
+          prompt_version: string
+          provider: string
+          provider_request_id: string | null
+          request_key: string
+          requested_at: string
+          requested_by: string
+          source_id: string
+          source_type: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["ai_run_status"]
+        }
+        Insert: {
+          analysis_kind: Database["public"]["Enums"]["ai_analysis_kind"]
+          completed_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          input_sha256: string
+          input_tokens?: number | null
+          model: string
+          output_tokens?: number | null
+          prompt_version: string
+          provider: string
+          provider_request_id?: string | null
+          request_key: string
+          requested_at?: string
+          requested_by: string
+          source_id: string
+          source_type: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["ai_run_status"]
+        }
+        Update: {
+          analysis_kind?: Database["public"]["Enums"]["ai_analysis_kind"]
+          completed_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          input_sha256?: string
+          input_tokens?: number | null
+          model?: string
+          output_tokens?: number | null
+          prompt_version?: string
+          provider?: string
+          provider_request_id?: string | null
+          request_key?: string
+          requested_at?: string
+          requested_by?: string
+          source_id?: string
+          source_type?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["ai_run_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_runs_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_suggestion_evidence: {
+        Row: {
+          confidence: number
+          created_at: string
+          end_offset: number | null
+          excerpt: string
+          field_path: string
+          id: number
+          source_id: string
+          source_type: string
+          start_offset: number | null
+          suggestion_id: string
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          end_offset?: number | null
+          excerpt: string
+          field_path: string
+          id?: never
+          source_id: string
+          source_type: string
+          start_offset?: number | null
+          suggestion_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          end_offset?: number | null
+          excerpt?: string
+          field_path?: string
+          id?: never
+          source_id?: string
+          source_type?: string
+          start_offset?: number | null
+          suggestion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_suggestion_evidence_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "ai_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_suggestion_revisions: {
+        Row: {
+          changed_by: string
+          created_at: string
+          id: number
+          previous_payload: Json
+          reason: string
+          revised_payload: Json
+          suggestion_id: string
+        }
+        Insert: {
+          changed_by: string
+          created_at?: string
+          id?: never
+          previous_payload: Json
+          reason: string
+          revised_payload: Json
+          suggestion_id: string
+        }
+        Update: {
+          changed_by?: string
+          created_at?: string
+          id?: never
+          previous_payload?: Json
+          reason?: string
+          revised_payload?: Json
+          suggestion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_suggestion_revisions_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_suggestion_revisions_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "ai_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_suggestions: {
+        Row: {
+          analysis_kind: Database["public"]["Enums"]["ai_analysis_kind"]
+          confidence: number
+          created_at: string
+          id: string
+          provider_payload: Json
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_payload: Json
+          run_id: string
+          source_id: string
+          source_type: string
+          status: Database["public"]["Enums"]["ai_suggestion_status"]
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          analysis_kind: Database["public"]["Enums"]["ai_analysis_kind"]
+          confidence: number
+          created_at?: string
+          id?: string
+          provider_payload: Json
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewed_payload: Json
+          run_id: string
+          source_id: string
+          source_type: string
+          status?: Database["public"]["Enums"]["ai_suggestion_status"]
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          analysis_kind?: Database["public"]["Enums"]["ai_analysis_kind"]
+          confidence?: number
+          created_at?: string
+          id?: string
+          provider_payload?: Json
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewed_payload?: Json
+          run_id?: string
+          source_id?: string
+          source_type?: string
+          status?: Database["public"]["Enums"]["ai_suggestion_status"]
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_suggestions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_suggestions_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: true
+            referencedRelation: "ai_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_events: {
         Row: {
           action: string
@@ -400,6 +635,86 @@ export type Database = {
           {
             foreignKeyName: "commission_calculations_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_templates: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          body_template: string
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: Database["public"]["Enums"]["communication_template_kind"]
+          name: string
+          source_template_id: string | null
+          status: Database["public"]["Enums"]["communication_template_status"]
+          subject_template: string
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          body_template: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["communication_template_kind"]
+          name: string
+          source_template_id?: string | null
+          status?: Database["public"]["Enums"]["communication_template_status"]
+          subject_template: string
+          updated_at?: string
+          updated_by?: string | null
+          version_number: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          body_template?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["communication_template_kind"]
+          name?: string
+          source_template_id?: string | null
+          status?: Database["public"]["Enums"]["communication_template_status"]
+          subject_template?: string
+          updated_at?: string
+          updated_by?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_templates_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_templates_source_template_id_fkey"
+            columns: ["source_template_id"]
+            isOneToOne: false
+            referencedRelation: "communication_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_templates_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -2956,6 +3271,10 @@ export type Database = {
         }
       }
       apply_enquiry_timeouts: { Args: { p_as_of?: string }; Returns: number }
+      approve_communication_template: {
+        Args: { p_template_id: string }
+        Returns: undefined
+      }
       approve_contract_review: {
         Args: {
           p_payment_amounts: number[]
@@ -3134,6 +3453,29 @@ export type Database = {
         }
         Returns: string
       }
+      classify_email_message_with_details: {
+        Args: {
+          p_budget_amount?: number
+          p_charter_end_date?: string
+          p_charter_start_date?: string
+          p_classification: Database["public"]["Enums"]["email_classification"]
+          p_contact_id?: string
+          p_currency?: string
+          p_disembarkation_port?: string
+          p_embarkation_port?: string
+          p_enquiry_id?: string
+          p_enquiry_summary?: string
+          p_guest_count?: number
+          p_message_id: string
+          p_reason: string
+          p_requested_yacht_id?: string
+        }
+        Returns: string
+      }
+      clone_communication_template: {
+        Args: { p_name: string; p_source_template_id: string }
+        Returns: string
+      }
       clone_task_template: {
         Args: { p_name: string; p_source_template_id: string }
         Returns: {
@@ -3157,6 +3499,19 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      complete_ai_analysis: {
+        Args: {
+          p_confidence: number
+          p_evidence: Json
+          p_input_tokens?: number
+          p_output_tokens?: number
+          p_payload: Json
+          p_provider_request_id: string
+          p_run_id: string
+          p_summary: string
+        }
+        Returns: string
       }
       complete_task: {
         Args: { p_reason: string; p_task_id: string }
@@ -3247,6 +3602,15 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_communication_template_draft: {
+        Args: {
+          p_body_template: string
+          p_kind: Database["public"]["Enums"]["communication_template_kind"]
+          p_name: string
+          p_subject_template: string
+        }
+        Returns: string
+      }
       create_offer_draft: {
         Args: {
           p_body_snapshot: string
@@ -3301,6 +3665,14 @@ export type Database = {
         Returns: undefined
       }
       email_domain: { Args: { value: string }; Returns: string }
+      fail_ai_analysis: {
+        Args: {
+          p_error_code: string
+          p_error_message: string
+          p_run_id: string
+        }
+        Returns: undefined
+      }
       generate_booking_tasks: {
         Args: { p_booking_id: string; p_template_id?: string }
         Returns: number
@@ -3443,8 +3815,33 @@ export type Database = {
         Args: { p_depends_on_step_ids: string[]; p_step_id: string }
         Returns: number
       }
+      request_ai_analysis: {
+        Args: {
+          p_analysis_kind: Database["public"]["Enums"]["ai_analysis_kind"]
+          p_input_sha256: string
+          p_model: string
+          p_prompt_version: string
+          p_provider: string
+          p_request_key: string
+          p_source_id: string
+          p_source_type: string
+        }
+        Returns: string
+      }
+      review_ai_suggestion: {
+        Args: { p_approved: boolean; p_reason: string; p_suggestion_id: string }
+        Returns: undefined
+      }
       review_booking_document: {
         Args: { p_approved: boolean; p_document_id: string; p_reason: string }
+        Returns: undefined
+      }
+      revise_ai_suggestion: {
+        Args: {
+          p_reason: string
+          p_revised_payload: Json
+          p_suggestion_id: string
+        }
         Returns: undefined
       }
       save_contract_review: {
@@ -3488,6 +3885,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      start_ai_analysis: { Args: { p_run_id: string }; Returns: undefined }
       sync_booking_anchored_task_dates: {
         Args: { p_booking_id: string; p_reason: string }
         Returns: number
@@ -3567,6 +3965,15 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      update_communication_template_draft: {
+        Args: {
+          p_body_template: string
+          p_name: string
+          p_subject_template: string
+          p_template_id: string
+        }
+        Returns: undefined
       }
       update_offer_draft: {
         Args: {
@@ -3728,13 +4135,33 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      validate_communication_template_placeholders: {
+        Args: {
+          p_body: string
+          p_kind: Database["public"]["Enums"]["communication_template_kind"]
+          p_subject: string
+        }
+        Returns: undefined
+      }
       waive_booking_document_requirement: {
         Args: { p_reason: string; p_requirement_id: string }
         Returns: undefined
       }
     }
     Enums: {
+      ai_analysis_kind: "email_triage" | "contract_extraction"
+      ai_run_status: "queued" | "processing" | "completed" | "failed"
+      ai_suggestion_status:
+        | "pending_review"
+        | "approved"
+        | "rejected"
+        | "superseded"
       booking_status: "confirmed" | "charter_active" | "completed" | "cancelled"
+      communication_template_kind:
+        | "kyc_request"
+        | "captain_contact"
+        | "broker_follow_up"
+      communication_template_status: "draft" | "approved" | "retired"
       contact_role:
         | "customer"
         | "charterer"
@@ -3950,7 +4377,21 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ai_analysis_kind: ["email_triage", "contract_extraction"],
+      ai_run_status: ["queued", "processing", "completed", "failed"],
+      ai_suggestion_status: [
+        "pending_review",
+        "approved",
+        "rejected",
+        "superseded",
+      ],
       booking_status: ["confirmed", "charter_active", "completed", "cancelled"],
+      communication_template_kind: [
+        "kyc_request",
+        "captain_contact",
+        "broker_follow_up",
+      ],
+      communication_template_status: ["draft", "approved", "retired"],
       contact_role: [
         "customer",
         "charterer",

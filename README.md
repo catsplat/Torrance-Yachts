@@ -2,7 +2,7 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Versions through `0.9.0` are released, including idempotent Gmail ingestion, deterministic routing, human email review, enquiry/thread association, and configurable inactivity timeouts. Do not enter real client data yet.
+> **Development status:** Versions through `0.10.0` are released, including provider-neutral AI suggestions for email and selected contract clauses, exact source evidence, correction history, explicit human approval, and versioned communication templates. Do not enter real client data yet.
 
 ## Current milestone
 
@@ -28,11 +28,14 @@ The current candidate provides the secured operational master-data, enquiry, off
 - configurable versioned task templates and dependency graphs;
 - generated booking checklists, assignees, reviewed schedules, reminders, notes, and completion/reopening audit;
 - live enquiry, offer, booking, and upcoming-charter dashboard counts while unfinished modules remain visibly labelled synthetic;
+- local deterministic and optional OpenAI-assisted email triage, structured enquiry extraction, summaries, and draft replies;
+- selected contract-clause extraction with exact evidence, corrections, and a separate human application step;
+- a central AI review queue plus versioned KYC, captain-contact, and broker-follow-up templates;
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
-- 49 unit tests, 349 database permission/behaviour tests, database linting, and matching CI gates.
+- 55 unit tests, 411 database permission/behaviour tests, database linting, and matching CI gates.
 
-Confirmed bookings generate their dependency-aware workflow, private document checklist, reviewed contract data, and payments. Phase 9 adds the reliable email intake and review foundation. AI suggestions, notifications, calendar synchronisation, and external delivery adapters remain deliberately scheduled for later phases. The application does not send consequential communications or update Yachtfolio automatically.
+Confirmed bookings generate their dependency-aware workflow, private document checklist, reviewed contract data, and payments. Phase 10 adds AI assistance without granting it operational authority. Notifications, calendar synchronisation, invoice delivery, and external adapters remain scheduled for Phase 11. The application does not send consequential communications or update Yachtfolio automatically.
 
 ## Technology foundation
 
@@ -45,7 +48,7 @@ Confirmed bookings generate their dependency-aware workflow, private document ch
 - ESLint
 - npm
 
-n8n, Gmail, Telegram, Google Drive, Google Calendar, Google Sheets, file storage, and AI providers remain planned integrations. No production Supabase project or paid service is required by this milestone.
+n8n, live Gmail delivery, Telegram, Google Drive, Google Calendar, and Google Sheets remain planned integrations. The deterministic local AI provider requires no paid service; OpenAI is optional and server-only. No production Supabase project is required by this milestone.
 
 ## Run locally
 
@@ -89,6 +92,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Task-engine architecture](docs/architecture/TASK_ENGINE_SLICE.md)
 - [Documents, contracts, and payments architecture](docs/architecture/DOCUMENTS_CONTRACTS_PAYMENTS_SLICE.md)
 - [Email-ingestion architecture](docs/architecture/EMAIL_INGESTION_SLICE.md)
+- [AI-assistance architecture](docs/architecture/AI_ASSISTANCE_SLICE.md)
 - [Automation and n8n boundary](docs/architecture/AUTOMATION_AND_N8N.md)
 - [Phase 2 database schema](docs/database/PHASE_2_SCHEMA.md)
 - [Phase 3 contact-directory schema](docs/database/PHASE_3_CONTACT_DIRECTORY_SCHEMA.md)
@@ -98,6 +102,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 7 task-engine schema](docs/database/PHASE_7_TASK_ENGINE_SCHEMA.md)
 - [Phase 8 documents and payments schema](docs/database/PHASE_8_DOCUMENTS_PAYMENTS_SCHEMA.md)
 - [Phase 9 email schema](docs/database/PHASE_9_EMAIL_SCHEMA.md)
+- [Phase 10 AI schema](docs/database/PHASE_10_AI_SCHEMA.md)
 - [Architecture decisions](docs/decisions/0001-application-foundation.md)
 - [Supabase identity and RLS decision](docs/decisions/0002-supabase-identity-and-rls.md)
 - [Contact-directory modelling decision](docs/decisions/0003-contact-directory-model.md)
@@ -107,6 +112,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Versioned dependency-aware task engine decision](docs/decisions/0007-versioned-dependency-aware-task-engine.md)
 - [Private documents and reviewed contract data decision](docs/decisions/0008-private-documents-reviewed-contract-data.md)
 - [Idempotent email-ingestion decision](docs/decisions/0010-idempotent-email-ingestion.md)
+- [Provider-neutral human-reviewed AI decision](docs/decisions/0011-provider-neutral-human-reviewed-ai.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)
 - [Phase 2 development diary](docs/development/2026-07-15-auth-yacht-slice.md)
@@ -117,6 +123,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 7 development diary](docs/development/2026-07-16-task-engine-slice.md)
 - [Phase 8 development diary](docs/development/2026-07-16-documents-payments-slice.md)
 - [Phase 9 development diary](docs/development/2026-07-16-email-ingestion-slice.md)
+- [Phase 10 development diary](docs/development/2026-07-16-ai-assistance-slice.md)
 - [Foundation verification record](docs/audit/2026-07-15-foundation-verification.md)
 - [Phase 2 verification record](docs/audit/2026-07-15-phase-2-verification.md)
 - [Phase 3 verification record](docs/audit/2026-07-15-phase-3-verification.md)
@@ -124,12 +131,14 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 5 verification record](docs/audit/2026-07-15-phase-5-verification.md)
 - [Phase 8 verification record](docs/audit/2026-07-16-phase-8-verification.md)
 - [Phase 9 verification record](docs/audit/2026-07-16-phase-9-verification.md)
+- [Phase 10 verification record](docs/audit/2026-07-16-phase-10-verification.md)
 - [Client requirements traceability](docs/planning/CLIENT_REQUIREMENTS_TRACEABILITY.md)
 - [Portfolio case study](docs/portfolio/FOUNDATION_CASE_STUDY.md)
 - [Phase 2 portfolio case study](docs/portfolio/AUTH_YACHT_CASE_STUDY.md)
 - [Phase 3 portfolio case study](docs/portfolio/CONTACT_DIRECTORY_CASE_STUDY.md)
 - [Phase 4 portfolio case study](docs/portfolio/ENQUIRY_PIPELINE_CASE_STUDY.md)
 - [Phase 5 portfolio case study](docs/portfolio/COMMERCIAL_OFFERS_CASE_STUDY.md)
+- [Phase 10 portfolio case study](docs/portfolio/AI_ASSISTANCE_CASE_STUDY.md)
 - [Security policy](SECURITY.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [GitHub configuration record](docs/audit/GITHUB_CONFIGURATION.md)

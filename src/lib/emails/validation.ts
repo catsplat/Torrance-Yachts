@@ -31,6 +31,9 @@ export const gmailIngestionSchema = z.object({
 })
 
 export const emailClassificationSchema = z.object({
+  budgetAmount: z.union([z.literal(""), z.coerce.number().min(0)]).default(""),
+  charterEndDate: z.union([z.literal(""), z.iso.date()]).default(""),
+  charterStartDate: z.union([z.literal(""), z.iso.date()]).default(""),
   classification: z.enum([
     "new_enquiry",
     "enquiry_follow_up",
@@ -39,16 +42,30 @@ export const emailClassificationSchema = z.object({
     "other_relevant",
   ]),
   contactId: z.union([z.literal(""), z.uuid()]).default(""),
+  currency: z.union([
+    z.literal(""),
+    z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/),
+  ]).default(""),
+  disembarkationPort: z.string().trim().max(120).default(""),
+  embarkationPort: z.string().trim().max(120).default(""),
   enquiryId: z.union([z.literal(""), z.uuid()]).default(""),
   enquirySummary: z.string().trim().max(2000).default(""),
+  guestCount: z.union([z.literal(""), z.coerce.number().int().min(1).max(36)]).default(""),
   messageId: z.uuid(),
   reason: z.string().trim().min(2).max(2000),
+  requestedYachtId: z.union([z.literal(""), z.uuid()]).default(""),
 }).superRefine((value, context) => {
   if (value.classification === "new_enquiry") {
     if (value.enquirySummary.length < 2) context.addIssue({ code: "custom", message: "Add an enquiry summary." })
   }
   if (value.classification === "enquiry_follow_up" && !value.enquiryId) {
     context.addIssue({ code: "custom", message: "Select the enquiry this follows up." })
+  }
+  if ((value.charterStartDate === "") !== (value.charterEndDate === "")) {
+    context.addIssue({ code: "custom", message: "Provide both charter dates." })
+  }
+  if ((value.budgetAmount === "") !== (value.currency === "")) {
+    context.addIssue({ code: "custom", message: "Provide both budget and currency." })
   }
 })
 

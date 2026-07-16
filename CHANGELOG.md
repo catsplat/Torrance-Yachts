@@ -4,6 +4,42 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-07-16
+
+### Added
+
+- Provider-neutral AI service with a deterministic local development provider and
+  optional OpenAI Responses API adapter.
+- Structured email classification, enquiry facts, summaries, draft responses,
+  confidence, and exact-source evidence.
+- Selected contract-clause extraction for verified charter agreements without
+  transmitting identity-document attachments.
+- Human correction history, approve/reject decisions, provider/model/prompt
+  provenance, idempotent runs, and a central AI review queue.
+- Separate human application of reviewed email and contract values so model output
+  cannot directly change authoritative operational records.
+- Versioned administrator-managed KYC request, captain-contact, and broker
+  follow-up communication templates.
+- Phase 12 requirement for a Settings-launched guided tutorial and isolated,
+  resettable synthetic email-to-follow-up practice workflow.
+
+### Security
+
+- Treats all email and contract text as untrusted, bounds model input/output,
+  validates Structured Outputs with Zod, and verifies evidence excerpts.
+- Keeps provider credentials server-only, disables OpenAI response storage, and
+  excludes passport/KYC attachments from model processing.
+- Restricts run completion/failure to the trusted service role and blocks direct
+  mutation of AI provenance, approved templates, and review history.
+
+### Known limitations
+
+- Phase 10 does not send drafts or notifications and does not execute Gmail,
+  Telegram, calendar, Google Drive/Sheets, or Yachtfolio actions.
+- Contract extraction requires relevant clauses to be pasted manually.
+- The local deterministic provider is intended for development and workflow
+  testing, not semantic equivalence with a production model.
+
 ## [0.9.0] - 2026-07-16
 
 ### Added

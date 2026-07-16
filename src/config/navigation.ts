@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  BrainCircuit,
   CalendarDays,
   ClipboardCheck,
   ContactRound,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 
 export type ModuleKey =
+  | "ai"
   | "enquiries"
   | "offers"
   | "bookings"
@@ -50,6 +52,12 @@ export const primaryNavigation: NavigationItem[] = [
     href: "/emails",
     icon: Mail,
     description: "Imported messages, deterministic routing, and human review.",
+  },
+  {
+    label: "AI Review",
+    href: "/ai/review",
+    icon: BrainCircuit,
+    description: "Evidence-backed suggestions awaiting human approval.",
   },
   {
     label: "Offers",

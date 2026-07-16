@@ -300,6 +300,30 @@ The captain-contact source required for task 2.A should ultimately be the yacht/
 - Filters for state, date, yacht, assignee, overdue status, missing documents, and payment status.
 - An append-only audit view showing who or what changed each important value, from which prior value, at what time, and with which originating event.
 
+### 6.15 Guided tutorial and synthetic practice mode
+
+After the complete operational workflow is implemented, Settings must offer a guided
+tutorial that explains the application in the context of the client's actual working
+process rather than as a generic feature tour.
+
+The tutorial must:
+
+- explain each module and the hand-off between email, enquiry, offer, booking,
+  tasks, documents, payments, charter operations, and broker follow-up;
+- highlight the relevant controls in the real interface with clear next/previous,
+  pause, restart, and exit actions;
+- include a completely synthetic practice scenario beginning with a fake enquiry
+  email and continuing through the full enquiry-to-post-charter workflow;
+- explain when AI is suggesting work and when a human approval is required;
+- make clear which external actions remain manual or are performed by integrations;
+- remain isolated from live operational records, documents, notifications, provider
+  actions, and external systems;
+- allow the tutorial state and synthetic practice records to be reset safely.
+
+This is a Phase 12 launch-readiness feature. It must not be implemented before the
+underlying workflow and interfaces are stable, because premature tutorial content
+would become inaccurate as the product changes.
+
 ## 7. Core domain records
 
 The detailed database schema will be designed separately, but it must cover:

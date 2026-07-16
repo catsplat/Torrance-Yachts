@@ -383,3 +383,41 @@ values
   ('91000000-0000-4000-8000-000000000015','91000000-0000-4000-8000-000000000014')
 on conflict do nothing;
 select set_config('app.task_template_step_authorised', '', false);
+
+select set_config('app.phase10_command', 'yes', false);
+insert into public.communication_templates (
+  id, kind, version_number, name, subject_template, body_template, status,
+  approved_at
+) values
+  (
+    'a2000000-0000-4000-8000-000000000001',
+    'kyc_request',
+    1,
+    'Synthetic KYC and passport request',
+    'KYC verification request for {{client_name}}',
+    E'Dear {{broker_company_name}},\n\nPlease provide a KYC statement for {{client_name}} on your company letterhead, together with the client passport required for our own compliance review.\n\nThe statement should confirm the passport country ({{passport_country}}), main residency ({{residency_country}}), sanctions screening, and PEP status for {{year}}.\n\nThank you in advance.',
+    'draft',
+    null
+  ),
+  (
+    'a2000000-0000-4000-8000-000000000002',
+    'captain_contact',
+    1,
+    'Synthetic captain contact introduction',
+    '{{yacht_name}} captain contact details',
+    E'Dear {{broker_name}},\n\nPlease find the captain contact details for {{yacht_name}} below:\n\n{{captain_name}}\n{{captain_email}}\n{{captain_phone}}\n\nKind regards,',
+    'draft',
+    null
+  ),
+  (
+    'a2000000-0000-4000-8000-000000000003',
+    'broker_follow_up',
+    1,
+    'Synthetic post-charter broker follow-up',
+    'Follow-up after the {{yacht_name}} charter',
+    E'Dear {{broker_name}},\n\nI hope your clients enjoyed their charter aboard {{yacht_name}} from {{charter_start_date}} to {{charter_end_date}}. We would be grateful for any feedback or reference you are able to share.\n\nKind regards,',
+    'draft',
+    null
+  )
+on conflict do nothing;
+select set_config('app.phase10_command', '', false);

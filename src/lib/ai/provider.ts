@@ -1,0 +1,50 @@
+import "server-only"
+
+import type {
+  ContractAiSuggestion,
+  EmailAiSuggestion,
+} from "@/lib/ai/schemas"
+
+export type YachtAiContext = {
+  name: string
+  overview: string
+  portGuidance: string
+  rates: Array<{
+    currency: string
+    name: string
+    taxRate: number
+    validFrom: string
+    validTo: string
+    weeklyRate: number
+  }>
+}
+
+export type EmailAiInput = {
+  body: string
+  receivedAt: string
+  senderEmail: string
+  senderName: string
+  subject: string
+  yachts: YachtAiContext[]
+}
+
+export type ContractAiInput = {
+  bookingReference: string
+  sourceText: string
+}
+
+export type ProviderResult<T> = {
+  inputTokens: number | null
+  model: string
+  output: T
+  outputTokens: number | null
+  provider: string
+  providerRequestId: string
+}
+
+export interface AiProvider {
+  analyzeContract(input: ContractAiInput, safetyIdentifier: string): Promise<ProviderResult<ContractAiSuggestion>>
+  analyzeEmail(input: EmailAiInput, safetyIdentifier: string): Promise<ProviderResult<EmailAiSuggestion>>
+  model: string
+  name: string
+}
