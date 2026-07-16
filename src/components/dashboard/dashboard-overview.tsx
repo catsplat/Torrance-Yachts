@@ -79,18 +79,26 @@ type DashboardTaskSummary = {
   }>;
 };
 
+type DashboardDocumentSummary = {
+  awaitingReview: number;
+  missingRequired: number;
+  paymentsDue: number;
+};
+
 export function DashboardOverview({
   displayName,
   enquirySummary,
   offerSummary,
   bookingSummary,
   taskSummary,
+  documentSummary,
 }: {
   displayName: string;
   enquirySummary: DashboardEnquirySummary;
   offerSummary: DashboardOfferSummary;
   bookingSummary: DashboardBookingSummary;
   taskSummary: DashboardTaskSummary;
+  documentSummary: DashboardDocumentSummary;
 }) {
   const liveMetrics = dashboardMetrics.map((metric) =>
     metric.key === "enquiries"
@@ -104,7 +112,9 @@ export function DashboardOverview({
         ? { ...metric, value: String(bookingSummary.activeCount), detail: `${bookingSummary.yachtfolioPending} Yachtfolio actions pending`, trend: "Live database" }
         : metric.key === "tasks"
           ? { ...metric, value: String(taskSummary.openCount), detail: `${taskSummary.overdueCount} overdue`, trend: "Live database" }
-        : metric,
+          : metric.key === "documents"
+            ? { ...metric, value: String(documentSummary.missingRequired), detail: `${documentSummary.awaitingReview} await review · ${documentSummary.paymentsDue} payments due`, trend: "Live database" }
+            : metric,
   );
   const largestPipelineStage = Math.max(
     1,

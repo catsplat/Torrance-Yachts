@@ -53,6 +53,57 @@ export type Database = {
           },
         ]
       }
+      booking_document_requirements: {
+        Row: {
+          booking_id: string
+          created_at: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          id: string
+          required: boolean
+          status: Database["public"]["Enums"]["document_requirement_status"]
+          updated_at: string
+          verified_document_id: string | null
+          waiver_reason: string | null
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          id?: string
+          required?: boolean
+          status?: Database["public"]["Enums"]["document_requirement_status"]
+          updated_at?: string
+          verified_document_id?: string | null
+          waiver_reason?: string | null
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          id?: string
+          required?: boolean
+          status?: Database["public"]["Enums"]["document_requirement_status"]
+          updated_at?: string
+          verified_document_id?: string | null
+          waiver_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_document_requirements_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_document_requirements_verified_document_fkey"
+            columns: ["verified_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_reservations: {
         Row: {
           active: boolean
@@ -294,6 +345,67 @@ export type Database = {
           },
         ]
       }
+      commission_calculations: {
+        Row: {
+          amount: number
+          basis_amount: number
+          booking_id: string
+          calculation_version: string
+          contract_review_id: string
+          created_at: string
+          created_by: string
+          currency: string
+          id: string
+          rate: number
+        }
+        Insert: {
+          amount: number
+          basis_amount: number
+          booking_id: string
+          calculation_version?: string
+          contract_review_id: string
+          created_at?: string
+          created_by: string
+          currency: string
+          id?: string
+          rate: number
+        }
+        Update: {
+          amount?: number
+          basis_amount?: number
+          booking_id?: string
+          calculation_version?: string
+          contract_review_id?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          id?: string
+          rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_calculations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_calculations_contract_review_id_fkey"
+            columns: ["contract_review_id"]
+            isOneToOne: true
+            referencedRelation: "contract_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_calculations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           active: boolean
@@ -467,6 +579,232 @@ export type Database = {
           {
             foreignKeyName: "contacts_updated_by_fkey"
             columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_reviews: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          booking_id: string
+          charter_end_date: string
+          charter_fee: number
+          charter_start_date: string
+          commission_rate: number
+          created_at: string
+          created_by: string
+          currency: string
+          disembarkation_port: string | null
+          embarkation_port: string | null
+          id: string
+          review_notes: string
+          source_document_id: string
+          status: Database["public"]["Enums"]["contract_review_status"]
+          tax_rate: number
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          booking_id: string
+          charter_end_date: string
+          charter_fee: number
+          charter_start_date: string
+          commission_rate?: number
+          created_at?: string
+          created_by: string
+          currency: string
+          disembarkation_port?: string | null
+          embarkation_port?: string | null
+          id?: string
+          review_notes: string
+          source_document_id: string
+          status?: Database["public"]["Enums"]["contract_review_status"]
+          tax_rate: number
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          booking_id?: string
+          charter_end_date?: string
+          charter_fee?: number
+          charter_start_date?: string
+          commission_rate?: number
+          created_at?: string
+          created_by?: string
+          currency?: string
+          disembarkation_port?: string | null
+          embarkation_port?: string | null
+          id?: string
+          review_notes?: string
+          source_document_id?: string
+          status?: Database["public"]["Enums"]["contract_review_status"]
+          tax_rate?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_reviews_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_reviews_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_reviews_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_history: {
+        Row: {
+          action: string
+          changed_by: string | null
+          created_at: string
+          document_id: string
+          id: number
+          reason: string
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          created_at?: string
+          document_id: string
+          id?: never
+          reason: string
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          created_at?: string
+          document_id?: string
+          id?: never
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_history_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          booking_id: string
+          created_at: string
+          created_by: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          id: string
+          mime_type: string
+          original_filename: string
+          requirement_id: string | null
+          retention_class: string
+          size_bytes: number
+          storage_bucket: string
+          storage_path: string
+          title: string
+          verification_notes: string | null
+          verification_status: Database["public"]["Enums"]["document_verification_status"]
+          verified_at: string | null
+          verified_by: string | null
+          version_number: number
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          created_by: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          id?: string
+          mime_type: string
+          original_filename: string
+          requirement_id?: string | null
+          retention_class?: string
+          size_bytes: number
+          storage_bucket?: string
+          storage_path: string
+          title: string
+          verification_notes?: string | null
+          verification_status?: Database["public"]["Enums"]["document_verification_status"]
+          verified_at?: string | null
+          verified_by?: string | null
+          version_number?: number
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          created_by?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          id?: string
+          mime_type?: string
+          original_filename?: string
+          requirement_id?: string | null
+          retention_class?: string
+          size_bytes?: number
+          storage_bucket?: string
+          storage_path?: string
+          title?: string
+          verification_notes?: string | null
+          verification_status?: Database["public"]["Enums"]["document_verification_status"]
+          verified_at?: string | null
+          verified_by?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "booking_document_requirements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_verified_by_fkey"
+            columns: ["verified_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -899,6 +1237,86 @@ export type Database = {
             columns: ["yacht_id"]
             isOneToOne: false
             referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_schedules: {
+        Row: {
+          amount: number
+          booking_id: string
+          contract_review_id: string
+          created_at: string
+          created_by: string
+          currency: string
+          due_date: string
+          id: string
+          instalment_number: number
+          notes: string | null
+          paid_at: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          amount: number
+          booking_id: string
+          contract_review_id: string
+          created_at?: string
+          created_by: string
+          currency: string
+          due_date: string
+          id?: string
+          instalment_number: number
+          notes?: string | null
+          paid_at?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          contract_review_id?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          due_date?: string
+          id?: string
+          instalment_number?: number
+          notes?: string | null
+          paid_at?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_schedules_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_schedules_contract_review_id_fkey"
+            columns: ["contract_review_id"]
+            isOneToOne: false
+            referencedRelation: "contract_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_schedules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_schedules_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2176,6 +2594,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      approve_contract_review: {
+        Args: {
+          p_payment_amounts: number[]
+          p_payment_dates: string[]
+          p_review_id: string
+        }
+        Returns: undefined
+      }
       approve_offer: {
         Args: { p_offer_id: string; p_reason: string }
         Returns: {
@@ -2554,9 +2980,26 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      mark_payment_paid: {
+        Args: { p_payment_id: string; p_reason: string }
+        Returns: undefined
+      }
       refresh_booking_task_states: {
         Args: { p_booking_id: string }
         Returns: undefined
+      }
+      register_booking_document: {
+        Args: {
+          p_booking_id: string
+          p_document_type: Database["public"]["Enums"]["document_type"]
+          p_mime_type: string
+          p_original_filename: string
+          p_retention_class: string
+          p_size_bytes: number
+          p_storage_path: string
+          p_title: string
+        }
+        Returns: string
       }
       reopen_task: {
         Args: { p_reason: string; p_task_id: string }
@@ -2601,6 +3044,26 @@ export type Database = {
       replace_task_template_dependencies: {
         Args: { p_depends_on_step_ids: string[]; p_step_id: string }
         Returns: number
+      }
+      review_booking_document: {
+        Args: { p_approved: boolean; p_document_id: string; p_reason: string }
+        Returns: undefined
+      }
+      save_contract_review: {
+        Args: {
+          p_booking_id: string
+          p_charter_end_date: string
+          p_charter_fee: number
+          p_charter_start_date: string
+          p_commission_rate: number
+          p_currency: string
+          p_disembarkation_port: string
+          p_embarkation_port: string
+          p_review_notes: string
+          p_source_document_id: string
+          p_tax_rate: number
+        }
+        Returns: string
       }
       set_yachtfolio_action_status: {
         Args: {
@@ -2840,6 +3303,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      waive_booking_document_requirement: {
+        Args: { p_reason: string; p_requirement_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       booking_status: "confirmed" | "charter_active" | "completed" | "cancelled"
@@ -2852,6 +3319,21 @@ export type Database = {
         | "operations"
         | "supplier"
         | "other"
+      contract_review_status: "draft" | "approved" | "superseded"
+      document_requirement_status:
+        | "missing"
+        | "uploaded"
+        | "verified"
+        | "waived"
+      document_type:
+        | "charter_agreement"
+        | "broker_kyc_statement"
+        | "client_passport"
+        | "cdd_check"
+        | "kylian_commission_invoice"
+        | "broker_commission_invoice"
+        | "other"
+      document_verification_status: "pending_review" | "verified" | "rejected"
       enquiry_note_kind: "internal" | "requirement" | "follow_up"
       enquiry_priority: "low" | "normal" | "high" | "urgent"
       enquiry_source: "manual" | "email" | "import"
@@ -2870,6 +3352,7 @@ export type Database = {
       offer_pricing_basis: "seasonal_rate" | "manually_adjusted"
       offer_status: "draft" | "approved" | "sent" | "withdrawn" | "superseded"
       offer_template_status: "draft" | "approved" | "retired"
+      payment_status: "scheduled" | "paid" | "cancelled"
       sales_material_type:
         | "brochure"
         | "crew_profiles"
@@ -3038,6 +3521,23 @@ export const Constants = {
         "supplier",
         "other",
       ],
+      contract_review_status: ["draft", "approved", "superseded"],
+      document_requirement_status: [
+        "missing",
+        "uploaded",
+        "verified",
+        "waived",
+      ],
+      document_type: [
+        "charter_agreement",
+        "broker_kyc_statement",
+        "client_passport",
+        "cdd_check",
+        "kylian_commission_invoice",
+        "broker_commission_invoice",
+        "other",
+      ],
+      document_verification_status: ["pending_review", "verified", "rejected"],
       enquiry_note_kind: ["internal", "requirement", "follow_up"],
       enquiry_priority: ["low", "normal", "high", "urgent"],
       enquiry_source: ["manual", "email", "import"],
@@ -3057,6 +3557,7 @@ export const Constants = {
       offer_pricing_basis: ["seasonal_rate", "manually_adjusted"],
       offer_status: ["draft", "approved", "sent", "withdrawn", "superseded"],
       offer_template_status: ["draft", "approved", "retired"],
+      payment_status: ["scheduled", "paid", "cancelled"],
       sales_material_type: [
         "brochure",
         "crew_profiles",
