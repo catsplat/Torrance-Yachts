@@ -10,11 +10,11 @@ consequential actions remain subject to human approval.
 | Client request | Implementation |
 | --- | --- |
 | Read and categorise emails into enquiries, internal mail, circulars, and unknowns | Phase 9 stores messages/threads and deterministically routes safe cases; Phase 10 adds evidence-backed AI suggestions; uncertain mail remains human-reviewed |
-| Track enquiry data in a presentable Sheet/website | Phase 4 enquiry database and UI are authoritative; Phase 11 may expose a controlled Sheet view |
-| Telegram notification for enquiries, internal mail, unknown mail, and non-circular mail | Durable Phase 9 classifications/events feed the central notification and Telegram adapter in Phase 11 |
-| Ignore, mark read, and archive circulars | Phase 9 creates idempotent `mark_read` and `archive` provider actions; Phase 11 n8n executes them |
+| Track enquiry data in a presentable Sheet/website | Phase 4 enquiry database and UI are authoritative; Phase 11 provides a controlled one-way workbook snapshot |
+| Telegram notification for enquiries, internal mail, unknown mail, and non-circular mail | Phase 11 materialises central notifications and queues idempotent Telegram delivery through n8n |
+| Ignore, mark read, and archive circulars | Phase 9 creates idempotent actions; Phase 11 queues them through the Gmail adapter |
 | Distinguish new enquiries from follow-ups | Phase 9 links Gmail threads, automatically recognises known threads, and lets staff create/reuse sender contacts and enquiries |
-| Draft the yacht-specific new-enquiry response | Phase 5 stores approved yacht commercial/template data; Phase 10 creates an evidence-backed editable draft; Phase 11 delivers the reviewed draft to Telegram/Gmail |
+| Draft the yacht-specific new-enquiry response | Phase 5/10 prepare the reviewed content; Phase 11 delivers to Telegram or creates a Gmail draft without automatic sending |
 | Notify sender and summary for other relevant emails | Phase 9 stores and classifies them; Phase 10 supplies a reviewable summary; Phase 11 sends notifications |
 | Enquiry becomes offer | Phase 5 controlled offer snapshots and status history |
 | Fully signed contract becomes booking | Phase 6 human-confirmed booking command |

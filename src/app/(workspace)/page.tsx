@@ -10,7 +10,7 @@ export default async function DashboardPage() {
   if (!currentUser) redirect("/login");
 
   const supabase = await createClient();
-  const [enquiriesResult, offersResult, bookingsResult, tasksResult, requirementsResult, paymentsResult, emailsResult, aiResult] = await Promise.all([
+  const [enquiriesResult, offersResult, bookingsResult, tasksResult, requirementsResult, paymentsResult, emailsResult, aiResult, notificationsResult, deliveriesResult] = await Promise.all([
     supabase.from("enquiries").select("status").in("status", phaseFourOpenStatuses),
     supabase.from("offers").select("status").in("status", ["draft", "approved"]),
     supabase.from("bookings").select("id,reference,status,charter_start_date,charter_end_date,yacht:yachts!bookings_yacht_id_fkey(name),yachtfolio:yachtfolio_booking_actions!yachtfolio_booking_actions_booking_id_fkey(status)").in("status", ["confirmed", "charter_active"]).order("charter_start_date").limit(5),
@@ -20,10 +20,12 @@ export default async function DashboardPage() {
     supabase.from("email_messages").select("processing_status,classification")
       .in("processing_status", ["review_required", "classified", "linked"]),
     supabase.from("ai_suggestions").select("status").eq("status", "pending_review"),
+    supabase.from("notifications").select("status").eq("status", "pending_approval"),
+    supabase.from("integration_deliveries").select("status").eq("status", "failed"),
   ]);
   const { data: openEnquiries, error } = enquiriesResult;
 
-  if (error || offersResult.error || bookingsResult.error || tasksResult.error || requirementsResult.error || paymentsResult.error || emailsResult.error || aiResult.error) throw new Error("Unable to load the live dashboard summary.");
+  if (error || offersResult.error || bookingsResult.error || tasksResult.error || requirementsResult.error || paymentsResult.error || emailsResult.error || aiResult.error || notificationsResult.error || deliveriesResult.error) throw new Error("Unable to load the live dashboard summary.");
 
   const countStatus = (status: (typeof phaseFourOpenStatuses)[number]) =>
     openEnquiries.filter((enquiry) => enquiry.status === status).length;
@@ -31,6 +33,10 @@ export default async function DashboardPage() {
   return (
     <DashboardOverview
       aiSummary={{ pendingReview: aiResult.data.length }}
+      integrationSummary={{
+        failedDeliveries: deliveriesResult.data.length,
+        pendingApproval: notificationsResult.data.length,
+      }}
       displayName={currentUser.displayName}
       enquirySummary={{
         needsResponse:

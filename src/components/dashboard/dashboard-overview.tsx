@@ -93,6 +93,7 @@ type DashboardEmailSummary = {
 
 export function DashboardOverview({
   aiSummary,
+  integrationSummary,
   displayName,
   enquirySummary,
   offerSummary,
@@ -102,6 +103,7 @@ export function DashboardOverview({
   emailSummary,
 }: {
   aiSummary: { pendingReview: number };
+  integrationSummary: { failedDeliveries: number; pendingApproval: number };
   displayName: string;
   enquirySummary: DashboardEnquirySummary;
   offerSummary: DashboardOfferSummary;
@@ -186,6 +188,10 @@ export function DashboardOverview({
           <Link className="text-muted-foreground" href="/ai/review">
             <strong>{aiSummary.pendingReview}</strong> AI proposals await evidence review →
           </Link>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t pt-2">
+          <Link href="/integrations"><strong>{integrationSummary.pendingApproval}</strong> notifications await approval</Link>
+          <Link className={integrationSummary.failedDeliveries ? "text-destructive" : "text-muted-foreground"} href="/integrations"><strong>{integrationSummary.failedDeliveries}</strong> integration deliveries failed →</Link>
         </div>
       </section>
 

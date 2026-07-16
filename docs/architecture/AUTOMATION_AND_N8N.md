@@ -2,7 +2,8 @@
 
 ## Role of n8n
 
-n8n is the planned integration and background-work runner. It is not the business database, state machine, pricing engine, or approval authority.
+n8n is the integration and background-work runner. It is not the business
+database, state machine, pricing engine, or approval authority.
 
 ```text
 Human action / reviewed command
@@ -39,6 +40,31 @@ Visible success or failure in the application
 
 n8n may prepare a Telegram approval request or place an approved email into Gmail, but the underlying application command decides whether the action is allowed. AI output remains a proposal with source evidence and confidence. Material actions—including approving/sending offers, confirming bookings, blocking dates, issuing invoices, or contacting external parties—require an authenticated human decision.
 
-## Hosting decision
+## Phase 11 implementation
 
-Development can use local n8n. Production will use either a small protected Linux VPS or n8n Cloud after the Phase 11 cost, backup, access-control, and maintenance comparison. No n8n service is required or created during Phase 5.
+Development uses the pinned n8n Community Edition image in
+`automation/docker-compose.yml`. The editor and webhook surface bind only to
+`127.0.0.1:5678`, workflow definitions are version controlled, and n8n calls the
+application through a server-only shared-secret contract.
+
+The application owns delivery records and grants short leases to workers. n8n
+reports provider success or failure using those delivery identifiers. A crashed
+worker can therefore be retried without losing the work or changing authoritative
+business records.
+
+Real Gmail, Telegram, Google Calendar, Drive, and Sheets credentials remain
+deliberately disconnected until Phase 12 acceptance. Phase 11 proves the
+application-to-worker contract with synthetic delivery data; it does not claim
+that live provider accounts have been commissioned.
+
+## Production topology
+
+Phase 12 will select and verify one of the documented deployment forms:
+
+- the primary internet-hosted version, using a protected Linux service for n8n
+  and the application background worker; or
+- the separately planned local packaged version, where the same database and
+  adapter contracts run on the client machine.
+
+Whichever topology is chosen, PostgreSQL remains authoritative and provider
+credentials remain outside the application database and source control.

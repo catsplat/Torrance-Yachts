@@ -1,0 +1,121 @@
+{
+  "name": "Torrance Yachts - DEVELOPMENT delivery simulator",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "159cab25-b1ed-44f4-ab77-176f8d19b2bb",
+      "name": "Manual test only",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TORRANCE_APP_URL }}/api/integrations/deliveries/claim",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.AUTOMATION_SHARED_SECRET }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"workerId\":\"n8n-development-simulator\",\"limit\":20}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "24c3fa18-3abc-49cc-945a-3c811930f1a8",
+      "name": "Claim delivery work",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "deliveries",
+        "options": {}
+      },
+      "id": "890a3efe-d19a-40f7-8a45-64f0b018fdb0",
+      "name": "One delivery per item",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TORRANCE_APP_URL }}/api/integrations/deliveries/{{ $json.id }}/complete",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.AUTOMATION_SHARED_SECRET }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"workerId\":\"n8n-development-simulator\",\"externalId\":\"synthetic-{{ $json.id }}\",\"externalUrl\":\"\"}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "08fac827-1a6b-459e-93d4-4d12eab0cdbe",
+      "name": "Record synthetic success",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 0]
+    }
+  ],
+  "connections": {
+    "Manual test only": {
+      "main": [
+        [
+          {
+            "node": "Claim delivery work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim delivery work": {
+      "main": [
+        [
+          {
+            "node": "One delivery per item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One delivery per item": {
+      "main": [
+        [
+          {
+            "node": "Record synthetic success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/London"
+  },
+  "versionId": "90543a92-ac78-491d-8aa1-4343f9ff865c",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

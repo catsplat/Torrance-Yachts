@@ -2,7 +2,7 @@
 
 **Updated:** 16 July 2026
 
-The project has moved from planning into a working, secured internal application. Ten of twelve planned delivery phases are released through version 0.10.0.
+The project has moved from planning into a working, secured internal application. Eleven of twelve planned delivery phases are released through version 0.11.0.
 
 ## Completed
 
@@ -17,7 +17,7 @@ The project has moved from planning into a working, secured internal application
 
 All development and demonstrations currently use synthetic information. No live client, broker, captain, contract, identity-document, banking, or confidential commercial data has been entered.
 
-## Released through Phase 8
+## Released Phases 6-8
 
 The application can now create a booking only after a staff member confirms that the charter agreement is signed by all required parties and records what they reviewed. It links the booking to its enquiry and sent offer, blocks the yacht from 24 hours before until 24 hours after the charter, prevents overlapping reservations at database level, and creates a visible manual action to add the dates and Booked status in Yachtfolio. Booking amendments, charter start/completion/cancellation, Yachtfolio completion/reopening, the live register, availability checker, yacht view, enquiry link, and dashboard are all audited and verified with synthetic data.
 
@@ -49,15 +49,30 @@ The default local assistant works without a paid AI service. OpenAI can be enabl
 later through server-only configuration after the production data policy is
 approved.
 
-Current verification includes 55 application tests and 411 database
+## Released Phase 11
+
+The application now has one central notification and external-delivery system.
+Telegram alerts, Gmail actions/drafts, private Calendar entries, controlled Drive
+copies, and professional Sheets snapshots all use the same retry-safe queue. Staff
+can approve messages, see failures, and retry them without external outages
+changing the booking record.
+
+Charters, payment dates, and tasks appear in the internal calendar. Commission
+invoice PDFs are generated from reviewed calculations and protected, versioned
+invoice details rather than AI or source-controlled bank information.
+
+Local n8n Community Edition is installed through Docker, and the complete
+application-to-n8n delivery contract has been tested with synthetic data. Real
+provider accounts remain disconnected until deployment acceptance.
+
+Current verification includes 58 application tests and 471 database
 security/behaviour assertions.
 
 ## Still to come
 
-The remaining phases add notifications and calendar/Google integrations, local
-n8n automation, invoice generation, optional desktop packaging, followed by
-production security, backups, the guided synthetic tutorial, staff acceptance,
-training, and launch.
+The final phase covers production hosting, real provider credentials, backups and
+restore testing, monitoring, security/privacy acceptance, optional desktop
+packaging validation, the guided synthetic tutorial, staff training, and launch.
 
 ## Current status
 

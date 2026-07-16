@@ -9,6 +9,7 @@ import {
   Mail,
   Inbox,
   LayoutDashboard,
+  PlugZap,
   Settings,
   Ship,
   TicketsPlane,
@@ -25,6 +26,7 @@ export type ModuleKey =
   | "documents"
   | "emails"
   | "calendar"
+  | "integrations"
   | "settings";
 
 export type NavigationItem = {
@@ -100,6 +102,12 @@ export const primaryNavigation: NavigationItem[] = [
     href: "/calendar",
     icon: CalendarDays,
     description: "Charter dates, deadlines, and yacht availability.",
+  },
+  {
+    label: "Integrations",
+    href: "/integrations",
+    icon: PlugZap,
+    description: "Notification approvals, provider delivery, and automation health.",
   },
   {
     label: "Settings",
