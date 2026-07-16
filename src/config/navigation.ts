@@ -5,6 +5,7 @@ import {
   ContactRound,
   FolderLock,
   FileText,
+  Mail,
   Inbox,
   LayoutDashboard,
   Settings,
@@ -20,6 +21,7 @@ export type ModuleKey =
   | "yachts"
   | "contacts"
   | "documents"
+  | "emails"
   | "calendar"
   | "settings";
 
@@ -42,6 +44,12 @@ export const primaryNavigation: NavigationItem[] = [
     href: "/enquiries",
     icon: Inbox,
     description: "New enquiries, follow-ups, offers, and email history.",
+  },
+  {
+    label: "Email Inbox",
+    href: "/emails",
+    icon: Mail,
+    description: "Imported messages, deterministic routing, and human review.",
   },
   {
     label: "Offers",

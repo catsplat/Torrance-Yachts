@@ -2,7 +2,7 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Version `0.7.0` is released with the configurable dependency-aware booking task engine. Version `0.8.0` is a release candidate with private document storage, booking document requirements, reviewed contract fields, payment schedules, and deterministic commission calculations. Do not enter real client data yet.
+> **Development status:** Versions through `0.9.0` are released, including idempotent Gmail ingestion, deterministic routing, human email review, enquiry/thread association, and configurable inactivity timeouts. Do not enter real client data yet.
 
 ## Current milestone
 
@@ -30,9 +30,9 @@ The current candidate provides the secured operational master-data, enquiry, off
 - live enquiry, offer, booking, and upcoming-charter dashboard counts while unfinished modules remain visibly labelled synthetic;
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
-- 42 unit tests, 235 database permission/behaviour tests, database linting, and matching CI gates.
+- 49 unit tests, 349 database permission/behaviour tests, database linting, and matching CI gates.
 
-Confirmed bookings now generate their dependency-aware operational task workflow. Phase 8 adds private documents, reviewed contract data, and payments. Email, notifications, calendar synchronisation, and external adapters remain deliberately scheduled for later phases. The application does not send consequential communications or update Yachtfolio automatically.
+Confirmed bookings generate their dependency-aware workflow, private document checklist, reviewed contract data, and payments. Phase 9 adds the reliable email intake and review foundation. AI suggestions, notifications, calendar synchronisation, and external delivery adapters remain deliberately scheduled for later phases. The application does not send consequential communications or update Yachtfolio automatically.
 
 ## Technology foundation
 
@@ -87,6 +87,8 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Commercial-offers architecture](docs/architecture/COMMERCIAL_OFFERS_SLICE.md)
 - [Booking and availability architecture](docs/architecture/BOOKING_AVAILABILITY_SLICE.md)
 - [Task-engine architecture](docs/architecture/TASK_ENGINE_SLICE.md)
+- [Documents, contracts, and payments architecture](docs/architecture/DOCUMENTS_CONTRACTS_PAYMENTS_SLICE.md)
+- [Email-ingestion architecture](docs/architecture/EMAIL_INGESTION_SLICE.md)
 - [Automation and n8n boundary](docs/architecture/AUTOMATION_AND_N8N.md)
 - [Phase 2 database schema](docs/database/PHASE_2_SCHEMA.md)
 - [Phase 3 contact-directory schema](docs/database/PHASE_3_CONTACT_DIRECTORY_SCHEMA.md)
@@ -94,6 +96,8 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 5 commercial-offers schema](docs/database/PHASE_5_COMMERCIAL_OFFERS_SCHEMA.md)
 - [Phase 6 booking and availability schema](docs/database/PHASE_6_BOOKING_AVAILABILITY_SCHEMA.md)
 - [Phase 7 task-engine schema](docs/database/PHASE_7_TASK_ENGINE_SCHEMA.md)
+- [Phase 8 documents and payments schema](docs/database/PHASE_8_DOCUMENTS_PAYMENTS_SCHEMA.md)
+- [Phase 9 email schema](docs/database/PHASE_9_EMAIL_SCHEMA.md)
 - [Architecture decisions](docs/decisions/0001-application-foundation.md)
 - [Supabase identity and RLS decision](docs/decisions/0002-supabase-identity-and-rls.md)
 - [Contact-directory modelling decision](docs/decisions/0003-contact-directory-model.md)
@@ -101,6 +105,8 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Human-reviewed offer snapshots decision](docs/decisions/0005-human-reviewed-offer-snapshots.md)
 - [Transactional booking reservations decision](docs/decisions/0006-transactional-booking-reservations.md)
 - [Versioned dependency-aware task engine decision](docs/decisions/0007-versioned-dependency-aware-task-engine.md)
+- [Private documents and reviewed contract data decision](docs/decisions/0008-private-documents-reviewed-contract-data.md)
+- [Idempotent email-ingestion decision](docs/decisions/0010-idempotent-email-ingestion.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)
 - [Phase 2 development diary](docs/development/2026-07-15-auth-yacht-slice.md)
@@ -109,11 +115,16 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 5 development diary](docs/development/2026-07-15-commercial-offers-slice.md)
 - [Phase 6 development diary](docs/development/2026-07-15-booking-availability-slice.md)
 - [Phase 7 development diary](docs/development/2026-07-16-task-engine-slice.md)
+- [Phase 8 development diary](docs/development/2026-07-16-documents-payments-slice.md)
+- [Phase 9 development diary](docs/development/2026-07-16-email-ingestion-slice.md)
 - [Foundation verification record](docs/audit/2026-07-15-foundation-verification.md)
 - [Phase 2 verification record](docs/audit/2026-07-15-phase-2-verification.md)
 - [Phase 3 verification record](docs/audit/2026-07-15-phase-3-verification.md)
 - [Phase 4 verification record](docs/audit/2026-07-15-phase-4-verification.md)
 - [Phase 5 verification record](docs/audit/2026-07-15-phase-5-verification.md)
+- [Phase 8 verification record](docs/audit/2026-07-16-phase-8-verification.md)
+- [Phase 9 verification record](docs/audit/2026-07-16-phase-9-verification.md)
+- [Client requirements traceability](docs/planning/CLIENT_REQUIREMENTS_TRACEABILITY.md)
 - [Portfolio case study](docs/portfolio/FOUNDATION_CASE_STUDY.md)
 - [Phase 2 portfolio case study](docs/portfolio/AUTH_YACHT_CASE_STUDY.md)
 - [Phase 3 portfolio case study](docs/portfolio/CONTACT_DIRECTORY_CASE_STUDY.md)

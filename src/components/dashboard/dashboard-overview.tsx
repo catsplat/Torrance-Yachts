@@ -85,6 +85,11 @@ type DashboardDocumentSummary = {
   paymentsDue: number;
 };
 
+type DashboardEmailSummary = {
+  relevantReceived: number;
+  reviewRequired: number;
+};
+
 export function DashboardOverview({
   displayName,
   enquirySummary,
@@ -92,6 +97,7 @@ export function DashboardOverview({
   bookingSummary,
   taskSummary,
   documentSummary,
+  emailSummary,
 }: {
   displayName: string;
   enquirySummary: DashboardEnquirySummary;
@@ -99,6 +105,7 @@ export function DashboardOverview({
   bookingSummary: DashboardBookingSummary;
   taskSummary: DashboardTaskSummary;
   documentSummary: DashboardDocumentSummary;
+  emailSummary: DashboardEmailSummary;
 }) {
   const liveMetrics = dashboardMetrics.map((metric) =>
     metric.key === "enquiries"
@@ -138,6 +145,13 @@ export function DashboardOverview({
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
+            href="/emails"
+            className={buttonVariants({ variant: "outline", size: "lg" })}
+          >
+            <Inbox aria-hidden="true" />
+            Email review ({emailSummary.reviewRequired})
+          </Link>
+          <Link
             href="/tasks"
             className={buttonVariants({ variant: "outline", size: "lg" })}
           >
@@ -152,6 +166,13 @@ export function DashboardOverview({
             New enquiry
           </Link>
         </div>
+      </section>
+
+      <section className="rounded-xl border bg-card px-4 py-3 text-sm">
+        <Link className="flex flex-wrap items-center justify-between gap-3" href="/emails">
+          <span><strong>{emailSummary.reviewRequired}</strong> imported emails need human review</span>
+          <span className="text-muted-foreground">{emailSummary.relevantReceived} relevant messages retained in the operational register →</span>
+        </Link>
       </section>
 
       <section aria-labelledby="attention-heading" className="space-y-3">

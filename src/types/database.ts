@@ -811,6 +811,323 @@ export type Database = {
           },
         ]
       }
+      email_attachments: {
+        Row: {
+          created_at: string
+          filename: string
+          id: string
+          message_id: string
+          mime_type: string
+          provider_attachment_id: string
+          size_bytes: number
+          storage_status: string
+        }
+        Insert: {
+          created_at?: string
+          filename: string
+          id?: string
+          message_id: string
+          mime_type: string
+          provider_attachment_id: string
+          size_bytes: number
+          storage_status?: string
+        }
+        Update: {
+          created_at?: string
+          filename?: string
+          id?: string
+          message_id?: string
+          mime_type?: string
+          provider_attachment_id?: string
+          size_bytes?: number
+          storage_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "email_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_classification_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          from_classification:
+            | Database["public"]["Enums"]["email_classification"]
+            | null
+          id: number
+          message_id: string
+          reason: string
+          to_classification: Database["public"]["Enums"]["email_classification"]
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          from_classification?:
+            | Database["public"]["Enums"]["email_classification"]
+            | null
+          id?: never
+          message_id: string
+          reason: string
+          to_classification: Database["public"]["Enums"]["email_classification"]
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          from_classification?:
+            | Database["public"]["Enums"]["email_classification"]
+            | null
+          id?: never
+          message_id?: string
+          reason?: string
+          to_classification?: Database["public"]["Enums"]["email_classification"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_classification_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_classification_history_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "email_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_ingestion_events: {
+        Row: {
+          completed_at: string | null
+          error_code: string | null
+          id: string
+          message_id: string | null
+          provider_event_id: string
+          provider_message_id: string
+          received_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_code?: string | null
+          id?: string
+          message_id?: string | null
+          provider_event_id: string
+          provider_message_id: string
+          received_at?: string
+          status: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_code?: string | null
+          id?: string
+          message_id?: string | null
+          provider_event_id?: string
+          provider_message_id?: string
+          received_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_ingestion_events_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "email_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_messages: {
+        Row: {
+          body_text: string
+          cc_emails: string[]
+          classification: Database["public"]["Enums"]["email_classification"]
+          classification_reason: string | null
+          classified_at: string | null
+          classified_by: string | null
+          created_at: string
+          deterministic_rule: string | null
+          gmail_label_ids: string[]
+          has_attachments: boolean
+          id: string
+          internet_message_id: string | null
+          processing_status: Database["public"]["Enums"]["email_processing_status"]
+          provider: string
+          provider_message_id: string
+          received_at: string
+          recipient_emails: string[]
+          sender_email: string
+          sender_name: string | null
+          snippet: string
+          subject: string
+          thread_id: string
+        }
+        Insert: {
+          body_text?: string
+          cc_emails?: string[]
+          classification?: Database["public"]["Enums"]["email_classification"]
+          classification_reason?: string | null
+          classified_at?: string | null
+          classified_by?: string | null
+          created_at?: string
+          deterministic_rule?: string | null
+          gmail_label_ids?: string[]
+          has_attachments?: boolean
+          id?: string
+          internet_message_id?: string | null
+          processing_status?: Database["public"]["Enums"]["email_processing_status"]
+          provider?: string
+          provider_message_id: string
+          received_at: string
+          recipient_emails?: string[]
+          sender_email: string
+          sender_name?: string | null
+          snippet?: string
+          subject: string
+          thread_id: string
+        }
+        Update: {
+          body_text?: string
+          cc_emails?: string[]
+          classification?: Database["public"]["Enums"]["email_classification"]
+          classification_reason?: string | null
+          classified_at?: string | null
+          classified_by?: string | null
+          created_at?: string
+          deterministic_rule?: string | null
+          gmail_label_ids?: string[]
+          has_attachments?: boolean
+          id?: string
+          internet_message_id?: string | null
+          processing_status?: Database["public"]["Enums"]["email_processing_status"]
+          provider?: string
+          provider_message_id?: string
+          received_at?: string
+          recipient_emails?: string[]
+          sender_email?: string
+          sender_name?: string | null
+          snippet?: string
+          subject?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_messages_classified_by_fkey"
+            columns: ["classified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "email_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_provider_actions: {
+        Row: {
+          action_type: Database["public"]["Enums"]["email_provider_action_type"]
+          attempt_count: number
+          completed_at: string | null
+          created_at: string
+          id: string
+          last_error: string | null
+          message_id: string
+          status: Database["public"]["Enums"]["email_provider_action_status"]
+          updated_at: string
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["email_provider_action_type"]
+          attempt_count?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          message_id: string
+          status?: Database["public"]["Enums"]["email_provider_action_status"]
+          updated_at?: string
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["email_provider_action_type"]
+          attempt_count?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          message_id?: string
+          status?: Database["public"]["Enums"]["email_provider_action_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_provider_actions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "email_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_threads: {
+        Row: {
+          created_at: string
+          enquiry_id: string | null
+          first_message_at: string
+          id: string
+          last_message_at: string
+          message_count: number
+          participants: string[]
+          provider: string
+          provider_thread_id: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enquiry_id?: string | null
+          first_message_at: string
+          id?: string
+          last_message_at: string
+          message_count?: number
+          participants?: string[]
+          provider?: string
+          provider_thread_id: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enquiry_id?: string | null
+          first_message_at?: string
+          id?: string
+          last_message_at?: string
+          message_count?: number
+          participants?: string[]
+          provider?: string
+          provider_thread_id?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_threads_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enquiries: {
         Row: {
           broker_company_id: string | null
@@ -1237,6 +1554,50 @@ export type Database = {
             columns: ["yacht_id"]
             isOneToOne: false
             referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operational_settings: {
+        Row: {
+          enquiry_timeout_enabled: boolean
+          id: boolean
+          internal_email_domains: string[]
+          negotiating_timeout_days: number
+          new_enquiry_timeout_days: number
+          offer_sent_timeout_days: number
+          updated_at: string
+          updated_by: string | null
+          waiting_reply_timeout_days: number
+        }
+        Insert: {
+          enquiry_timeout_enabled?: boolean
+          id?: boolean
+          internal_email_domains?: string[]
+          negotiating_timeout_days?: number
+          new_enquiry_timeout_days?: number
+          offer_sent_timeout_days?: number
+          updated_at?: string
+          updated_by?: string | null
+          waiting_reply_timeout_days?: number
+        }
+        Update: {
+          enquiry_timeout_enabled?: boolean
+          id?: boolean
+          internal_email_domains?: string[]
+          negotiating_timeout_days?: number
+          new_enquiry_timeout_days?: number
+          offer_sent_timeout_days?: number
+          updated_at?: string
+          updated_by?: string | null
+          waiting_reply_timeout_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operational_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2594,6 +2955,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      apply_enquiry_timeouts: { Args: { p_as_of?: string }; Returns: number }
       approve_contract_review: {
         Args: {
           p_payment_amounts: number[]
@@ -2761,6 +3123,17 @@ export type Database = {
           reserved_through: string
         }[]
       }
+      classify_email_message: {
+        Args: {
+          p_classification: Database["public"]["Enums"]["email_classification"]
+          p_contact_id?: string
+          p_enquiry_id?: string
+          p_enquiry_summary?: string
+          p_message_id: string
+          p_reason: string
+        }
+        Returns: string
+      }
       clone_task_template: {
         Args: { p_name: string; p_source_template_id: string }
         Returns: {
@@ -2927,9 +3300,33 @@ export type Database = {
         Args: { p_reason: string; p_step_id: string }
         Returns: undefined
       }
+      email_domain: { Args: { value: string }; Returns: string }
       generate_booking_tasks: {
         Args: { p_booking_id: string; p_template_id?: string }
         Returns: number
+      }
+      ingest_gmail_message: {
+        Args: {
+          p_attachments?: Json
+          p_body_text: string
+          p_cc_emails: string[]
+          p_gmail_label_ids: string[]
+          p_has_attachments: boolean
+          p_has_list_id: boolean
+          p_has_list_unsubscribe: boolean
+          p_internet_message_id: string
+          p_is_bulk: boolean
+          p_provider_event_id: string
+          p_provider_message_id: string
+          p_provider_thread_id: string
+          p_received_at: string
+          p_recipient_emails: string[]
+          p_sender_email: string
+          p_sender_name: string
+          p_snippet: string
+          p_subject: string
+        }
+        Returns: string
       }
       is_active_staff: { Args: never; Returns: boolean }
       is_administrator: { Args: never; Returns: boolean }
@@ -2984,6 +3381,7 @@ export type Database = {
         Args: { p_payment_id: string; p_reason: string }
         Returns: undefined
       }
+      normalise_email_address: { Args: { value: string }; Returns: string }
       refresh_booking_task_states: {
         Args: { p_booking_id: string }
         Returns: undefined
@@ -3216,6 +3614,33 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_operational_settings: {
+        Args: {
+          p_enquiry_timeout_enabled: boolean
+          p_internal_email_domains: string[]
+          p_negotiating_timeout_days: number
+          p_new_enquiry_timeout_days: number
+          p_offer_sent_timeout_days: number
+          p_waiting_reply_timeout_days: number
+        }
+        Returns: {
+          enquiry_timeout_enabled: boolean
+          id: boolean
+          internal_email_domains: string[]
+          negotiating_timeout_days: number
+          new_enquiry_timeout_days: number
+          offer_sent_timeout_days: number
+          updated_at: string
+          updated_by: string | null
+          waiting_reply_timeout_days: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "operational_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_task_schedule: {
         Args: {
           p_assigned_user_id: string
@@ -3334,6 +3759,21 @@ export type Database = {
         | "broker_commission_invoice"
         | "other"
       document_verification_status: "pending_review" | "verified" | "rejected"
+      email_classification:
+        | "unclassified"
+        | "new_enquiry"
+        | "enquiry_follow_up"
+        | "internal"
+        | "circular"
+        | "other_relevant"
+      email_processing_status:
+        | "received"
+        | "review_required"
+        | "classified"
+        | "linked"
+        | "ignored"
+      email_provider_action_status: "pending" | "completed" | "failed"
+      email_provider_action_type: "mark_read" | "archive"
       enquiry_note_kind: "internal" | "requirement" | "follow_up"
       enquiry_priority: "low" | "normal" | "high" | "urgent"
       enquiry_source: "manual" | "email" | "import"
@@ -3538,6 +3978,23 @@ export const Constants = {
         "other",
       ],
       document_verification_status: ["pending_review", "verified", "rejected"],
+      email_classification: [
+        "unclassified",
+        "new_enquiry",
+        "enquiry_follow_up",
+        "internal",
+        "circular",
+        "other_relevant",
+      ],
+      email_processing_status: [
+        "received",
+        "review_required",
+        "classified",
+        "linked",
+        "ignored",
+      ],
+      email_provider_action_status: ["pending", "completed", "failed"],
+      email_provider_action_type: ["mark_read", "archive"],
       enquiry_note_kind: ["internal", "requirement", "follow_up"],
       enquiry_priority: ["low", "normal", "high", "urgent"],
       enquiry_source: ["manual", "email", "import"],
