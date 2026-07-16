@@ -1,6 +1,6 @@
 {
   "name": "torrance-yachts-platform",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "packageManager": "npm@11.16.0",
   "scripts": {
@@ -17,7 +17,11 @@
     "db:test": "supabase test db --network-id torrance-yachts-local",
     "db:lint": "supabase db lint --local --schema public --level warning --fail-on warning",
     "db:status": "supabase status",
-    "db:types": "supabase gen types typescript --local --schema public --network-id torrance-yachts-local"
+    "db:types": "supabase gen types typescript --local --schema public --network-id torrance-yachts-local",
+    "automation:start": "docker compose --env-file automation/.env -f automation/docker-compose.yml up -d",
+    "automation:stop": "docker compose --env-file automation/.env -f automation/docker-compose.yml down",
+    "automation:status": "docker compose --env-file automation/.env -f automation/docker-compose.yml ps",
+    "automation:import": "docker compose --env-file automation/.env -f automation/docker-compose.yml exec n8n n8n import:workflow --separate --input=/workflows"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -28,6 +32,7 @@
     "lucide-react": "^1.24.0",
     "next": "16.2.10",
     "openai": "^6.47.0",
+    "pdf-lib": "^1.17.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "shadcn": "^4.13.0",

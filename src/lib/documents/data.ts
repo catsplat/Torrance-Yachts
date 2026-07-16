@@ -27,6 +27,7 @@ export async function getBookingDocumentWorkspace(bookingId: string) {
     reviewsResult,
     paymentsResult,
     commissionResult,
+    generatedInvoicesResult,
   ] = await Promise.all([
     supabase.from("bookings").select(`
       id, reference, charter_start_date, charter_end_date, charter_fee, currency,
@@ -48,10 +49,13 @@ export async function getBookingDocumentWorkspace(bookingId: string) {
     supabase.from("commission_calculations").select("*")
       .eq("booking_id", bookingId).order("created_at", { ascending: false })
       .limit(1).maybeSingle(),
+    supabase.from("generated_invoices").select("*")
+      .eq("booking_id", bookingId).order("generated_at", { ascending: false }),
   ])
   if (
     bookingResult.error || requirementsResult.error || documentsResult.error ||
-    reviewsResult.error || paymentsResult.error || commissionResult.error
+    reviewsResult.error || paymentsResult.error || commissionResult.error ||
+    generatedInvoicesResult.error
   ) {
     throw new Error("Unable to load the private booking document workspace.")
   }
@@ -67,6 +71,7 @@ export async function getBookingDocumentWorkspace(bookingId: string) {
     booking: bookingResult.data,
     commission: commissionResult.data,
     documents,
+    generatedInvoices: generatedInvoicesResult.data,
     payments: paymentsResult.data,
     requirements: requirementsResult.data,
     reviews: reviewsResult.data,

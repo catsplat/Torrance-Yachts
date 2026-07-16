@@ -1,4 +1,4 @@
-import { BrainCircuit, Clock3, FilePenLine, MailCheck, ShieldCheck } from "lucide-react"
+import { BrainCircuit, Clock3, FilePenLine, FileText, MailCheck, PlugZap, ShieldCheck } from "lucide-react"
 import Link from "next/link"
 
 import { OperationalSettingsForm, TimeoutSweepForm } from "@/components/emails/email-forms"
@@ -17,8 +17,10 @@ export default async function SettingsPage() {
       <div className="grid gap-5 md:grid-cols-2">
         <Card><CardContent className="flex gap-3 pt-5"><BrainCircuit className="size-5 text-primary" /><div><p className="font-medium">AI provider</p><p className="mt-1 text-sm text-muted-foreground">{ai.provider} · {ai.model} · {ai.enabled ? "configured" : "not configured"}</p><p className="mt-2 text-xs text-muted-foreground">Provider credentials stay server-only. Outputs always require human review.</p></div></CardContent></Card>
         <Link href="/settings/communications"><Card className="h-full transition-colors hover:border-primary/40"><CardContent className="flex gap-3 pt-5"><FilePenLine className="size-5 text-primary" /><div><p className="font-medium">Communication templates</p><p className="mt-1 text-sm text-muted-foreground">Version KYC, captain-contact, and broker follow-up wording.</p></div></CardContent></Card></Link>
+        <Link href="/settings/invoices"><Card className="h-full transition-colors hover:border-primary/40"><CardContent className="flex gap-3 pt-5"><FileText className="size-5 text-primary" /><div><p className="font-medium">Invoice profiles</p><p className="mt-1 text-sm text-muted-foreground">Protected, versioned issuer and payment instructions.</p></div></CardContent></Card></Link>
+        <Link href="/integrations"><Card className="h-full transition-colors hover:border-primary/40"><CardContent className="flex gap-3 pt-5"><PlugZap className="size-5 text-primary" /><div><p className="font-medium">Integrations</p><p className="mt-1 text-sm text-muted-foreground">Enable adapters, review notifications, and inspect delivery failures.</p></div></CardContent></Card></Link>
       </div>
-      <div className="grid gap-5 md:grid-cols-2"><Card><CardContent className="flex gap-3 pt-5"><MailCheck className="size-5 text-primary" /><div><p className="font-medium">Gmail routing boundary</p><p className="mt-1 text-sm text-muted-foreground">n8n will submit validated messages through the authenticated ingestion endpoint in Phase 11.</p></div></CardContent></Card><Card><CardContent className="flex gap-3 pt-5"><ShieldCheck className="size-5 text-primary" /><div><p className="font-medium">Human approval retained</p><p className="mt-1 text-sm text-muted-foreground">Circular and known-thread rules are deterministic. New enquiries and uncertain mail remain reviewable.</p></div></CardContent></Card></div>
+      <div className="grid gap-5 md:grid-cols-2"><Card><CardContent className="flex gap-3 pt-5"><MailCheck className="size-5 text-primary" /><div><p className="font-medium">Gmail routing boundary</p><p className="mt-1 text-sm text-muted-foreground">n8n submits validated messages and executes only durable, idempotent provider actions.</p></div></CardContent></Card><Card><CardContent className="flex gap-3 pt-5"><ShieldCheck className="size-5 text-primary" /><div><p className="font-medium">Human approval retained</p><p className="mt-1 text-sm text-muted-foreground">External drafts and consequential notifications remain reviewable before delivery.</p></div></CardContent></Card></div>
     </div>
   )
 }

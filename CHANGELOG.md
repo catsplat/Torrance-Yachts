@@ -4,6 +4,41 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-07-16
+
+### Added
+
+- Central notification records with recipient, channel, priority, human approval,
+  delivery state, and application action links.
+- Generic leased integration outbox with idempotency, retry/backoff, provider IDs,
+  visible failures, and administrator retry.
+- Operational calendar generated from bookings, payment instalments, and due tasks,
+  plus duplicate-protected private Google Calendar delivery records.
+- Controlled one-way Google Sheets snapshots and explicit verified-document Google
+  Drive copy requests.
+- Private versioned invoice profiles and deterministic commission invoice PDF
+  generation into protected document storage.
+- Pinned local n8n Community Edition Docker setup, importable workflows, adapter
+  API contracts, and a development-only delivery simulator.
+- Integrations workspace, notification approvals, delivery history, calendar,
+  invoice Settings, and dashboard automation-failure counts.
+
+### Security
+
+- External credentials remain in n8n/secret storage and are never stored in
+  PostgreSQL or source control.
+- Gmail creates drafts only, Calendar sends no attendee updates, Sheets is one-way,
+  and Drive requires a verified document plus an explicit human reason.
+- n8n receives no authority to change offers, bookings, tasks, payments, AI
+  reviews, or Yachtfolio completion.
+
+### Known limitations
+
+- Real bot, mailbox, Google OAuth, calendar, Drive folder, and workbook credentials
+  remain deliberately unconfigured until Phase 12 deployment acceptance.
+- The included delivery simulator is synthetic-only and must never be enabled for
+  production data.
+
 ## [0.10.0] - 2026-07-16
 
 ### Added

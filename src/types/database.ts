@@ -580,6 +580,69 @@ export type Database = {
           },
         ]
       }
+      calendar_events: {
+        Row: {
+          all_day: boolean
+          created_at: string
+          description: string | null
+          end_at: string
+          external_event_id: string | null
+          external_url: string | null
+          id: string
+          kind: Database["public"]["Enums"]["calendar_event_kind"]
+          last_synced_at: string | null
+          revision: number
+          source_id: string
+          source_type: string
+          start_at: string
+          status: Database["public"]["Enums"]["calendar_event_status"]
+          sync_status: Database["public"]["Enums"]["calendar_sync_status"]
+          timezone: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          all_day?: boolean
+          created_at?: string
+          description?: string | null
+          end_at: string
+          external_event_id?: string | null
+          external_url?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["calendar_event_kind"]
+          last_synced_at?: string | null
+          revision?: number
+          source_id: string
+          source_type: string
+          start_at: string
+          status?: Database["public"]["Enums"]["calendar_event_status"]
+          sync_status?: Database["public"]["Enums"]["calendar_sync_status"]
+          timezone?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          all_day?: boolean
+          created_at?: string
+          description?: string | null
+          end_at?: string
+          external_event_id?: string | null
+          external_url?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["calendar_event_kind"]
+          last_synced_at?: string | null
+          revision?: number
+          source_id?: string
+          source_type?: string
+          start_at?: string
+          status?: Database["public"]["Enums"]["calendar_event_status"]
+          sync_status?: Database["public"]["Enums"]["calendar_sync_status"]
+          timezone?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       commission_calculations: {
         Row: {
           amount: number
@@ -1664,6 +1727,430 @@ export type Database = {
             columns: ["enquiry_id"]
             isOneToOne: false
             referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      generated_invoices: {
+        Row: {
+          amount: number
+          booking_id: string
+          commission_calculation_id: string
+          currency: string
+          document_id: string
+          generated_at: string
+          generated_by: string | null
+          id: string
+          invoice_number: string
+          invoice_profile_id: string
+          issue_date: string
+          service_description: string
+        }
+        Insert: {
+          amount: number
+          booking_id: string
+          commission_calculation_id: string
+          currency: string
+          document_id: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          invoice_number: string
+          invoice_profile_id: string
+          issue_date: string
+          service_description: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          commission_calculation_id?: string
+          currency?: string
+          document_id?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          invoice_number?: string
+          invoice_profile_id?: string
+          issue_date?: string
+          service_description?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_invoices_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_invoices_commission_calculation_id_fkey"
+            columns: ["commission_calculation_id"]
+            isOneToOne: false
+            referencedRelation: "commission_calculations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_invoices_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_invoices_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_invoices_invoice_profile_id_fkey"
+            columns: ["invoice_profile_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_connections: {
+        Row: {
+          configuration_notes: string | null
+          display_name: string
+          enabled: boolean
+          last_error: string | null
+          last_failure_at: string | null
+          last_success_at: string | null
+          provider: Database["public"]["Enums"]["integration_provider"]
+          target_reference: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          configuration_notes?: string | null
+          display_name: string
+          enabled?: boolean
+          last_error?: string | null
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          provider: Database["public"]["Enums"]["integration_provider"]
+          target_reference?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          configuration_notes?: string | null
+          display_name?: string
+          enabled?: boolean
+          last_error?: string | null
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          provider?: Database["public"]["Enums"]["integration_provider"]
+          target_reference?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_connections_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_deliveries: {
+        Row: {
+          attempt_count: number
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          delivered_at: string | null
+          external_id: string | null
+          external_url: string | null
+          id: string
+          idempotency_key: string
+          last_error_code: string | null
+          last_error_message: string | null
+          lease_expires_at: string | null
+          next_attempt_at: string
+          operation: Database["public"]["Enums"]["integration_operation"]
+          payload: Json
+          provider: Database["public"]["Enums"]["integration_provider"]
+          source_id: string
+          source_type: string
+          status: Database["public"]["Enums"]["integration_delivery_status"]
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          external_id?: string | null
+          external_url?: string | null
+          id?: string
+          idempotency_key: string
+          last_error_code?: string | null
+          last_error_message?: string | null
+          lease_expires_at?: string | null
+          next_attempt_at?: string
+          operation: Database["public"]["Enums"]["integration_operation"]
+          payload?: Json
+          provider: Database["public"]["Enums"]["integration_provider"]
+          source_id: string
+          source_type: string
+          status?: Database["public"]["Enums"]["integration_delivery_status"]
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          external_id?: string | null
+          external_url?: string | null
+          id?: string
+          idempotency_key?: string
+          last_error_code?: string | null
+          last_error_message?: string | null
+          lease_expires_at?: string | null
+          next_attempt_at?: string
+          operation?: Database["public"]["Enums"]["integration_operation"]
+          payload?: Json
+          provider?: Database["public"]["Enums"]["integration_provider"]
+          source_id?: string
+          source_type?: string
+          status?: Database["public"]["Enums"]["integration_delivery_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      integration_snapshots: {
+        Row: {
+          delivered_at: string | null
+          id: string
+          payload: Json
+          payload_sha256: string
+          requested_at: string
+          requested_by: string | null
+          row_count: number
+          snapshot_type: string
+          status: Database["public"]["Enums"]["integration_snapshot_status"]
+        }
+        Insert: {
+          delivered_at?: string | null
+          id?: string
+          payload: Json
+          payload_sha256: string
+          requested_at?: string
+          requested_by?: string | null
+          row_count: number
+          snapshot_type: string
+          status?: Database["public"]["Enums"]["integration_snapshot_status"]
+        }
+        Update: {
+          delivered_at?: string | null
+          id?: string
+          payload?: Json
+          payload_sha256?: string
+          requested_at?: string
+          requested_by?: string | null
+          row_count?: number
+          snapshot_type?: string
+          status?: Database["public"]["Enums"]["integration_snapshot_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_snapshots_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_profiles: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          issuer_address: string
+          issuer_name: string
+          payment_instructions: string
+          profile_name: string
+          recipient_address: string
+          recipient_email: string | null
+          recipient_name: string
+          service_description_template: string
+          source_profile_id: string | null
+          status: Database["public"]["Enums"]["invoice_profile_status"]
+          updated_at: string
+          version_number: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          issuer_address: string
+          issuer_name: string
+          payment_instructions: string
+          profile_name: string
+          recipient_address: string
+          recipient_email?: string | null
+          recipient_name: string
+          service_description_template: string
+          source_profile_id?: string | null
+          status?: Database["public"]["Enums"]["invoice_profile_status"]
+          updated_at?: string
+          version_number: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          issuer_address?: string
+          issuer_name?: string
+          payment_instructions?: string
+          profile_name?: string
+          recipient_address?: string
+          recipient_email?: string | null
+          recipient_name?: string
+          service_description_template?: string
+          source_profile_id?: string | null
+          status?: Database["public"]["Enums"]["invoice_profile_status"]
+          updated_at?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_profiles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_profiles_source_profile_id_fkey"
+            columns: ["source_profile_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          approval_reason: string | null
+          approved_at: string | null
+          approved_by: string | null
+          body: string
+          channel: Database["public"]["Enums"]["notification_channel"]
+          created_at: string
+          created_by: string | null
+          delivered_at: string | null
+          id: string
+          idempotency_key: string
+          notification_type: string
+          priority: Database["public"]["Enums"]["notification_priority"]
+          recipient_contact_id: string | null
+          recipient_user_id: string | null
+          requires_approval: boolean
+          source_id: string
+          source_type: string
+          status: Database["public"]["Enums"]["notification_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          action_url?: string | null
+          approval_reason?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          body: string
+          channel: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          created_by?: string | null
+          delivered_at?: string | null
+          id?: string
+          idempotency_key: string
+          notification_type: string
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          recipient_contact_id?: string | null
+          recipient_user_id?: string | null
+          requires_approval?: boolean
+          source_id: string
+          source_type: string
+          status?: Database["public"]["Enums"]["notification_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          action_url?: string | null
+          approval_reason?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          body?: string
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          created_by?: string | null
+          delivered_at?: string | null
+          id?: string
+          idempotency_key?: string
+          notification_type?: string
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          recipient_contact_id?: string | null
+          recipient_user_id?: string | null
+          requires_approval?: boolean
+          source_id?: string
+          source_type?: string
+          status?: Database["public"]["Enums"]["notification_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_contact_id_fkey"
+            columns: ["recipient_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3283,6 +3770,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      approve_invoice_profile: {
+        Args: { p_profile_id: string; p_reason: string }
+        Returns: undefined
+      }
       approve_offer: {
         Args: { p_offer_id: string; p_reason: string }
         Returns: {
@@ -3442,6 +3933,37 @@ export type Database = {
           reserved_through: string
         }[]
       }
+      claim_integration_deliveries: {
+        Args: { p_limit?: number; p_worker_id: string }
+        Returns: {
+          attempt_count: number
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          delivered_at: string | null
+          external_id: string | null
+          external_url: string | null
+          id: string
+          idempotency_key: string
+          last_error_code: string | null
+          last_error_message: string | null
+          lease_expires_at: string | null
+          next_attempt_at: string
+          operation: Database["public"]["Enums"]["integration_operation"]
+          payload: Json
+          provider: Database["public"]["Enums"]["integration_provider"]
+          source_id: string
+          source_type: string
+          status: Database["public"]["Enums"]["integration_delivery_status"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "integration_deliveries"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       classify_email_message: {
         Args: {
           p_classification: Database["public"]["Enums"]["email_classification"]
@@ -3512,6 +4034,15 @@ export type Database = {
           p_summary: string
         }
         Returns: string
+      }
+      complete_integration_delivery: {
+        Args: {
+          p_delivery_id: string
+          p_external_id: string
+          p_external_url: string
+          p_worker_id: string
+        }
+        Returns: undefined
       }
       complete_task: {
         Args: { p_reason: string; p_task_id: string }
@@ -3611,6 +4142,36 @@ export type Database = {
         }
         Returns: string
       }
+      create_invoice_profile_draft: {
+        Args: {
+          p_issuer_address: string
+          p_issuer_name: string
+          p_payment_instructions: string
+          p_profile_name: string
+          p_recipient_address: string
+          p_recipient_email: string
+          p_recipient_name: string
+          p_service_description_template: string
+        }
+        Returns: string
+      }
+      create_notification: {
+        Args: {
+          p_action_url: string
+          p_body: string
+          p_channel: Database["public"]["Enums"]["notification_channel"]
+          p_idempotency_key: string
+          p_notification_type: string
+          p_priority: Database["public"]["Enums"]["notification_priority"]
+          p_recipient_contact_id: string
+          p_recipient_user_id: string
+          p_requires_approval: boolean
+          p_source_id: string
+          p_source_type: string
+          p_title: string
+        }
+        Returns: string
+      }
       create_offer_draft: {
         Args: {
           p_body_snapshot: string
@@ -3670,6 +4231,16 @@ export type Database = {
           p_error_code: string
           p_error_message: string
           p_run_id: string
+        }
+        Returns: undefined
+      }
+      fail_integration_delivery: {
+        Args: {
+          p_delivery_id: string
+          p_error_code: string
+          p_error_message: string
+          p_retryable: boolean
+          p_worker_id: string
         }
         Returns: undefined
       }
@@ -3753,11 +4324,26 @@ export type Database = {
         Args: { p_payment_id: string; p_reason: string }
         Returns: undefined
       }
+      materialise_operational_notifications: {
+        Args: { p_as_of?: string }
+        Returns: number
+      }
       normalise_email_address: { Args: { value: string }; Returns: string }
+      queue_document_drive_sync: {
+        Args: { p_document_id: string; p_reason: string }
+        Returns: string
+      }
+      queue_email_provider_actions: { Args: never; Returns: number }
+      queue_notification_delivery: {
+        Args: { p_notification_id: string }
+        Returns: string
+      }
+      queue_operations_sheet_snapshot: { Args: never; Returns: string }
       refresh_booking_task_states: {
         Args: { p_booking_id: string }
         Returns: undefined
       }
+      refresh_operational_calendar: { Args: never; Returns: number }
       register_booking_document: {
         Args: {
           p_booking_id: string
@@ -3768,6 +4354,18 @@ export type Database = {
           p_size_bytes: number
           p_storage_path: string
           p_title: string
+        }
+        Returns: string
+      }
+      register_generated_invoice: {
+        Args: {
+          p_booking_id: string
+          p_commission_calculation_id: string
+          p_document_id: string
+          p_invoice_number: string
+          p_invoice_profile_id: string
+          p_issue_date: string
+          p_service_description: string
         }
         Returns: string
       }
@@ -3828,12 +4426,24 @@ export type Database = {
         }
         Returns: string
       }
+      retry_integration_delivery: {
+        Args: { p_delivery_id: string; p_reason: string }
+        Returns: undefined
+      }
       review_ai_suggestion: {
         Args: { p_approved: boolean; p_reason: string; p_suggestion_id: string }
         Returns: undefined
       }
       review_booking_document: {
         Args: { p_approved: boolean; p_document_id: string; p_reason: string }
+        Returns: undefined
+      }
+      review_notification: {
+        Args: {
+          p_approved: boolean
+          p_notification_id: string
+          p_reason: string
+        }
         Returns: undefined
       }
       revise_ai_suggestion: {
@@ -3844,6 +4454,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      run_automation_tick: { Args: { p_as_of?: string }; Returns: Json }
       save_contract_review: {
         Args: {
           p_booking_id: string
@@ -3974,6 +4585,32 @@ export type Database = {
           p_template_id: string
         }
         Returns: undefined
+      }
+      update_integration_connection: {
+        Args: {
+          p_configuration_notes: string
+          p_enabled: boolean
+          p_provider: Database["public"]["Enums"]["integration_provider"]
+          p_target_reference: string
+        }
+        Returns: {
+          configuration_notes: string | null
+          display_name: string
+          enabled: boolean
+          last_error: string | null
+          last_failure_at: string | null
+          last_success_at: string | null
+          provider: Database["public"]["Enums"]["integration_provider"]
+          target_reference: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "integration_connections"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       update_offer_draft: {
         Args: {
@@ -4157,6 +4794,9 @@ export type Database = {
         | "rejected"
         | "superseded"
       booking_status: "confirmed" | "charter_active" | "completed" | "cancelled"
+      calendar_event_kind: "charter" | "payment" | "task"
+      calendar_event_status: "active" | "cancelled"
+      calendar_sync_status: "not_configured" | "pending" | "synced" | "failed"
       communication_template_kind:
         | "kyc_request"
         | "captain_contact"
@@ -4215,6 +4855,41 @@ export type Database = {
         | "charter_active"
         | "completed"
         | "archived"
+        | "cancelled"
+      integration_delivery_status:
+        | "pending"
+        | "claimed"
+        | "delivered"
+        | "failed"
+        | "cancelled"
+      integration_operation:
+        | "telegram_send"
+        | "gmail_mark_read"
+        | "gmail_archive"
+        | "gmail_create_draft"
+        | "calendar_upsert"
+        | "drive_upload"
+        | "sheets_snapshot"
+      integration_provider:
+        | "telegram"
+        | "gmail"
+        | "google_calendar"
+        | "google_drive"
+        | "google_sheets"
+      integration_snapshot_status:
+        | "queued"
+        | "delivered"
+        | "failed"
+        | "cancelled"
+      invoice_profile_status: "draft" | "approved" | "retired"
+      notification_channel: "in_app" | "telegram" | "email_draft"
+      notification_priority: "low" | "normal" | "high" | "urgent"
+      notification_status:
+        | "pending_approval"
+        | "approved"
+        | "queued"
+        | "delivered"
+        | "failed"
         | "cancelled"
       offer_pricing_basis: "seasonal_rate" | "manually_adjusted"
       offer_status: "draft" | "approved" | "sent" | "withdrawn" | "superseded"
@@ -4386,6 +5061,9 @@ export const Constants = {
         "superseded",
       ],
       booking_status: ["confirmed", "charter_active", "completed", "cancelled"],
+      calendar_event_kind: ["charter", "payment", "task"],
+      calendar_event_status: ["active", "cancelled"],
+      calendar_sync_status: ["not_configured", "pending", "synced", "failed"],
       communication_template_kind: [
         "kyc_request",
         "captain_contact",
@@ -4450,6 +5128,46 @@ export const Constants = {
         "charter_active",
         "completed",
         "archived",
+        "cancelled",
+      ],
+      integration_delivery_status: [
+        "pending",
+        "claimed",
+        "delivered",
+        "failed",
+        "cancelled",
+      ],
+      integration_operation: [
+        "telegram_send",
+        "gmail_mark_read",
+        "gmail_archive",
+        "gmail_create_draft",
+        "calendar_upsert",
+        "drive_upload",
+        "sheets_snapshot",
+      ],
+      integration_provider: [
+        "telegram",
+        "gmail",
+        "google_calendar",
+        "google_drive",
+        "google_sheets",
+      ],
+      integration_snapshot_status: [
+        "queued",
+        "delivered",
+        "failed",
+        "cancelled",
+      ],
+      invoice_profile_status: ["draft", "approved", "retired"],
+      notification_channel: ["in_app", "telegram", "email_draft"],
+      notification_priority: ["low", "normal", "high", "urgent"],
+      notification_status: [
+        "pending_approval",
+        "approved",
+        "queued",
+        "delivered",
+        "failed",
         "cancelled",
       ],
       offer_pricing_basis: ["seasonal_rate", "manually_adjusted"],
