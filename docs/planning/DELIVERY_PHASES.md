@@ -17,12 +17,17 @@ The first complete production release is divided into twelve dependency-aware ve
 | 9 | Idempotent Gmail ingestion, message/thread storage, deterministic routing, manual classification, follow-up association, and configurable inactivity timeouts | Released as `v0.9.0` |
 | 10 | Provider-neutral AI extraction, classification, summaries, yacht-specific drafts, and editable KYC/follow-up templates with confidence, source evidence, correction, and human approval | Released as `v0.10.0` |
 | 11 | Central notifications plus Telegram, calendar, Google Drive/Sheets, n8n, invoice PDF generation, and controlled external-system adapters | Released as `v0.11.0` |
-| 12 | Production hosting, backups and restore test, monitoring, security/privacy review, guided tutorial and isolated synthetic practice workflow, staff acceptance, migration, training, and launch | Planned |
+| 12 | Production hosting, backups and restore test, monitoring, security/privacy review, guided tutorial and isolated synthetic practice workflow, staff acceptance, migration, training, and launch | Implemented as `v0.12.0` release candidate; external activation and client sign-off pending |
+
+Post-programme release hardening is tracked as `v0.13.0`: personal staff alert
+routes, encrypted Gmail OAuth credentials, automatic advisory email analysis,
+functional notification/search controls, persistent dark mode, workflow-focused
+navigation/dashboard, and task-specific communication preparation.
 
 ## Interpretation
 
 - Phase count is a delivery map, not a claim that every phase has equal effort.
-- Eleven of twelve phases are released. Production activation, packaging validation, security/backup acceptance, tutorial, training, and launch remain.
+- All twelve code and documentation phases are implemented. Production activation remains deliberately blocked until client-owned infrastructure, credentials, policies, macOS acceptance, training, and launch sign-off are supplied.
 - The dashboard is upgraded incrementally as real records become available; final operational reporting and polish are completed in Phase 12.
 - No later integration becomes a source of truth. PostgreSQL remains authoritative throughout.
 - AI is deliberately Phase 10: it assists a workflow that is already functional and testable without AI.

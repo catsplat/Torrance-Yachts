@@ -26,7 +26,7 @@ export default async function EmailInboxPage({ searchParams }: Props) {
   const reviewCount = messages.filter((message) => message.processing_status === "review_required").length
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5">
+    <div className="mx-auto max-w-7xl space-y-5" data-tutorial-anchor="email-inbox">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Operational mailbox</p><h1 className="mt-1 text-3xl font-semibold">Email inbox</h1><p className="mt-2 max-w-3xl text-sm text-muted-foreground">Gmail messages are imported once, routed by safe deterministic evidence, and held for human review when uncertain.</p></div>
         <Badge className={reviewCount ? "border-amber-300 bg-amber-50 text-amber-900" : ""} variant="outline">{reviewCount} need review</Badge>

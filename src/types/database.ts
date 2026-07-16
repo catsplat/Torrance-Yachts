@@ -288,6 +288,59 @@ export type Database = {
           },
         ]
       }
+      backup_verifications: {
+        Row: {
+          artifact_reference: string | null
+          checksum_sha256: string | null
+          completed_at: string | null
+          created_at: string
+          environment: string
+          id: string
+          notes: string
+          recorded_by: string
+          restore_tested_at: string | null
+          scope: string
+          started_at: string
+          status: Database["public"]["Enums"]["backup_verification_status"]
+        }
+        Insert: {
+          artifact_reference?: string | null
+          checksum_sha256?: string | null
+          completed_at?: string | null
+          created_at?: string
+          environment: string
+          id?: string
+          notes: string
+          recorded_by: string
+          restore_tested_at?: string | null
+          scope: string
+          started_at: string
+          status: Database["public"]["Enums"]["backup_verification_status"]
+        }
+        Update: {
+          artifact_reference?: string | null
+          checksum_sha256?: string | null
+          completed_at?: string | null
+          created_at?: string
+          environment?: string
+          id?: string
+          notes?: string
+          recorded_by?: string
+          restore_tested_at?: string | null
+          scope?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["backup_verification_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backup_verifications_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_document_requirements: {
         Row: {
           booking_id: string
@@ -1865,6 +1918,7 @@ export type Database = {
           claimed_at: string | null
           claimed_by: string | null
           created_at: string
+          credential_user_id: string | null
           delivered_at: string | null
           external_id: string | null
           external_url: string | null
@@ -1887,6 +1941,7 @@ export type Database = {
           claimed_at?: string | null
           claimed_by?: string | null
           created_at?: string
+          credential_user_id?: string | null
           delivered_at?: string | null
           external_id?: string | null
           external_url?: string | null
@@ -1909,6 +1964,7 @@ export type Database = {
           claimed_at?: string | null
           claimed_by?: string | null
           created_at?: string
+          credential_user_id?: string | null
           delivered_at?: string | null
           external_id?: string | null
           external_url?: string | null
@@ -1926,7 +1982,15 @@ export type Database = {
           status?: Database["public"]["Enums"]["integration_delivery_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "integration_deliveries_credential_user_id_fkey"
+            columns: ["credential_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integration_snapshots: {
         Row: {
@@ -2054,6 +2118,56 @@ export type Database = {
           },
         ]
       }
+      launch_readiness_checks: {
+        Row: {
+          category: string
+          check_key: string
+          description: string
+          evidence: string | null
+          id: string
+          required: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["launch_check_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          check_key: string
+          description: string
+          evidence?: string | null
+          id?: string
+          required?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["launch_check_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          check_key?: string
+          description?: string
+          evidence?: string | null
+          id?: string
+          required?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["launch_check_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "launch_readiness_checks_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -2069,6 +2183,7 @@ export type Database = {
           idempotency_key: string
           notification_type: string
           priority: Database["public"]["Enums"]["notification_priority"]
+          read_at: string | null
           recipient_contact_id: string | null
           recipient_user_id: string | null
           requires_approval: boolean
@@ -2092,6 +2207,7 @@ export type Database = {
           idempotency_key: string
           notification_type: string
           priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
           recipient_contact_id?: string | null
           recipient_user_id?: string | null
           requires_approval?: boolean
@@ -2115,6 +2231,7 @@ export type Database = {
           idempotency_key?: string
           notification_type?: string
           priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
           recipient_contact_id?: string | null
           recipient_user_id?: string | null
           requires_approval?: boolean
@@ -2994,6 +3111,219 @@ export type Database = {
           },
         ]
       }
+      tutorial_history: {
+        Row: {
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          practice_stage: Database["public"]["Enums"]["tutorial_practice_stage"]
+          step: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+          practice_stage: Database["public"]["Enums"]["tutorial_practice_stage"]
+          step: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+          practice_stage?: Database["public"]["Enums"]["tutorial_practice_stage"]
+          step?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutorial_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutorial_sessions: {
+        Row: {
+          completed_at: string | null
+          current_step: number
+          paused_at: string | null
+          practice_stage: Database["public"]["Enums"]["tutorial_practice_stage"]
+          reset_count: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["tutorial_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          current_step?: number
+          paused_at?: string | null
+          practice_stage?: Database["public"]["Enums"]["tutorial_practice_stage"]
+          reset_count?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["tutorial_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          current_step?: number
+          paused_at?: string | null
+          practice_stage?: Database["public"]["Enums"]["tutorial_practice_stage"]
+          reset_count?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["tutorial_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutorial_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_notification_preferences: {
+        Row: {
+          ai_summary_enabled: boolean
+          charter_enabled: boolean
+          created_at: string
+          email_enabled: boolean
+          follow_up_enabled: boolean
+          in_app_enabled: boolean
+          integration_failure_enabled: boolean
+          internal_email_enabled: boolean
+          new_enquiry_enabled: boolean
+          notification_email: string | null
+          payment_enabled: boolean
+          task_enabled: boolean
+          telegram_enabled: boolean
+          unknown_email_enabled: boolean
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_summary_enabled?: boolean
+          charter_enabled?: boolean
+          created_at?: string
+          email_enabled?: boolean
+          follow_up_enabled?: boolean
+          in_app_enabled?: boolean
+          integration_failure_enabled?: boolean
+          internal_email_enabled?: boolean
+          new_enquiry_enabled?: boolean
+          notification_email?: string | null
+          payment_enabled?: boolean
+          task_enabled?: boolean
+          telegram_enabled?: boolean
+          unknown_email_enabled?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_summary_enabled?: boolean
+          charter_enabled?: boolean
+          created_at?: string
+          email_enabled?: boolean
+          follow_up_enabled?: boolean
+          in_app_enabled?: boolean
+          integration_failure_enabled?: boolean
+          internal_email_enabled?: boolean
+          new_enquiry_enabled?: boolean
+          notification_email?: string | null
+          payment_enabled?: boolean
+          task_enabled?: boolean
+          telegram_enabled?: boolean
+          unknown_email_enabled?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_preferences_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_oauth_connections: {
+        Row: {
+          account_email: string
+          client_id_secret_id: string
+          client_secret_secret_id: string
+          connected_at: string
+          last_error: string | null
+          last_failure_at: string | null
+          last_success_at: string | null
+          provider: Database["public"]["Enums"]["integration_provider"]
+          refresh_token_secret_id: string
+          scopes: string[]
+          status: Database["public"]["Enums"]["user_oauth_connection_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_email: string
+          client_id_secret_id: string
+          client_secret_secret_id: string
+          connected_at?: string
+          last_error?: string | null
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          provider: Database["public"]["Enums"]["integration_provider"]
+          refresh_token_secret_id: string
+          scopes?: string[]
+          status?: Database["public"]["Enums"]["user_oauth_connection_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_email?: string
+          client_id_secret_id?: string
+          client_secret_secret_id?: string
+          connected_at?: string
+          last_error?: string | null
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          provider?: Database["public"]["Enums"]["integration_provider"]
+          refresh_token_secret_id?: string
+          scopes?: string[]
+          status?: Database["public"]["Enums"]["user_oauth_connection_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_oauth_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflow_events: {
         Row: {
           actor_user_id: string | null
@@ -3710,6 +4040,30 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      advance_tutorial: {
+        Args: {
+          p_event_type: string
+          p_stage: Database["public"]["Enums"]["tutorial_practice_stage"]
+          p_step: number
+        }
+        Returns: {
+          completed_at: string | null
+          current_step: number
+          paused_at: string | null
+          practice_stage: Database["public"]["Enums"]["tutorial_practice_stage"]
+          reset_count: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["tutorial_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tutorial_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       amend_confirmed_booking: {
         Args: {
           p_booking_id: string
@@ -3940,6 +4294,39 @@ export type Database = {
           claimed_at: string | null
           claimed_by: string | null
           created_at: string
+          credential_user_id: string | null
+          delivered_at: string | null
+          external_id: string | null
+          external_url: string | null
+          id: string
+          idempotency_key: string
+          last_error_code: string | null
+          last_error_message: string | null
+          lease_expires_at: string | null
+          next_attempt_at: string
+          operation: Database["public"]["Enums"]["integration_operation"]
+          payload: Json
+          provider: Database["public"]["Enums"]["integration_provider"]
+          source_id: string
+          source_type: string
+          status: Database["public"]["Enums"]["integration_delivery_status"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "integration_deliveries"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_internal_alert_deliveries: {
+        Args: { p_limit?: number; p_worker_id: string }
+        Returns: {
+          attempt_count: number
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          credential_user_id: string | null
           delivered_at: string | null
           external_id: string | null
           external_url: string | null
@@ -4225,6 +4612,10 @@ export type Database = {
         Args: { p_reason: string; p_step_id: string }
         Returns: undefined
       }
+      disconnect_my_gmail_oauth: {
+        Args: { p_reason: string }
+        Returns: undefined
+      }
       email_domain: { Args: { value: string }; Returns: string }
       fail_ai_analysis: {
         Args: {
@@ -4247,6 +4638,34 @@ export type Database = {
       generate_booking_tasks: {
         Args: { p_booking_id: string; p_template_id?: string }
         Returns: number
+      }
+      get_delivery_oauth_credentials: {
+        Args: { p_delivery_id: string }
+        Returns: {
+          account_email: string
+          client_id: string
+          client_secret: string
+          refresh_token: string
+        }[]
+      }
+      get_launch_readiness_summary: { Args: never; Returns: Json }
+      get_my_oauth_connections: {
+        Args: never
+        Returns: {
+          account_email: string
+          connected_at: string
+          last_error: string
+          last_failure_at: string
+          last_success_at: string
+          provider: Database["public"]["Enums"]["integration_provider"]
+          scopes: string[]
+          status: Database["public"]["Enums"]["user_oauth_connection_status"]
+          updated_at: string
+        }[]
+      }
+      get_operational_readiness: {
+        Args: { p_environment: string }
+        Returns: Json
       }
       ingest_gmail_message: {
         Args: {
@@ -4279,6 +4698,11 @@ export type Database = {
           target_status: Database["public"]["Enums"]["enquiry_status"]
         }
         Returns: boolean
+      }
+      mark_all_notifications_read: { Args: never; Returns: number }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: undefined
       }
       mark_offer_sent: {
         Args: { p_offer_id: string; p_reason: string }
@@ -4329,6 +4753,30 @@ export type Database = {
         Returns: number
       }
       normalise_email_address: { Args: { value: string }; Returns: string }
+      pause_tutorial: {
+        Args: never
+        Returns: {
+          completed_at: string | null
+          current_step: number
+          paused_at: string | null
+          practice_stage: Database["public"]["Enums"]["tutorial_practice_stage"]
+          reset_count: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["tutorial_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tutorial_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      personal_notification_channels: {
+        Args: { p_user_id: string }
+        Returns: Database["public"]["Enums"]["notification_channel"][]
+      }
       queue_document_drive_sync: {
         Args: { p_document_id: string; p_reason: string }
         Returns: string
@@ -4339,6 +4787,49 @@ export type Database = {
         Returns: string
       }
       queue_operations_sheet_snapshot: { Args: never; Returns: string }
+      record_backup_verification: {
+        Args: {
+          p_artifact_reference: string
+          p_checksum_sha256: string
+          p_completed_at: string
+          p_environment: string
+          p_notes: string
+          p_restore_tested_at: string
+          p_scope: string
+          p_started_at: string
+          p_status: Database["public"]["Enums"]["backup_verification_status"]
+        }
+        Returns: {
+          artifact_reference: string | null
+          checksum_sha256: string | null
+          completed_at: string | null
+          created_at: string
+          environment: string
+          id: string
+          notes: string
+          recorded_by: string
+          restore_tested_at: string | null
+          scope: string
+          started_at: string
+          status: Database["public"]["Enums"]["backup_verification_status"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "backup_verifications"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      record_tutorial_event: {
+        Args: {
+          p_details?: Json
+          p_event_type: string
+          p_stage: Database["public"]["Enums"]["tutorial_practice_stage"]
+          p_step: number
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       refresh_booking_task_states: {
         Args: { p_booking_id: string }
         Returns: undefined
@@ -4426,6 +4917,26 @@ export type Database = {
         }
         Returns: string
       }
+      reset_tutorial: {
+        Args: { p_reason: string }
+        Returns: {
+          completed_at: string | null
+          current_step: number
+          paused_at: string | null
+          practice_stage: Database["public"]["Enums"]["tutorial_practice_stage"]
+          reset_count: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["tutorial_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tutorial_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       retry_integration_delivery: {
         Args: { p_delivery_id: string; p_reason: string }
         Returns: undefined
@@ -4471,6 +4982,17 @@ export type Database = {
         }
         Returns: string
       }
+      save_my_gmail_oauth_credentials: {
+        Args: {
+          p_account_email: string
+          p_client_id: string
+          p_client_secret: string
+          p_reason: string
+          p_refresh_token: string
+          p_scopes: string[]
+        }
+        Returns: undefined
+      }
       set_yachtfolio_action_status: {
         Args: {
           p_action_id: string
@@ -4497,6 +5019,26 @@ export type Database = {
         }
       }
       start_ai_analysis: { Args: { p_run_id: string }; Returns: undefined }
+      start_tutorial: {
+        Args: never
+        Returns: {
+          completed_at: string | null
+          current_step: number
+          paused_at: string | null
+          practice_stage: Database["public"]["Enums"]["tutorial_practice_stage"]
+          reset_count: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["tutorial_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tutorial_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       sync_booking_anchored_task_dates: {
         Args: { p_booking_id: string; p_reason: string }
         Returns: number
@@ -4608,6 +5150,106 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "integration_connections"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_internal_user: {
+        Args: {
+          p_active: boolean
+          p_display_name: string
+          p_phone: string
+          p_reason: string
+          p_role: Database["public"]["Enums"]["user_role"]
+          p_telegram_chat_id: string
+          p_user_id: string
+        }
+        Returns: {
+          active: boolean
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          telegram_chat_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_launch_readiness_check: {
+        Args: {
+          p_check_key: string
+          p_evidence: string
+          p_reason: string
+          p_status: Database["public"]["Enums"]["launch_check_status"]
+        }
+        Returns: {
+          category: string
+          check_key: string
+          description: string
+          evidence: string | null
+          id: string
+          required: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["launch_check_status"]
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "launch_readiness_checks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_my_alert_preferences: {
+        Args: {
+          p_ai_summary_enabled: boolean
+          p_charter_enabled: boolean
+          p_email_enabled: boolean
+          p_follow_up_enabled: boolean
+          p_in_app_enabled: boolean
+          p_integration_failure_enabled: boolean
+          p_internal_email_enabled: boolean
+          p_new_enquiry_enabled: boolean
+          p_notification_email: string
+          p_payment_enabled: boolean
+          p_phone: string
+          p_reason: string
+          p_task_enabled: boolean
+          p_telegram_chat_id: string
+          p_telegram_enabled: boolean
+          p_unknown_email_enabled: boolean
+        }
+        Returns: {
+          ai_summary_enabled: boolean
+          charter_enabled: boolean
+          created_at: string
+          email_enabled: boolean
+          follow_up_enabled: boolean
+          in_app_enabled: boolean
+          integration_failure_enabled: boolean
+          internal_email_enabled: boolean
+          new_enquiry_enabled: boolean
+          notification_email: string | null
+          payment_enabled: boolean
+          task_enabled: boolean
+          telegram_enabled: boolean
+          unknown_email_enabled: boolean
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_notification_preferences"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -4793,6 +5435,7 @@ export type Database = {
         | "approved"
         | "rejected"
         | "superseded"
+      backup_verification_status: "started" | "passed" | "failed"
       booking_status: "confirmed" | "charter_active" | "completed" | "cancelled"
       calendar_event_kind: "charter" | "payment" | "task"
       calendar_event_status: "active" | "cancelled"
@@ -4870,6 +5513,7 @@ export type Database = {
         | "calendar_upsert"
         | "drive_upload"
         | "sheets_snapshot"
+        | "gmail_send_internal"
       integration_provider:
         | "telegram"
         | "gmail"
@@ -4882,7 +5526,12 @@ export type Database = {
         | "failed"
         | "cancelled"
       invoice_profile_status: "draft" | "approved" | "retired"
-      notification_channel: "in_app" | "telegram" | "email_draft"
+      launch_check_status: "pending" | "passed" | "waived"
+      notification_channel:
+        | "in_app"
+        | "telegram"
+        | "email_draft"
+        | "email_alert"
       notification_priority: "low" | "normal" | "high" | "urgent"
       notification_status:
         | "pending_approval"
@@ -4915,6 +5564,23 @@ export type Database = {
       task_source: "template" | "ad_hoc"
       task_status: "blocked" | "ready" | "completed" | "cancelled"
       task_template_status: "draft" | "approved" | "retired"
+      tutorial_practice_stage:
+        | "email_received"
+        | "classified"
+        | "enquiry_created"
+        | "offer_prepared"
+        | "contract_reviewed"
+        | "booking_confirmed"
+        | "compliance_completed"
+        | "operations_ready"
+        | "charter_active"
+        | "charter_completed"
+        | "follow_up_completed"
+      tutorial_status: "not_started" | "active" | "paused" | "completed"
+      user_oauth_connection_status:
+        | "connected"
+        | "needs_reauthentication"
+        | "disconnected"
       user_role: "administrator" | "staff"
       yacht_contact_responsibility:
         | "captain"
@@ -5060,6 +5726,7 @@ export const Constants = {
         "rejected",
         "superseded",
       ],
+      backup_verification_status: ["started", "passed", "failed"],
       booking_status: ["confirmed", "charter_active", "completed", "cancelled"],
       calendar_event_kind: ["charter", "payment", "task"],
       calendar_event_status: ["active", "cancelled"],
@@ -5145,6 +5812,7 @@ export const Constants = {
         "calendar_upsert",
         "drive_upload",
         "sheets_snapshot",
+        "gmail_send_internal",
       ],
       integration_provider: [
         "telegram",
@@ -5160,7 +5828,13 @@ export const Constants = {
         "cancelled",
       ],
       invoice_profile_status: ["draft", "approved", "retired"],
-      notification_channel: ["in_app", "telegram", "email_draft"],
+      launch_check_status: ["pending", "passed", "waived"],
+      notification_channel: [
+        "in_app",
+        "telegram",
+        "email_draft",
+        "email_alert",
+      ],
       notification_priority: ["low", "normal", "high", "urgent"],
       notification_status: [
         "pending_approval",
@@ -5196,6 +5870,25 @@ export const Constants = {
       task_source: ["template", "ad_hoc"],
       task_status: ["blocked", "ready", "completed", "cancelled"],
       task_template_status: ["draft", "approved", "retired"],
+      tutorial_practice_stage: [
+        "email_received",
+        "classified",
+        "enquiry_created",
+        "offer_prepared",
+        "contract_reviewed",
+        "booking_confirmed",
+        "compliance_completed",
+        "operations_ready",
+        "charter_active",
+        "charter_completed",
+        "follow_up_completed",
+      ],
+      tutorial_status: ["not_started", "active", "paused", "completed"],
+      user_oauth_connection_status: [
+        "connected",
+        "needs_reauthentication",
+        "disconnected",
+      ],
       user_role: ["administrator", "staff"],
       yacht_contact_responsibility: [
         "captain",

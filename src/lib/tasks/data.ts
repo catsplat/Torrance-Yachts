@@ -74,7 +74,10 @@ export async function getTaskDetail(id: string) {
         *,
         booking:bookings!tasks_booking_id_fkey(
           id, reference, charter_start_date, charter_end_date,
-          yacht:yachts!bookings_yacht_id_fkey(name)
+          yacht:yachts!bookings_yacht_id_fkey(id, name),
+          customer:contacts!bookings_customer_contact_id_fkey(full_name),
+          broker:contacts!bookings_broker_contact_id_fkey(id, full_name, email),
+          broker_company:companies!bookings_broker_company_id_fkey(name)
         ),
         assignee:profiles!tasks_assigned_user_id_fkey(display_name)
       `).eq("id", id).single(),

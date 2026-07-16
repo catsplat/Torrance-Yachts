@@ -31,8 +31,9 @@ export default async function IntegrationsPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Controlled adapters</p>
         <h1 className="mt-1 text-3xl font-semibold">Notifications and integrations</h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-          PostgreSQL creates idempotent delivery work. n8n performs provider calls and reports
-          results; it cannot change authoritative booking state.
+          PostgreSQL creates idempotent delivery work. n8n schedules the safe
+          application adapters and shared provider workers; neither can change
+          authoritative booking state.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
@@ -43,7 +44,7 @@ export default async function IntegrationsPage() {
 
       {user?.role === "administrator" ? <AutomationControls /> : null}
 
-      <Card>
+      <Card data-tutorial-anchor="integration-approvals">
         <CardHeader className="border-b"><CardTitle>Create controlled notification</CardTitle><CardDescription>Telegram and Gmail drafts are held for a separate approval. Gmail creates a draft only and never sends automatically.</CardDescription></CardHeader>
         <CardContent className="pt-5"><NotificationDraftForm contacts={workspace.contacts} users={workspace.users} /></CardContent>
       </Card>
@@ -51,7 +52,7 @@ export default async function IntegrationsPage() {
       <Card>
         <CardHeader className="border-b">
           <CardTitle className="flex items-center gap-2"><PlugZap className="size-5 text-primary" />Provider configuration</CardTitle>
-          <CardDescription>Credentials stay in n8n or secret storage. These records contain only operational metadata.</CardDescription>
+          <CardDescription>Personal Gmail credentials are encrypted in Vault; shared provider secrets stay server-side or in n8n. These records contain only operational metadata.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 pt-5 lg:grid-cols-2">
           {workspace.connections.map((connection) => (

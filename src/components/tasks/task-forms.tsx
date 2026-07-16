@@ -12,6 +12,7 @@ import {
   completeTaskAction,
   deleteTaskTemplateStepAction,
   generateBookingTasksAction,
+  prepareTaskCommunicationAction,
   reopenTaskAction,
   type TaskActionState,
   updateTaskScheduleAction,
@@ -84,6 +85,39 @@ export function TaskScheduleForm({
 export function TaskNoteForm({ taskId }: { taskId: string }) {
   const [state, action, pending] = useActionState(addTaskNoteAction.bind(null, taskId), initialState)
   return <form action={action} className="space-y-3"><textarea className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={10000} name="body" placeholder="Add a permanent operational note" required /><div className="flex items-center justify-between gap-3"><Feedback state={state} /><Button disabled={pending} type="submit" variant="outline">{pending ? "Adding…" : "Add note"}</Button></div></form>
+}
+
+export function TaskCommunicationForm({
+  stepCode,
+  taskId,
+}: {
+  stepCode: string
+  taskId: string
+}) {
+  const [state, action, pending] = useActionState(
+    prepareTaskCommunicationAction.bind(null, taskId),
+    initialState,
+  )
+  const destination = stepCode === "2.B"
+    ? "a reviewable Gmail draft for the primary captain"
+    : "a reviewable Telegram draft for you"
+  return (
+    <form action={action} className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Prepare {destination} from approved templates and authoritative booking
+        contacts. Nothing is sent by this action.
+      </p>
+      <Input
+        name="reason"
+        placeholder="Why this communication is being prepared"
+        required
+      />
+      <Feedback state={state} />
+      <Button disabled={pending} type="submit" variant="outline">
+        {pending ? "Preparing…" : "Prepare reviewable communication"}
+      </Button>
+    </form>
+  )
 }
 
 export function AdHocTaskForm({

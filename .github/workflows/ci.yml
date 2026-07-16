@@ -67,3 +67,47 @@ jobs:
       - name: Stop local Supabase stack
         if: always()
         run: supabase stop --no-backup
+
+  operations:
+    name: Deployment and recovery package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Validate automation workflow JSON
+        run: |
+          for workflow in automation/workflows/*.json; do
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))" "$workflow"
+          done
+
+      - name: Validate backup tooling
+        run: |
+          bash -n ops/backup/backup-production.sh
+          node --check ops/backup/export-storage.mjs
+
+      - name: Validate production Compose package
+        env:
+          ACME_EMAIL: operations@example.test
+          APP_DOMAIN: operations.example.test
+          N8N_DOMAIN: automation.example.test
+          DEPLOYMENT_VERSION: ci
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: synthetic-publishable-key
+          SUPABASE_SECRET_KEY: synthetic-secret-key
+          AUTOMATION_SHARED_SECRET: synthetic-automation-secret
+          EMAIL_INGESTION_TOKEN: synthetic-ingestion-token
+          MONITORING_SHARED_SECRET: synthetic-monitoring-secret
+          N8N_ENCRYPTION_KEY: synthetic-n8n-encryption-key
+        run: docker compose -f deploy/production/docker-compose.yml config --quiet
+
+      - name: Build production application image
+        run: |
+          docker build \
+            --build-arg DEPLOYMENT_VERSION=ci \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
+            --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=synthetic-publishable-key \
+            --tag torrance-yachts-platform:ci \
+            --file deploy/production/Dockerfile \
+            .

@@ -40,6 +40,29 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TORRANCE_APP_URL }}/api/integrations/automation/dispatch-alerts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.AUTOMATION_SHARED_SECRET }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "1c732865-c8d3-45d6-bb03-209e04aebc9d",
+      "name": "Deliver internal staff alerts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 0]
     }
   ],
   "connections": {
@@ -48,6 +71,17 @@
         [
           {
             "node": "Materialise operational work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Materialise operational work": {
+      "main": [
+        [
+          {
+            "node": "Deliver internal staff alerts",
             "type": "main",
             "index": 0
           }

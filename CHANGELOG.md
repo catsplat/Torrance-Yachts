@@ -4,6 +4,88 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-07-16
+
+### Added
+
+- Personal staff alert settings for email, phone, Telegram chat ID, delivery
+  channels, operational topics, and optional AI summaries.
+- Per-user Gmail OAuth credential storage encrypted in Supabase Vault with
+  redacted status, audit events, and secure disconnect/deletion.
+- Real personal notification centre, unread header badge, mark-read controls,
+  and authorised cross-module workspace search.
+- Persistent light/dark theme toggle.
+- Automatic bounded email AI analysis before notification materialisation so
+  staff alerts can include labelled summaries and suggested replies.
+- Application provider adapter for internal Telegram alerts, internal Gmail
+  alerts, and approval-controlled Gmail draft creation.
+- Task-page communication preparation for KYC, captain contact, captain booking
+  notification, and broker follow-up work.
+
+### Changed
+
+- Reorganised navigation and dashboard around the client's daily sequence:
+  Inbox, Enquiry, Offer, Booking, Operations, and Follow-up.
+- Replaced the dashboard's 1,000-row task count with exact count queries and a
+  bounded priority list.
+- Updated the supplied numbered task descriptions to describe the completed
+  document, invoice, notification, and payment capabilities.
+- Clarified that n8n schedules automation while PostgreSQL and the application
+  retain business logic and personal credential isolation.
+
+### Security
+
+- Restricted automatic sending to internal staff alerts.
+- External Gmail operations create drafts only after human approval.
+- Kept OAuth secrets out of browser-readable tables, API payloads, n8n workflow
+  definitions, logs, and source control.
+- Added RLS and database behaviour tests for personal preferences, notification
+  privacy, Vault lifecycle, credential ownership, and external draft approval.
+
+## [0.12.0] - 2026-07-16
+
+### Added
+
+- Evidence-based launch-readiness register with administrator review, required
+  acceptance gates, configuration presence reporting, and backup/restore records.
+- Settings-launched guided tutorial with real-interface spotlights, pause/resume,
+  permanent training history, and an isolated resettable synthetic
+  enquiry-to-follow-up practice workflow.
+- Administrator user management for invitations, roles, active access, phone and
+  Telegram details, plus secure password-recovery and password-update flows.
+- Public minimal liveness and bearer-protected readiness endpoints covering
+  database access, configuration, delivery failures, and recent restore evidence.
+- Reproducible production Compose package for standalone Next.js, pinned n8n
+  Community Edition, and Caddy HTTPS on a protected Linux VPS.
+- Reviewed n8n `2.30.6`; retained the verified `2.30.5` image because the new
+  container could not be fetched and validated, and the upstream patch contains
+  no declared security fix or breaking change.
+- Encrypted logical database/private-storage backup tooling, documented recovery,
+  and a successful disposable local restore drill with checksum evidence.
+- Deployment, incident response, retention/privacy, maintenance, acceptance,
+  staff quick-start, desktop-direction, architecture, audit, and portfolio records.
+
+### Security
+
+- Added a per-request nonce Content Security Policy, production HSTS, restrictive
+  browser permissions, cross-origin controls, bounded Server Actions, and
+  authenticated operational monitoring.
+- Added twelve-hour absolute and two-hour inactivity session limits.
+- Kept tutorial data separate from operational records and proved that practice
+  actions cannot create notifications or external deliveries.
+- Protected launch/backup evidence and user administration with RLS,
+  database-owned commands, last-administrator safeguards, and durable audit events.
+
+### Known limitations
+
+- `v0.12.0` is a technically verified release candidate, not evidence that the
+  production system is live.
+- Client-owned Supabase, domain/VPS, mailbox, Telegram/Google credentials,
+  off-site backup destination, policies, macOS acceptance, training, and final
+  launch sign-off remain required before live data is permitted.
+- The downloadable local desktop distribution is documented for later work and
+  is not part of this hosted release.
+
 ## [0.11.0] - 2026-07-16
 
 ### Added

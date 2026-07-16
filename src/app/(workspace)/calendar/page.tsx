@@ -21,7 +21,7 @@ export default async function CalendarPage() {
       .format(new Date(event.start_at))
   )
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
+    <div className="mx-auto max-w-6xl space-y-5" data-tutorial-anchor="calendar-register">
       <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Authoritative dates</p><h1 className="mt-1 text-3xl font-semibold">Operational calendar</h1><p className="mt-2 text-sm text-muted-foreground">Charters, instalments, and due tasks are generated from PostgreSQL. Google Calendar is an optional duplicate-protected view.</p></div>
       {[...months.entries()].map(([month, monthEvents]) => (
         <Card key={month}>

@@ -132,6 +132,29 @@
     }
 }
 
+@keyframes tutorial-spotlight-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 20%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 9px color-mix(in oklab, var(--primary) 8%, transparent);
+  }
+}
+
+.tutorial-spotlight-target {
+  position: relative;
+  z-index: 60;
+  border-radius: 0.75rem;
+  outline: 3px solid color-mix(in oklab, var(--primary) 65%, white);
+  animation: tutorial-spotlight-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-spotlight-target {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -1,6 +1,7 @@
 # ADR 0009: Dual hosted and local desktop distributions
 
-**Status:** Proposed for Phase 12 validation
+**Status:** Validated as a secondary future distribution; deferred from the first
+production launch
 
 ## Context
 
@@ -46,3 +47,16 @@ The packaged edition is investigated only after the hosted product's operational
 workflow and integrations are stable. PostgreSQL remains the source of truth in
 both distributions; neither deployment justifies replacing it with ad-hoc files
 or spreadsheets.
+
+## Phase 12 validation result
+
+The architecture remains technically feasible, but a production-quality local
+edition is not a single copied executable. It requires signed Windows and macOS
+installers, managed application/database/n8n services, encrypted local secrets,
+upgrade and rollback handling, local backup/restore, OAuth callbacks, and a clear
+warning that automation stops when the computer is off.
+
+The principal client computer is macOS, so delivering only a Windows `.exe` would
+not meet the brief. The hosted product is therefore the first launch target.
+Desktop packaging can reuse the same web UI and contracts later without changing
+the PostgreSQL source-of-truth or human-approval boundaries.

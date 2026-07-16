@@ -167,6 +167,47 @@ export async function generateEmailSuggestion(
   }
 }
 
+export async function generateNextPendingEmailSuggestion() {
+  const admin = createAdminClient()
+  const [messagesResult, runsResult, ownerResult] = await Promise.all([
+    admin
+      .from("email_messages")
+      .select("id")
+      .eq("classification", "unclassified")
+      .eq("processing_status", "review_required")
+      .order("received_at")
+      .limit(25),
+    admin
+      .from("ai_runs")
+      .select("source_id")
+      .eq("source_type", "email_message")
+      .eq("analysis_kind", "email_triage")
+      .in("status", ["queued", "processing", "completed"])
+      .limit(1000),
+    admin
+      .from("profiles")
+      .select("id")
+      .eq("active", true)
+      .order("role", { ascending: true })
+      .order("created_at")
+      .limit(1)
+      .maybeSingle(),
+  ])
+  if (messagesResult.error || runsResult.error || ownerResult.error) {
+    throw new Error("Pending AI email work could not be loaded.")
+  }
+  if (!ownerResult.data) return { processed: false as const }
+  const existingSourceIds = new Set(runsResult.data.map((run) => run.source_id))
+  const message = messagesResult.data.find((candidate) => !existingSourceIds.has(candidate.id))
+  if (!message) return { processed: false as const }
+  const result = await generateEmailSuggestion(
+    { supabase: admin, userId: ownerResult.data.id },
+    message.id,
+    "automatic-v1",
+  )
+  return { messageId: message.id, processed: true as const, ...result }
+}
+
 export async function generateContractSuggestion(
   context: RequestContext,
   values: {

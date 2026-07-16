@@ -1,3 +1,5 @@
+name: torrance-yachts-automation
+
 services:
   n8n:
     image: docker.n8n.io/n8nio/n8n:2.30.5
@@ -19,10 +21,15 @@ services:
       N8N_RUNNERS_TASK_TIMEOUT: "60"
       N8N_COMPRESSION_NODE_MAX_DECOMPRESSED_SIZE_BYTES: "268435456"
       N8N_COMPRESSION_NODE_MAX_ZIP_ENTRIES: "1000"
+      N8N_COMMUNITY_PACKAGES_ENABLED: "false"
       GENERIC_TIMEZONE: ${TZ:-Europe/London}
+      N8N_PUBLIC_API_DISABLED: "true"
+      N8N_PUBLIC_API_SWAGGERUI_DISABLED: "true"
+      N8N_TEMPLATES_ENABLED: "false"
       TZ: ${TZ:-Europe/London}
       TORRANCE_APP_URL: ${TORRANCE_APP_URL:-http://host.docker.internal:3000}
       AUTOMATION_SHARED_SECRET: ${AUTOMATION_SHARED_SECRET:?Set AUTOMATION_SHARED_SECRET}
+      MONITORING_SHARED_SECRET: ${MONITORING_SHARED_SECRET:?Set MONITORING_SHARED_SECRET}
     volumes:
       - n8n_data:/home/node/.n8n
       - ./workflows:/workflows:ro

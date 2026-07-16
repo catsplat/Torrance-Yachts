@@ -2,7 +2,11 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Versions through `0.11.0` are released, including central notifications, the operational calendar, deterministic invoice PDFs, a leased integration outbox, and pinned local n8n automation. Real provider credentials remain unconfigured until Phase 12. Do not enter real client data yet.
+> **Development status:** All twelve implementation phases and the `v0.13.0`
+> workflow-hardening release are complete in the release candidate. Production
+> activation remains blocked until client-owned infrastructure, credentials,
+> policies, staff acceptance, training, and launch sign-off are recorded. Do not
+> enter real client data yet.
 
 ## Current milestone
 
@@ -27,20 +31,37 @@ The current candidate provides the secured operational master-data, enquiry, off
 - explicit pending/completed/reopened Yachtfolio manual actions;
 - configurable versioned task templates and dependency graphs;
 - generated booking checklists, assignees, reviewed schedules, reminders, notes, and completion/reopening audit;
-- live enquiry, offer, booking, and upcoming-charter dashboard counts while unfinished modules remain visibly labelled synthetic;
+- workflow-focused daily dashboard and grouped navigation following Inbox,
+  Enquiry, Offer, Booking, Operations, and Follow-up;
+- functional authorised cross-module search, personal notification centre, unread
+  badge, and persistent dark mode;
 - local deterministic and optional OpenAI-assisted email triage, structured enquiry extraction, summaries, and draft replies;
 - selected contract-clause extraction with exact evidence, corrections, and a separate human application step;
 - a central AI review queue plus versioned KYC, captain-contact, and broker-follow-up templates;
+- per-user in-app, Telegram, and email alert routes, topic preferences, phone/chat
+  details, and optional labelled AI summaries;
+- encrypted per-user Gmail OAuth credentials in Supabase Vault;
+- automatic bounded email AI analysis before alert materialisation;
 - central notification review and delivery-failure controls;
+- task-page KYC, captain-contact, captain-notification, and broker-follow-up draft
+  preparation from approved templates and authoritative contacts;
 - an internal calendar generated from bookings, payments, and tasks;
 - idempotent Telegram, Gmail, Calendar, Drive, and Sheets delivery contracts;
 - private versioned invoice profiles and deterministic commission PDF generation;
 - pinned local n8n Community Edition with importable workflows and synthetic acceptance;
+- a Settings-launched guided tutorial and isolated, resettable synthetic
+  enquiry-to-follow-up practice workflow;
+- administrator invitations, access management, and secure password recovery;
+- launch acceptance, backup/restore evidence, health monitoring, incident,
+  maintenance, retention/privacy, deployment, and staff-training runbooks;
+- a standalone Next.js/n8n/Caddy Linux production package and a separately
+  documented future desktop distribution;
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
-- 58 unit tests, 471 database permission/behaviour tests, database linting, and matching CI gates.
+- 70 unit tests, 593 database permission/behaviour tests, database linting,
+  deployment-package validation, and matching CI gates.
 
-Confirmed bookings generate their workflow, private document checklist, reviewed contract data, payments, calendar records, reminders, and controlled delivery work. Phase 11 adds observable external adapters without granting them operational authority. Real credentials and production activation remain Phase 12. The application does not send consequential communications or update Yachtfolio automatically.
+Confirmed bookings generate their workflow, private document checklist, reviewed contract data, payments, calendar records, reminders, and controlled delivery work. External adapters remain observable and cannot change operational authority. The application does not send consequential communications or update Yachtfolio automatically. Production approval is evidence-driven in `/settings/launch`; code completion alone does not permit live data.
 
 ## Technology foundation
 
@@ -53,7 +74,17 @@ Confirmed bookings generate their workflow, private document checklist, reviewed
 - ESLint
 - npm
 
-n8n now runs locally through the pinned Docker setup. Gmail, Telegram, Drive, Calendar, and Sheets contracts are implemented but live accounts remain disconnected. The deterministic local AI provider requires no paid service; OpenAI is optional and server-only.
+n8n now runs locally through the pinned Docker setup. It schedules bounded
+application automation and the remaining shared providers. Personal Gmail
+credentials are entered by each staff member and encrypted in Vault; the company
+Telegram bot token remains server-only. Live accounts remain disconnected until
+acceptance. The deterministic local AI provider requires no paid service; OpenAI
+is optional and server-only.
+
+The recommended production topology is managed Supabase Pro plus a protected Linux
+VPS running the standalone application, n8n Community Edition, and Caddy. See
+[production deployment](docs/operations/PRODUCTION_DEPLOYMENT.md) and
+[launch acceptance](docs/operations/LAUNCH_ACCEPTANCE.md).
 
 ## Run locally
 
@@ -99,6 +130,8 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Email-ingestion architecture](docs/architecture/EMAIL_INGESTION_SLICE.md)
 - [AI-assistance architecture](docs/architecture/AI_ASSISTANCE_SLICE.md)
 - [Integrations, notifications, and calendar architecture](docs/architecture/INTEGRATIONS_NOTIFICATIONS_CALENDAR_SLICE.md)
+- [Launch-readiness and tutorial architecture](docs/architecture/LAUNCH_READINESS_TUTORIAL_SLICE.md)
+- [Personal alerts and workflow UX](docs/architecture/PERSONAL_ALERTS_AND_WORKFLOW_UX.md)
 - [Automation and n8n boundary](docs/architecture/AUTOMATION_AND_N8N.md)
 - [Phase 2 database schema](docs/database/PHASE_2_SCHEMA.md)
 - [Phase 3 contact-directory schema](docs/database/PHASE_3_CONTACT_DIRECTORY_SCHEMA.md)
@@ -110,6 +143,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 9 email schema](docs/database/PHASE_9_EMAIL_SCHEMA.md)
 - [Phase 10 AI schema](docs/database/PHASE_10_AI_SCHEMA.md)
 - [Phase 11 integrations schema](docs/database/PHASE_11_INTEGRATIONS_SCHEMA.md)
+- [Phase 12 launch schema](docs/database/PHASE_12_LAUNCH_SCHEMA.md)
 - [Architecture decisions](docs/decisions/0001-application-foundation.md)
 - [Supabase identity and RLS decision](docs/decisions/0002-supabase-identity-and-rls.md)
 - [Contact-directory modelling decision](docs/decisions/0003-contact-directory-model.md)
@@ -121,6 +155,8 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Idempotent email-ingestion decision](docs/decisions/0010-idempotent-email-ingestion.md)
 - [Provider-neutral human-reviewed AI decision](docs/decisions/0011-provider-neutral-human-reviewed-ai.md)
 - [Transactional integration outbox decision](docs/decisions/0012-transactional-integration-outbox.md)
+- [Production hosting topology decision](docs/decisions/0013-production-hosting-topology.md)
+- [Personal alerts and encrypted OAuth decision](docs/decisions/0014-personal-alerts-encrypted-oauth.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)
 - [Phase 2 development diary](docs/development/2026-07-15-auth-yacht-slice.md)
@@ -133,6 +169,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 9 development diary](docs/development/2026-07-16-email-ingestion-slice.md)
 - [Phase 10 development diary](docs/development/2026-07-16-ai-assistance-slice.md)
 - [Phase 11 development diary](docs/development/2026-07-16-integrations-automation-slice.md)
+- [Phase 12 development diary](docs/development/2026-07-16-launch-readiness-slice.md)
 - [Foundation verification record](docs/audit/2026-07-15-foundation-verification.md)
 - [Phase 2 verification record](docs/audit/2026-07-15-phase-2-verification.md)
 - [Phase 3 verification record](docs/audit/2026-07-15-phase-3-verification.md)
@@ -142,6 +179,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 9 verification record](docs/audit/2026-07-16-phase-9-verification.md)
 - [Phase 10 verification record](docs/audit/2026-07-16-phase-10-verification.md)
 - [Phase 11 verification record](docs/audit/2026-07-16-phase-11-verification.md)
+- [Phase 12 verification record](docs/audit/2026-07-16-phase-12-verification.md)
 - [Phase 11 adapter contract](docs/integrations/PHASE_11_ADAPTER_CONTRACT.md)
 - [Local n8n setup](automation/README.md)
 - [Client requirements traceability](docs/planning/CLIENT_REQUIREMENTS_TRACEABILITY.md)
@@ -152,6 +190,9 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 5 portfolio case study](docs/portfolio/COMMERCIAL_OFFERS_CASE_STUDY.md)
 - [Phase 10 portfolio case study](docs/portfolio/AI_ASSISTANCE_CASE_STUDY.md)
 - [Phase 11 portfolio case study](docs/portfolio/INTEGRATIONS_AUTOMATION_CASE_STUDY.md)
+- [Phase 12 portfolio case study](docs/portfolio/LAUNCH_READINESS_CASE_STUDY.md)
+- [Production operations runbooks](docs/operations/PRODUCTION_DEPLOYMENT.md)
+- [Staff quick-start guide](docs/client/STAFF_QUICK_START.md)
 - [Security policy](SECURITY.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [GitHub configuration record](docs/audit/GITHUB_CONFIGURATION.md)

@@ -1,9 +1,13 @@
 "use server"
 
+import { randomUUID } from "node:crypto"
+
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { z } from "zod"
 
+import { taskCommunicationSchema } from "@/lib/alerts/validation"
+import { renderCommunicationTemplate } from "@/lib/ai/template"
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 import {
   adHocTaskSchema,
@@ -145,6 +149,141 @@ export async function addTaskNoteAction(
   if (error) return { message: "The note could not be added." }
   revalidatePath(`/tasks/${validId.data}`)
   return { message: "Note added to the permanent task record.", success: true }
+}
+
+export async function prepareTaskCommunicationAction(
+  taskId: string,
+  _state: TaskActionState,
+  formData: FormData,
+): Promise<TaskActionState> {
+  const validId = idSchema.safeParse(taskId)
+  const parsed = taskCommunicationSchema.safeParse(Object.fromEntries(formData))
+  if (!validId.success || !parsed.success) {
+    return { message: "Enter a reason for preparing this communication." }
+  }
+  const context = await contextOrMessage()
+  if ("message" in context) return context
+  const { data: task, error: taskError } = await context.supabase
+    .from("tasks")
+    .select(`
+      id, step_code, title,
+      booking:bookings!tasks_booking_id_fkey(
+        id, reference, charter_start_date, charter_end_date,
+        yacht:yachts!bookings_yacht_id_fkey(id, name),
+        customer:contacts!bookings_customer_contact_id_fkey(full_name),
+        broker:contacts!bookings_broker_contact_id_fkey(id, full_name, email),
+        broker_company:companies!bookings_broker_company_id_fkey(name)
+      )
+    `)
+    .eq("id", validId.data)
+    .single()
+  if (taskError || !task?.step_code) {
+    return { message: "The task context could not be loaded." }
+  }
+
+  const internalStepKinds = {
+    "0.A": "kyc_request",
+    "2.A": "captain_contact",
+    "7": "broker_follow_up",
+  } as const
+  const internalKind = internalStepKinds[
+    task.step_code as keyof typeof internalStepKinds
+  ]
+  let body = ""
+  let title = task.title
+  let recipientUserId: string | null = context.userId
+  let recipientContactId: string | null = null
+  let channel: "email_draft" | "telegram" = "telegram"
+
+  if (internalKind) {
+    const { data: template, error: templateError } = await context.supabase
+      .from("communication_templates")
+      .select("subject_template, body_template")
+      .eq("kind", internalKind)
+      .eq("status", "approved")
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (templateError || !template) {
+      return { message: "Approve the matching communication template in Settings first." }
+    }
+    const values: Record<string, string> = {
+      broker_company_name: task.booking.broker_company?.name ?? "the broker company",
+      broker_name: task.booking.broker?.full_name ?? "Broker",
+      captain_email: "Not recorded",
+      captain_name: "Captain",
+      captain_phone: "Not recorded",
+      charter_end_date: task.booking.charter_end_date,
+      charter_start_date: task.booking.charter_start_date,
+      client_name: task.booking.customer?.full_name ?? "the charter client",
+      passport_country: "to be confirmed",
+      residency_country: "to be confirmed",
+      yacht_name: task.booking.yacht.name,
+      year: String(new Date().getFullYear()),
+    }
+    if (internalKind === "captain_contact") {
+      const { data: captain } = await context.supabase
+        .from("yacht_contacts")
+        .select("contact:contacts!yacht_contacts_contact_id_fkey(full_name,email,phone)")
+        .eq("yacht_id", task.booking.yacht.id)
+        .eq("responsibility", "captain")
+        .eq("is_primary", true)
+        .maybeSingle()
+      values.captain_name = captain?.contact.full_name ?? "Captain"
+      values.captain_email = captain?.contact.email ?? "Not recorded"
+      values.captain_phone = captain?.contact.phone ?? "Not recorded"
+    }
+    const subject = renderCommunicationTemplate(template.subject_template, values)
+    body = `${subject}\n\n${renderCommunicationTemplate(template.body_template, values)}`
+  } else if (task.step_code === "2.B") {
+    const { data: captain } = await context.supabase
+      .from("yacht_contacts")
+      .select("contact:contacts!yacht_contacts_contact_id_fkey(id,full_name,email)")
+      .eq("yacht_id", task.booking.yacht.id)
+      .eq("responsibility", "captain")
+      .eq("is_primary", true)
+      .maybeSingle()
+    if (!captain?.contact.email) {
+      return { message: "Record an email for the yacht's primary captain first." }
+    }
+    recipientUserId = null
+    recipientContactId = captain.contact.id
+    channel = "email_draft"
+    title = `${task.booking.yacht.name} charter booking notification`
+    body = [
+      `Dear ${captain.contact.full_name},`,
+      `A charter booking has been confirmed for ${task.booking.yacht.name}.`,
+      `Charter dates: ${task.booking.charter_start_date} to ${task.booking.charter_end_date}.`,
+      `Booking reference: ${task.booking.reference}.`,
+      "Please review the booking details with the operations team before taking action.",
+    ].join("\n\n")
+  } else {
+    return { message: "This task does not have a communication assistant." }
+  }
+
+  const { error } = await context.supabase.rpc("create_notification", {
+    p_action_url: `/tasks/${task.id}`,
+    p_body: body,
+    p_channel: channel,
+    p_idempotency_key: `task-draft:${task.id}:${randomUUID()}`,
+    p_notification_type: `task_${task.step_code.replace(".", "_").toLowerCase()}_draft`,
+    p_priority: "high",
+    p_recipient_contact_id: recipientContactId as unknown as string,
+    p_recipient_user_id: recipientUserId as unknown as string,
+    p_requires_approval: true,
+    p_source_id: task.id,
+    p_source_type: "task",
+    p_title: title,
+  })
+  if (error) return { message: "The reviewable communication could not be prepared." }
+  revalidatePath("/integrations")
+  revalidatePath(`/tasks/${task.id}`)
+  return {
+    message: channel === "telegram"
+      ? "Draft prepared for approval and Telegram delivery."
+      : "Captain email draft prepared for approval before Gmail creation.",
+    success: true,
+  }
 }
 
 export async function addAdHocTaskAction(

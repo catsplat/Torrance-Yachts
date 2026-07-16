@@ -2,7 +2,9 @@
 
 **Updated:** 16 July 2026
 
-The project has moved from planning into a working, secured internal application. Eleven of twelve planned delivery phases are released through version 0.11.0.
+The project has moved from planning into a working, secured internal application.
+All twelve planned implementation phases are complete, followed by the
+`v0.13.0` workflow-hardening release.
 
 ## Completed
 
@@ -65,15 +67,55 @@ Local n8n Community Edition is installed through Docker, and the complete
 application-to-n8n delivery contract has been tested with synthetic data. Real
 provider accounts remain disconnected until deployment acceptance.
 
-Current verification includes 58 application tests and 471 database
+Current verification includes 66 application tests and 549 database
 security/behaviour assertions.
 
-## Still to come
+## Phase 12 release candidate
 
-The final phase covers production hosting, real provider credentials, backups and
-restore testing, monitoring, security/privacy acceptance, optional desktop
-packaging validation, the guided synthetic tutorial, staff training, and launch.
+The final implementation phase adds the guided in-product tutorial and a
+completely isolated fake email-to-follow-up practice journey. It also adds staff
+invitation/password recovery, evidence-based launch acceptance, protected health
+monitoring, backup/export tooling, a proven local restore drill, and the complete
+deployment, incident, privacy, maintenance, staff, and acceptance documentation.
+
+The recommended hosted form is now defined: managed Supabase plus one protected
+Linux server running the application, local n8n Community Edition, and HTTPS.
+The requested downloadable local-app direction is preserved as a separate future
+distribution and is not allowed to delay the primary hosted release.
+
+## v0.13 workflow hardening
+
+The daily interface now follows the real operating order from Inbox through
+Enquiry, Offer, Booking, Operations, and Follow-up. The previously inactive
+notification bell and workspace search are complete, the dashboard prioritises
+work requiring attention, and each staff member can use a persistent dark theme.
+
+Every staff member can configure their own alert email, phone, Telegram chat ID,
+channels, topics, and optional AI-summary content. Personal Gmail OAuth
+credentials are encrypted in Supabase Vault and are not readable back through
+the Settings interface. Internal alerts can be delivered automatically; external
+emails remain approval-controlled Gmail drafts.
+
+Pending email AI analysis is now part of the bounded automation tick, allowing
+new-enquiry, follow-up, internal, and unknown-message alerts to contain clearly
+labelled summaries and suggested replies. The numbered task pages now prepare
+the required KYC, captain-contact, captain-notification, and broker follow-up
+communications from approved templates and authoritative records.
+
+## Client activation still required
+
+- approve and purchase the client-owned domain, Supabase production project, and
+  Linux server;
+- supply and approve the real Gmail, Telegram, Google, and automation credentials;
+- approve retention/privacy, incident, account-recovery, and off-site backup rules;
+- complete the full synthetic acceptance walkthrough on the employee's Mac;
+- complete staff training and record the final go-live decision.
 
 ## Current status
 
-The technical foundation and operational workflow from imported email through enquiry, offer, human-confirmed booking, generated tasks, protected documents, and reviewed payment schedules is working with synthetic data. The system is not yet approved for production or live data, and it does not yet connect to the real Gmail mailbox or send notifications. Development remains on the agreed dependency-safe path toward the complete enquiry-to-charter workflow.
+The full technical workflow from imported email through enquiry, offer,
+human-confirmed booking, generated tasks, protected documents, reviewed payments,
+notifications, calendar, charter completion, and follow-up is working with
+synthetic data. The software release candidate is complete, but it is not yet
+approved for live data because client-owned services and final acceptance are
+external launch gates rather than coding tasks.

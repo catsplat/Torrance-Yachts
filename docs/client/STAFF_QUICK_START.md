@@ -1,0 +1,43 @@
+# Staff quick start
+
+## Every morning
+
+1. Sign in with your individual account.
+2. Work across the dashboard sequence: Inbox, Enquiry, Offer, Booking,
+   Operations, Follow-up.
+3. Open the bell for your personal alerts and resolve unread items.
+4. Open Inbox and resolve messages waiting for review.
+
+## New enquiry
+
+1. Review the email classification and AI evidence.
+2. Correct any extracted customer, yacht, date, guest, port, or budget fact.
+3. Create/associate the enquiry.
+4. Prepare the yacht-specific offer.
+5. Approve the exact wording and terms before recording it sent.
+
+## Booking
+
+1. Verify the agreement is signed by all parties.
+2. Review contract fields and compliance documents.
+3. Confirm the booking; check the buffered availability reservation.
+4. Complete the generated numbered tasks in order.
+5. Use the communication action on tasks 0.A, 2.A, 2.B, and 7 rather than
+   reconstructing wording manually.
+6. Record Yachtfolio work only after it is actually completed.
+7. Review payments, calendar records, captain/broker actions, and notifications.
+
+## Charter and follow-up
+
+Record charter start and completion deliberately. Complete the broker follow-up
+and commission-document work after charter end.
+
+## Important rules
+
+- AI suggests; staff decide.
+- Gmail drafts are not automatically sent.
+- Configure personal channels in Settings -> My alerts and connections.
+- Google/Telegram/n8n failures do not change the booking record.
+- Never create public links for contracts, passports, KYC/CDD, or invoices.
+- Report suspected mistakes or access issues immediately; do not delete evidence.
+- Use Settings → Guided tutorial to practise safely at any time.
