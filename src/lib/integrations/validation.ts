@@ -27,7 +27,7 @@ export const notificationReviewSchema = z.object({
 export const notificationDraftSchema = z.object({
   actionUrl: z.union([z.literal(""), z.string().trim().regex(/^\/[A-Za-z0-9/_?=&.-]+$/).max(1001)]),
   body: boundedText(30000),
-  channel: z.enum(["in_app", "telegram", "email_draft"]),
+  channel: z.enum(["in_app", "telegram", "email_alert", "email_draft"]),
   notificationType: z.string().trim().regex(/^[a-z][a-z0-9_]{1,79}$/),
   priority: z.enum(["low", "normal", "high", "urgent"]),
   recipient: z.string().regex(/^(user|contact):[0-9a-f-]{36}$/),

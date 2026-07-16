@@ -10,11 +10,14 @@ export default async function DashboardPage() {
   if (!currentUser) redirect("/login");
 
   const supabase = await createClient();
-  const [enquiriesResult, offersResult, bookingsResult, tasksResult, requirementsResult, paymentsResult, emailsResult, aiResult, notificationsResult, deliveriesResult] = await Promise.all([
+  const today = new Date().toISOString().slice(0, 10);
+  const [enquiriesResult, offersResult, bookingsResult, tasksResult, taskCountResult, overdueTaskCountResult, requirementsResult, paymentsResult, emailsResult, aiResult, notificationsResult, deliveriesResult] = await Promise.all([
     supabase.from("enquiries").select("status").in("status", phaseFourOpenStatuses),
     supabase.from("offers").select("status").in("status", ["draft", "approved"]),
     supabase.from("bookings").select("id,reference,status,charter_start_date,charter_end_date,yacht:yachts!bookings_yacht_id_fkey(name),yachtfolio:yachtfolio_booking_actions!yachtfolio_booking_actions_booking_id_fkey(status)").in("status", ["confirmed", "charter_active"]).order("charter_start_date").limit(5),
-    supabase.from("tasks").select("id,title,status,priority,due_date,booking:bookings!tasks_booking_id_fkey(reference,yacht:yachts!bookings_yacht_id_fkey(name))").in("status", ["ready", "blocked"]).order("due_date", { ascending: true, nullsFirst: false }).limit(1000),
+    supabase.from("tasks").select("id,title,status,priority,due_date,booking:bookings!tasks_booking_id_fkey(reference,yacht:yachts!bookings_yacht_id_fkey(name))").in("status", ["ready", "blocked"]).order("due_date", { ascending: true, nullsFirst: false }).limit(50),
+    supabase.from("tasks").select("id", { count: "exact", head: true }).in("status", ["ready", "blocked"]),
+    supabase.from("tasks").select("id", { count: "exact", head: true }).eq("status", "ready").lt("due_date", today),
     supabase.from("booking_document_requirements").select("status,required").in("status", ["missing", "uploaded"]),
     supabase.from("payment_schedules").select("status,due_date").eq("status", "scheduled"),
     supabase.from("email_messages").select("processing_status,classification")
@@ -25,7 +28,7 @@ export default async function DashboardPage() {
   ]);
   const { data: openEnquiries, error } = enquiriesResult;
 
-  if (error || offersResult.error || bookingsResult.error || tasksResult.error || requirementsResult.error || paymentsResult.error || emailsResult.error || aiResult.error || notificationsResult.error || deliveriesResult.error) throw new Error("Unable to load the live dashboard summary.");
+  if (error || offersResult.error || bookingsResult.error || tasksResult.error || taskCountResult.error || overdueTaskCountResult.error || requirementsResult.error || paymentsResult.error || emailsResult.error || aiResult.error || notificationsResult.error || deliveriesResult.error) throw new Error("Unable to load the live dashboard summary.");
 
   const countStatus = (status: (typeof phaseFourOpenStatuses)[number]) =>
     openEnquiries.filter((enquiry) => enquiry.status === status).length;
@@ -88,8 +91,8 @@ export default async function DashboardPage() {
         })),
       }}
       taskSummary={{
-        openCount: tasksResult.data.length,
-        overdueCount: tasksResult.data.filter((task) => taskDueState(task.due_date, task.status) === "overdue").length,
+        openCount: taskCountResult.count ?? 0,
+        overdueCount: overdueTaskCountResult.count ?? 0,
         priorities: [...tasksResult.data]
           .sort((a, b) => {
             const priority = { urgent: 0, high: 1, normal: 2, low: 3 };

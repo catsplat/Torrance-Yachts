@@ -4,6 +4,44 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-07-16
+
+### Added
+
+- Personal staff alert settings for email, phone, Telegram chat ID, delivery
+  channels, operational topics, and optional AI summaries.
+- Per-user Gmail OAuth credential storage encrypted in Supabase Vault with
+  redacted status, audit events, and secure disconnect/deletion.
+- Real personal notification centre, unread header badge, mark-read controls,
+  and authorised cross-module workspace search.
+- Persistent light/dark theme toggle.
+- Automatic bounded email AI analysis before notification materialisation so
+  staff alerts can include labelled summaries and suggested replies.
+- Application provider adapter for internal Telegram alerts, internal Gmail
+  alerts, and approval-controlled Gmail draft creation.
+- Task-page communication preparation for KYC, captain contact, captain booking
+  notification, and broker follow-up work.
+
+### Changed
+
+- Reorganised navigation and dashboard around the client's daily sequence:
+  Inbox, Enquiry, Offer, Booking, Operations, and Follow-up.
+- Replaced the dashboard's 1,000-row task count with exact count queries and a
+  bounded priority list.
+- Updated the supplied numbered task descriptions to describe the completed
+  document, invoice, notification, and payment capabilities.
+- Clarified that n8n schedules automation while PostgreSQL and the application
+  retain business logic and personal credential isolation.
+
+### Security
+
+- Restricted automatic sending to internal staff alerts.
+- External Gmail operations create drafts only after human approval.
+- Kept OAuth secrets out of browser-readable tables, API payloads, n8n workflow
+  definitions, logs, and source control.
+- Added RLS and database behaviour tests for personal preferences, notification
+  privacy, Vault lifecycle, credential ownership, and external draft approval.
+
 ## [0.12.0] - 2026-07-16
 
 ### Added

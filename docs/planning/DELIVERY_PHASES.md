@@ -19,6 +19,11 @@ The first complete production release is divided into twelve dependency-aware ve
 | 11 | Central notifications plus Telegram, calendar, Google Drive/Sheets, n8n, invoice PDF generation, and controlled external-system adapters | Released as `v0.11.0` |
 | 12 | Production hosting, backups and restore test, monitoring, security/privacy review, guided tutorial and isolated synthetic practice workflow, staff acceptance, migration, training, and launch | Implemented as `v0.12.0` release candidate; external activation and client sign-off pending |
 
+Post-programme release hardening is tracked as `v0.13.0`: personal staff alert
+routes, encrypted Gmail OAuth credentials, automatic advisory email analysis,
+functional notification/search controls, persistent dark mode, workflow-focused
+navigation/dashboard, and task-specific communication preparation.
+
 ## Interpretation
 
 - Phase count is a delivery map, not a claim that every phase has equal effort.

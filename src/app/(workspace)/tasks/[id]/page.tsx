@@ -1,31 +1,335 @@
-import { ArrowLeft, CalendarClock, CheckCircle2, CircleDot, History, Link2, MessageSquareText, UserRound } from "lucide-react"
+import {
+  ArrowLeft,
+  CalendarClock,
+  CheckCircle2,
+  CircleDot,
+  History,
+  Link2,
+  MessageSquareText,
+  UserRound,
+} from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
-import { TaskNoteForm, TaskScheduleForm, TaskStateForm } from "@/components/tasks/task-forms"
+import {
+  TaskCommunicationForm,
+  TaskNoteForm,
+  TaskScheduleForm,
+  TaskStateForm,
+} from "@/components/tasks/task-forms"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { getActiveTaskAssignees, getTaskDetail } from "@/lib/tasks/data"
-import { formatTaskDate, taskDueAnchorLabels, taskPriorityLabels, taskStatusLabels } from "@/lib/tasks/options"
+import {
+  formatTaskDate,
+  taskDueAnchorLabels,
+  taskPriorityLabels,
+  taskStatusLabels,
+} from "@/lib/tasks/options"
 
-type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string }> }
-function formatDateTime(value: string) { return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(value)) }
+type Props = {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ created?: string }>
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Europe/London",
+  }).format(new Date(value))
+}
 
 export default async function TaskDetailPage({ params, searchParams }: Props) {
   const { id } = await params
   const notice = await searchParams
-  const [record, assignees] = await Promise.all([getTaskDetail(id), getActiveTaskAssignees()])
+  const [record, assignees] = await Promise.all([
+    getTaskDetail(id),
+    getActiveTaskAssignees(),
+  ])
   if (!record.task) notFound()
   const { task, dependencies, dependents, history, notes } = record
-  return <div className="mx-auto max-w-7xl space-y-5"><Link className="inline-flex items-center gap-2 text-sm text-muted-foreground" href="/tasks"><ArrowLeft className="size-4" />Back to tasks</Link>{notice.created ? <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"><CheckCircle2 className="size-4" />Ad-hoc task created and audited.</div> : null}
-    <Card><CardHeader className="border-b"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="font-mono text-xs font-semibold text-primary">{task.reference}{task.step_code ? ` · ${task.step_code}` : ""}</p><h1 className="mt-1 text-2xl font-semibold">{task.title}</h1><div className="mt-3 flex flex-wrap gap-2"><Badge>{taskStatusLabels[task.status]}</Badge><Badge variant="outline">{taskPriorityLabels[task.priority]}</Badge><Badge variant="secondary">{task.source === "template" ? "Template task" : "Ad-hoc task"}</Badge>{!task.required ? <Badge variant="secondary">Optional</Badge> : null}</div></div><div className="text-right"><p className="font-medium">{formatTaskDate(task.due_date)}</p><p className="mt-1 text-xs text-muted-foreground">{task.assignee?.display_name ?? "Unassigned"}</p></div></div></CardHeader><CardContent className="grid gap-5 pt-5 sm:grid-cols-2 xl:grid-cols-4"><Fact icon={Link2} label="Booking" value={`${task.booking.reference} · ${task.booking.yacht.name}`} /><Fact icon={CalendarClock} label="Date source" value={`${taskDueAnchorLabels[task.due_anchor]}${task.due_offset_days ? ` ${task.due_offset_days > 0 ? "+" : ""}${task.due_offset_days} days` : ""}`} /><Fact icon={UserRound} label="Assignee" value={task.assignee?.display_name ?? "Unassigned"} /><Fact icon={History} label="History records" value={String(history.length)} /></CardContent></Card>
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,.65fr)]"><div className="space-y-5"><Card><CardHeader className="border-b"><CardTitle>Operational context</CardTitle><CardDescription>{task.description ?? "No additional description recorded."}</CardDescription></CardHeader><CardContent className="grid gap-4 pt-5 sm:grid-cols-2"><div><p className="text-xs text-muted-foreground">Charter</p><p className="mt-1 text-sm font-medium">{formatTaskDate(task.booking.charter_start_date)} – {formatTaskDate(task.booking.charter_end_date)}</p></div><div><p className="text-xs text-muted-foreground">Current blocker</p><p className="mt-1 text-sm font-medium">{task.blocked_reason ?? "None"}</p></div>{task.external_action !== "none" ? <div className="sm:col-span-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">This task requires the linked Yachtfolio action to be explicitly completed first.</div> : null}</CardContent></Card>
-      <Card><CardHeader className="border-b"><CardTitle>Dependencies</CardTitle><CardDescription>Prerequisites and downstream work are calculated from the generated dependency graph.</CardDescription></CardHeader><CardContent className="grid gap-4 pt-5 sm:grid-cols-2"><TaskLinks title="Requires" tasks={dependencies} /><TaskLinks title="Unlocks" tasks={dependents} /></CardContent></Card>
-      {task.status === "ready" || task.status === "blocked" ? <Card><CardHeader className="border-b"><CardTitle>Schedule and assignment</CardTitle><CardDescription>Every date, assignee, or priority change requires a permanent reason.</CardDescription></CardHeader><CardContent className="pt-5"><TaskScheduleForm assignedUserId={task.assigned_user_id} assignees={assignees} dueDate={task.due_date} priority={task.priority} taskId={task.id} /></CardContent></Card> : null}
-      <Card><CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><MessageSquareText className="size-4 text-primary" />Notes</CardTitle><CardDescription>Notes are append-only and attributed to an internal user.</CardDescription></CardHeader><CardContent className="space-y-4 pt-5"><TaskNoteForm taskId={task.id} />{notes.length ? <div className="divide-y rounded-xl border">{notes.map((note) => <div className="p-4" key={note.id}><p className="whitespace-pre-wrap text-sm">{note.body}</p><p className="mt-2 text-xs text-muted-foreground">{note.author?.display_name ?? "System"} · {formatDateTime(note.created_at)}</p></div>)}</div> : <p className="text-sm text-muted-foreground">No notes yet.</p>}</CardContent></Card>
-      <Card><CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><History className="size-4 text-primary" />Audit history</CardTitle></CardHeader><CardContent className="pt-5">{history.map((entry, index) => <div className="grid grid-cols-[1.5rem_1fr] gap-3" key={entry.id}><div className="flex flex-col items-center"><CircleDot className="size-4 text-primary" />{index < history.length - 1 ? <div className="my-1 h-full min-h-14 w-px bg-border" /> : null}</div><div className="pb-5"><div className="flex justify-between gap-3"><p className="font-medium capitalize">{entry.action.replace("_", " ")}</p><span className="text-xs text-muted-foreground">{formatDateTime(entry.created_at)}</span></div><p className="mt-1 text-sm text-muted-foreground">{entry.reason}</p><p className="mt-1 text-xs text-muted-foreground">{entry.actor?.display_name ?? "System"}</p></div></div>)}</CardContent></Card></div>
-      <div className="space-y-4"><Card><CardHeader className="border-b"><CardTitle>Task action</CardTitle><CardDescription>Consequential changes require human evidence.</CardDescription></CardHeader><CardContent className="space-y-3 pt-5">{task.status === "ready" ? <TaskStateForm mode="complete" taskId={task.id} /> : null}{task.status === "completed" && task.step_code !== "0.0" ? <TaskStateForm mode="reopen" taskId={task.id} /> : null}{task.source === "ad_hoc" && ["ready", "blocked"].includes(task.status) ? <TaskStateForm mode="cancel" taskId={task.id} /> : null}{task.status === "blocked" ? <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">Resolve its prerequisite tasks or required schedule data before completion.</p> : null}{task.status === "cancelled" ? <p className="text-sm text-muted-foreground">This ad-hoc task is permanently cancelled.</p> : null}</CardContent></Card><Link className="block rounded-xl border p-4 text-sm hover:bg-muted/40" href={`/bookings/${task.booking.id}/tasks`}>Open full booking checklist →</Link></div></div>
-  </div>
+  const communicationStep = task.step_code &&
+    ["0.A", "2.A", "2.B", "7"].includes(task.step_code)
+  return (
+    <div className="mx-auto max-w-7xl space-y-5">
+      <Link className="inline-flex items-center gap-2 text-sm text-muted-foreground" href="/tasks">
+        <ArrowLeft className="size-4" />
+        Back to operations
+      </Link>
+      {notice.created ? (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100">
+          <CheckCircle2 className="size-4" />
+          Ad-hoc task created and audited.
+        </div>
+      ) : null}
+      <Card>
+        <CardHeader className="border-b">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="font-mono text-xs font-semibold text-primary">
+                {task.reference}{task.step_code ? ` · ${task.step_code}` : ""}
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold">{task.title}</h1>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Badge>{taskStatusLabels[task.status]}</Badge>
+                <Badge variant="outline">{taskPriorityLabels[task.priority]}</Badge>
+                <Badge variant="secondary">
+                  {task.source === "template" ? "Template task" : "Ad-hoc task"}
+                </Badge>
+                {!task.required ? <Badge variant="secondary">Optional</Badge> : null}
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="font-medium">{formatTaskDate(task.due_date)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {task.assignee?.display_name ?? "Unassigned"}
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-5 pt-5 sm:grid-cols-2 xl:grid-cols-4">
+          <Fact icon={Link2} label="Booking" value={`${task.booking.reference} · ${task.booking.yacht.name}`} />
+          <Fact
+            icon={CalendarClock}
+            label="Date source"
+            value={`${taskDueAnchorLabels[task.due_anchor]}${task.due_offset_days ? ` ${task.due_offset_days > 0 ? "+" : ""}${task.due_offset_days} days` : ""}`}
+          />
+          <Fact icon={UserRound} label="Assignee" value={task.assignee?.display_name ?? "Unassigned"} />
+          <Fact icon={History} label="History records" value={String(history.length)} />
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,.65fr)]">
+        <div className="space-y-5">
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle>Operational context</CardTitle>
+              <CardDescription>{task.description ?? "No additional description recorded."}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 pt-5 sm:grid-cols-2">
+              <div>
+                <p className="text-xs text-muted-foreground">Charter</p>
+                <p className="mt-1 text-sm font-medium">
+                  {formatTaskDate(task.booking.charter_start_date)} – {formatTaskDate(task.booking.charter_end_date)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Current blocker</p>
+                <p className="mt-1 text-sm font-medium">{task.blocked_reason ?? "None"}</p>
+              </div>
+              {task.external_action !== "none" ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 sm:col-span-2 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+                  This task requires the linked Yachtfolio action to be explicitly completed first.
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle>Dependencies</CardTitle>
+              <CardDescription>
+                Prerequisites and downstream work are calculated from the generated
+                dependency graph.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 pt-5 sm:grid-cols-2">
+              <TaskLinks title="Requires" tasks={dependencies} />
+              <TaskLinks title="Unlocks" tasks={dependents} />
+            </CardContent>
+          </Card>
+          {task.status === "ready" || task.status === "blocked" ? (
+            <Card>
+              <CardHeader className="border-b">
+                <CardTitle>Schedule and assignment</CardTitle>
+                <CardDescription>
+                  Every date, assignee, or priority change requires a permanent reason.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-5">
+                <TaskScheduleForm
+                  assignedUserId={task.assigned_user_id}
+                  assignees={assignees}
+                  dueDate={task.due_date}
+                  priority={task.priority}
+                  taskId={task.id}
+                />
+              </CardContent>
+            </Card>
+          ) : null}
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquareText className="size-4 text-primary" />
+                Notes
+              </CardTitle>
+              <CardDescription>Notes are append-only and attributed to an internal user.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-5">
+              <TaskNoteForm taskId={task.id} />
+              {notes.length ? (
+                <div className="divide-y rounded-xl border">
+                  {notes.map((note) => (
+                    <div className="p-4" key={note.id}>
+                      <p className="whitespace-pre-wrap text-sm">{note.body}</p>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {note.author?.display_name ?? "System"} · {formatDateTime(note.created_at)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No notes yet.</p>
+              )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2">
+                <History className="size-4 text-primary" />
+                Audit history
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-5">
+              {history.map((entry, index) => (
+                <div className="grid grid-cols-[1.5rem_1fr] gap-3" key={entry.id}>
+                  <div className="flex flex-col items-center">
+                    <CircleDot className="size-4 text-primary" />
+                    {index < history.length - 1 ? <div className="my-1 h-full min-h-14 w-px bg-border" /> : null}
+                  </div>
+                  <div className="pb-5">
+                    <div className="flex justify-between gap-3">
+                      <p className="font-medium capitalize">{entry.action.replace("_", " ")}</p>
+                      <span className="text-xs text-muted-foreground">{formatDateTime(entry.created_at)}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{entry.reason}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{entry.actor?.display_name ?? "System"}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-4">
+          {communicationStep ? (
+            <Card>
+              <CardHeader className="border-b">
+                <CardTitle>Workflow communication</CardTitle>
+                <CardDescription>
+                  Prepare task-specific wording while preserving human approval.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-5">
+                <TaskCommunicationForm stepCode={task.step_code!} taskId={task.id} />
+              </CardContent>
+            </Card>
+          ) : null}
+          {task.step_code === "1.C" ? (
+            <Link
+              className="block rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm hover:bg-primary/10"
+              href={`/bookings/${task.booking.id}/documents`}
+            >
+              Open documents and payments to generate the deterministic commission
+              invoice →
+            </Link>
+          ) : null}
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle>Task action</CardTitle>
+              <CardDescription>Consequential changes require human evidence.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-5">
+              {task.status === "ready" ? <TaskStateForm mode="complete" taskId={task.id} /> : null}
+              {task.status === "completed" && task.step_code !== "0.0" ? (
+                <TaskStateForm mode="reopen" taskId={task.id} />
+              ) : null}
+              {task.source === "ad_hoc" && ["ready", "blocked"].includes(task.status) ? (
+                <TaskStateForm mode="cancel" taskId={task.id} />
+              ) : null}
+              {task.status === "blocked" ? (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+                  Resolve prerequisite tasks or required schedule data before completion.
+                </p>
+              ) : null}
+              {task.status === "cancelled" ? (
+                <p className="text-sm text-muted-foreground">This ad-hoc task is permanently cancelled.</p>
+              ) : null}
+            </CardContent>
+          </Card>
+          <Link
+            className="block rounded-xl border p-4 text-sm hover:bg-muted/40"
+            href={`/bookings/${task.booking.id}/tasks`}
+          >
+            Open full booking checklist →
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
 }
-function Fact({ icon: Icon, label, value }: { icon: typeof Link2; label: string; value: string }) { return <div className="flex gap-3"><Icon className="mt-0.5 size-4 text-primary" /><div><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 font-medium">{value}</p></div></div> }
-function TaskLinks({ title, tasks }: { title: string; tasks: { id: string; reference: string; step_code: string | null; title: string; status: string }[] }) { return <div><p className="text-xs font-medium text-muted-foreground">{title}</p>{tasks.length ? <div className="mt-2 space-y-2">{tasks.map((task) => <Link className="block rounded-lg border p-3 text-sm hover:bg-muted/40" href={`/tasks/${task.id}`} key={task.id}><span className="font-medium">{task.step_code ? `${task.step_code} · ` : ""}{task.title}</span><span className="ml-2 text-xs text-muted-foreground">{task.status}</span></Link>)}</div> : <p className="mt-2 text-sm text-muted-foreground">None</p>}</div> }
+
+function Fact({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Link2
+  label: string
+  value: string
+}) {
+  return (
+    <div className="flex gap-3">
+      <Icon className="mt-0.5 size-4 text-primary" />
+      <div>
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="mt-1 font-medium">{value}</p>
+      </div>
+    </div>
+  )
+}
+
+function TaskLinks({
+  title,
+  tasks,
+}: {
+  title: string
+  tasks: {
+    id: string
+    reference: string
+    status: string
+    step_code: string | null
+    title: string
+  }[]
+}) {
+  return (
+    <div>
+      <p className="text-xs font-medium text-muted-foreground">{title}</p>
+      {tasks.length ? (
+        <div className="mt-2 space-y-2">
+          {tasks.map((task) => (
+            <Link
+              className="block rounded-lg border p-3 text-sm hover:bg-muted/40"
+              href={`/tasks/${task.id}`}
+              key={task.id}
+            >
+              <span className="font-medium">
+                {task.step_code ? `${task.step_code} · ` : ""}
+                {task.title}
+              </span>
+              <span className="ml-2 text-xs text-muted-foreground">{task.status}</span>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-sm text-muted-foreground">None</p>
+      )}
+    </div>
+  )
+}

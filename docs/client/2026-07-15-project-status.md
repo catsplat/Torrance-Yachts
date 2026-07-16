@@ -2,7 +2,9 @@
 
 **Updated:** 16 July 2026
 
-The project has moved from planning into a working, secured internal application. All twelve planned implementation phases are complete through the `v0.12.0` release candidate.
+The project has moved from planning into a working, secured internal application.
+All twelve planned implementation phases are complete, followed by the
+`v0.13.0` workflow-hardening release.
 
 ## Completed
 
@@ -80,6 +82,25 @@ The recommended hosted form is now defined: managed Supabase plus one protected
 Linux server running the application, local n8n Community Edition, and HTTPS.
 The requested downloadable local-app direction is preserved as a separate future
 distribution and is not allowed to delay the primary hosted release.
+
+## v0.13 workflow hardening
+
+The daily interface now follows the real operating order from Inbox through
+Enquiry, Offer, Booking, Operations, and Follow-up. The previously inactive
+notification bell and workspace search are complete, the dashboard prioritises
+work requiring attention, and each staff member can use a persistent dark theme.
+
+Every staff member can configure their own alert email, phone, Telegram chat ID,
+channels, topics, and optional AI-summary content. Personal Gmail OAuth
+credentials are encrypted in Supabase Vault and are not readable back through
+the Settings interface. Internal alerts can be delivered automatically; external
+emails remain approval-controlled Gmail drafts.
+
+Pending email AI analysis is now part of the bounded automation tick, allowing
+new-enquiry, follow-up, internal, and unknown-message alerts to contain clearly
+labelled summaries and suggested replies. The numbered task pages now prepare
+the required KYC, captain-contact, captain-notification, and broker follow-up
+communications from approved templates and authoritative records.
 
 ## Client activation still required
 

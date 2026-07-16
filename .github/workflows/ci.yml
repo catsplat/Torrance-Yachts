@@ -71,7 +71,7 @@ jobs:
   operations:
     name: Deployment and recovery package
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -101,3 +101,13 @@ jobs:
           MONITORING_SHARED_SECRET: synthetic-monitoring-secret
           N8N_ENCRYPTION_KEY: synthetic-n8n-encryption-key
         run: docker compose -f deploy/production/docker-compose.yml config --quiet
+
+      - name: Build production application image
+        run: |
+          docker build \
+            --build-arg DEPLOYMENT_VERSION=ci \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
+            --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=synthetic-publishable-key \
+            --tag torrance-yachts-platform:ci \
+            --file deploy/production/Dockerfile \
+            .

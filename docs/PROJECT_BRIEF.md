@@ -2,7 +2,7 @@
 
 ## Project brief and source of truth
 
-**Status:** All twelve implementation phases complete through the `v0.12.0` release candidate; production activation pending client acceptance
+**Status:** All twelve implementation phases plus `v0.13.0` workflow hardening complete; production activation pending client acceptance
 
 **Owner/developer:** Thom, working with Codex
 

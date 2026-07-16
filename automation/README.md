@@ -42,23 +42,31 @@ remain available for the approved adapters.
 
 ## Provider adapters
 
-The application exposes one claim/result contract for all providers. Production
-workflows claim deliveries, switch on `operation`, call the relevant n8n node, and
-POST either the completion or failure result.
+The scheduler first asks the application to materialise work, then asks the
+application to deliver staff Telegram alerts, staff email alerts, and approved
+Gmail drafts. This narrow adapter can safely use each staff member's encrypted
+OAuth connection without exposing credentials to n8n.
+
+The remaining shared operational providers continue to use the generic
+claim/result contract. Production workflows claim deliveries, switch on
+`operation`, call the relevant n8n node, and POST either the completion or failure
+result.
 
 | Operation            | n8n adapter                                                                                            |
 | -------------------- | ------------------------------------------------------------------------------------------------------ |
-| `telegram_send`      | Telegram `Send Message`; append the application action URL                                             |
+| `telegram_send`      | Application adapter using the server-side company bot token and the staff member's chat ID              |
+| `gmail_send_internal`| Application adapter using the staff member's encrypted Gmail OAuth credentials                          |
 | `gmail_mark_read`    | Gmail message: remove `UNREAD`                                                                         |
 | `gmail_archive`      | Gmail message: remove `INBOX`                                                                          |
-| `gmail_create_draft` | Gmail draft creation only; never send automatically                                                    |
+| `gmail_create_draft` | Application adapter creates a Gmail draft after approval; it never sends automatically                  |
 | `calendar_upsert`    | Google Calendar create/update using the supplied stable event ID, private visibility, and no attendees |
 | `drive_upload`       | Download the leased private file URL, then upload to the configured protected Drive folder             |
 | `sheets_snapshot`    | Replace the Enquiries, Bookings, and Captains tabs from the one-way snapshot payload                   |
 
-Provider credentials are configured inside n8n and are never exported to Git.
-The exact mailbox, bot, chat, calendar, Drive folder, and workbook are selected
-during Phase 12 deployment acceptance.
+Personal Gmail credentials are encrypted in Supabase Vault through
+`Settings -> My alerts and connections`; the UI cannot read them back. The shared
+Telegram bot token remains server-only. Calendar, Drive, Sheets, and operational
+mailbox credentials are configured inside n8n and are never exported to Git.
 
 ## Failure contract
 

@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -1918,6 +1918,7 @@ export type Database = {
           claimed_at: string | null
           claimed_by: string | null
           created_at: string
+          credential_user_id: string | null
           delivered_at: string | null
           external_id: string | null
           external_url: string | null
@@ -1940,6 +1941,7 @@ export type Database = {
           claimed_at?: string | null
           claimed_by?: string | null
           created_at?: string
+          credential_user_id?: string | null
           delivered_at?: string | null
           external_id?: string | null
           external_url?: string | null
@@ -1962,6 +1964,7 @@ export type Database = {
           claimed_at?: string | null
           claimed_by?: string | null
           created_at?: string
+          credential_user_id?: string | null
           delivered_at?: string | null
           external_id?: string | null
           external_url?: string | null
@@ -1979,7 +1982,15 @@ export type Database = {
           status?: Database["public"]["Enums"]["integration_delivery_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "integration_deliveries_credential_user_id_fkey"
+            columns: ["credential_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integration_snapshots: {
         Row: {
@@ -2172,6 +2183,7 @@ export type Database = {
           idempotency_key: string
           notification_type: string
           priority: Database["public"]["Enums"]["notification_priority"]
+          read_at: string | null
           recipient_contact_id: string | null
           recipient_user_id: string | null
           requires_approval: boolean
@@ -2195,6 +2207,7 @@ export type Database = {
           idempotency_key: string
           notification_type: string
           priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
           recipient_contact_id?: string | null
           recipient_user_id?: string | null
           requires_approval?: boolean
@@ -2218,6 +2231,7 @@ export type Database = {
           idempotency_key?: string
           notification_type?: string
           priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
           recipient_contact_id?: string | null
           recipient_user_id?: string | null
           requires_approval?: boolean
@@ -3174,6 +3188,137 @@ export type Database = {
             foreignKeyName: "tutorial_sessions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_notification_preferences: {
+        Row: {
+          ai_summary_enabled: boolean
+          charter_enabled: boolean
+          created_at: string
+          email_enabled: boolean
+          follow_up_enabled: boolean
+          in_app_enabled: boolean
+          integration_failure_enabled: boolean
+          internal_email_enabled: boolean
+          new_enquiry_enabled: boolean
+          notification_email: string | null
+          payment_enabled: boolean
+          task_enabled: boolean
+          telegram_enabled: boolean
+          unknown_email_enabled: boolean
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_summary_enabled?: boolean
+          charter_enabled?: boolean
+          created_at?: string
+          email_enabled?: boolean
+          follow_up_enabled?: boolean
+          in_app_enabled?: boolean
+          integration_failure_enabled?: boolean
+          internal_email_enabled?: boolean
+          new_enquiry_enabled?: boolean
+          notification_email?: string | null
+          payment_enabled?: boolean
+          task_enabled?: boolean
+          telegram_enabled?: boolean
+          unknown_email_enabled?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_summary_enabled?: boolean
+          charter_enabled?: boolean
+          created_at?: string
+          email_enabled?: boolean
+          follow_up_enabled?: boolean
+          in_app_enabled?: boolean
+          integration_failure_enabled?: boolean
+          internal_email_enabled?: boolean
+          new_enquiry_enabled?: boolean
+          notification_email?: string | null
+          payment_enabled?: boolean
+          task_enabled?: boolean
+          telegram_enabled?: boolean
+          unknown_email_enabled?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_preferences_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_oauth_connections: {
+        Row: {
+          account_email: string
+          client_id_secret_id: string
+          client_secret_secret_id: string
+          connected_at: string
+          last_error: string | null
+          last_failure_at: string | null
+          last_success_at: string | null
+          provider: Database["public"]["Enums"]["integration_provider"]
+          refresh_token_secret_id: string
+          scopes: string[]
+          status: Database["public"]["Enums"]["user_oauth_connection_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_email: string
+          client_id_secret_id: string
+          client_secret_secret_id: string
+          connected_at?: string
+          last_error?: string | null
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          provider: Database["public"]["Enums"]["integration_provider"]
+          refresh_token_secret_id: string
+          scopes?: string[]
+          status?: Database["public"]["Enums"]["user_oauth_connection_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_email?: string
+          client_id_secret_id?: string
+          client_secret_secret_id?: string
+          connected_at?: string
+          last_error?: string | null
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          provider?: Database["public"]["Enums"]["integration_provider"]
+          refresh_token_secret_id?: string
+          scopes?: string[]
+          status?: Database["public"]["Enums"]["user_oauth_connection_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_oauth_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4149,6 +4294,39 @@ export type Database = {
           claimed_at: string | null
           claimed_by: string | null
           created_at: string
+          credential_user_id: string | null
+          delivered_at: string | null
+          external_id: string | null
+          external_url: string | null
+          id: string
+          idempotency_key: string
+          last_error_code: string | null
+          last_error_message: string | null
+          lease_expires_at: string | null
+          next_attempt_at: string
+          operation: Database["public"]["Enums"]["integration_operation"]
+          payload: Json
+          provider: Database["public"]["Enums"]["integration_provider"]
+          source_id: string
+          source_type: string
+          status: Database["public"]["Enums"]["integration_delivery_status"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "integration_deliveries"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_internal_alert_deliveries: {
+        Args: { p_limit?: number; p_worker_id: string }
+        Returns: {
+          attempt_count: number
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          credential_user_id: string | null
           delivered_at: string | null
           external_id: string | null
           external_url: string | null
@@ -4434,6 +4612,10 @@ export type Database = {
         Args: { p_reason: string; p_step_id: string }
         Returns: undefined
       }
+      disconnect_my_gmail_oauth: {
+        Args: { p_reason: string }
+        Returns: undefined
+      }
       email_domain: { Args: { value: string }; Returns: string }
       fail_ai_analysis: {
         Args: {
@@ -4457,7 +4639,30 @@ export type Database = {
         Args: { p_booking_id: string; p_template_id?: string }
         Returns: number
       }
+      get_delivery_oauth_credentials: {
+        Args: { p_delivery_id: string }
+        Returns: {
+          account_email: string
+          client_id: string
+          client_secret: string
+          refresh_token: string
+        }[]
+      }
       get_launch_readiness_summary: { Args: never; Returns: Json }
+      get_my_oauth_connections: {
+        Args: never
+        Returns: {
+          account_email: string
+          connected_at: string
+          last_error: string
+          last_failure_at: string
+          last_success_at: string
+          provider: Database["public"]["Enums"]["integration_provider"]
+          scopes: string[]
+          status: Database["public"]["Enums"]["user_oauth_connection_status"]
+          updated_at: string
+        }[]
+      }
       get_operational_readiness: {
         Args: { p_environment: string }
         Returns: Json
@@ -4493,6 +4698,11 @@ export type Database = {
           target_status: Database["public"]["Enums"]["enquiry_status"]
         }
         Returns: boolean
+      }
+      mark_all_notifications_read: { Args: never; Returns: number }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: undefined
       }
       mark_offer_sent: {
         Args: { p_offer_id: string; p_reason: string }
@@ -4562,6 +4772,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      personal_notification_channels: {
+        Args: { p_user_id: string }
+        Returns: Database["public"]["Enums"]["notification_channel"][]
       }
       queue_document_drive_sync: {
         Args: { p_document_id: string; p_reason: string }
@@ -4767,6 +4981,17 @@ export type Database = {
           p_tax_rate: number
         }
         Returns: string
+      }
+      save_my_gmail_oauth_credentials: {
+        Args: {
+          p_account_email: string
+          p_client_id: string
+          p_client_secret: string
+          p_reason: string
+          p_refresh_token: string
+          p_scopes: string[]
+        }
+        Returns: undefined
       }
       set_yachtfolio_action_status: {
         Args: {
@@ -4980,6 +5205,51 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "launch_readiness_checks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_my_alert_preferences: {
+        Args: {
+          p_ai_summary_enabled: boolean
+          p_charter_enabled: boolean
+          p_email_enabled: boolean
+          p_follow_up_enabled: boolean
+          p_in_app_enabled: boolean
+          p_integration_failure_enabled: boolean
+          p_internal_email_enabled: boolean
+          p_new_enquiry_enabled: boolean
+          p_notification_email: string
+          p_payment_enabled: boolean
+          p_phone: string
+          p_reason: string
+          p_task_enabled: boolean
+          p_telegram_chat_id: string
+          p_telegram_enabled: boolean
+          p_unknown_email_enabled: boolean
+        }
+        Returns: {
+          ai_summary_enabled: boolean
+          charter_enabled: boolean
+          created_at: string
+          email_enabled: boolean
+          follow_up_enabled: boolean
+          in_app_enabled: boolean
+          integration_failure_enabled: boolean
+          internal_email_enabled: boolean
+          new_enquiry_enabled: boolean
+          notification_email: string | null
+          payment_enabled: boolean
+          task_enabled: boolean
+          telegram_enabled: boolean
+          unknown_email_enabled: boolean
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_notification_preferences"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -5243,6 +5513,7 @@ export type Database = {
         | "calendar_upsert"
         | "drive_upload"
         | "sheets_snapshot"
+        | "gmail_send_internal"
       integration_provider:
         | "telegram"
         | "gmail"
@@ -5256,7 +5527,11 @@ export type Database = {
         | "cancelled"
       invoice_profile_status: "draft" | "approved" | "retired"
       launch_check_status: "pending" | "passed" | "waived"
-      notification_channel: "in_app" | "telegram" | "email_draft"
+      notification_channel:
+        | "in_app"
+        | "telegram"
+        | "email_draft"
+        | "email_alert"
       notification_priority: "low" | "normal" | "high" | "urgent"
       notification_status:
         | "pending_approval"
@@ -5302,6 +5577,10 @@ export type Database = {
         | "charter_completed"
         | "follow_up_completed"
       tutorial_status: "not_started" | "active" | "paused" | "completed"
+      user_oauth_connection_status:
+        | "connected"
+        | "needs_reauthentication"
+        | "disconnected"
       user_role: "administrator" | "staff"
       yacht_contact_responsibility:
         | "captain"
@@ -5533,6 +5812,7 @@ export const Constants = {
         "calendar_upsert",
         "drive_upload",
         "sheets_snapshot",
+        "gmail_send_internal",
       ],
       integration_provider: [
         "telegram",
@@ -5549,7 +5829,12 @@ export const Constants = {
       ],
       invoice_profile_status: ["draft", "approved", "retired"],
       launch_check_status: ["pending", "passed", "waived"],
-      notification_channel: ["in_app", "telegram", "email_draft"],
+      notification_channel: [
+        "in_app",
+        "telegram",
+        "email_draft",
+        "email_alert",
+      ],
       notification_priority: ["low", "normal", "high", "urgent"],
       notification_status: [
         "pending_approval",
@@ -5599,6 +5884,11 @@ export const Constants = {
         "follow_up_completed",
       ],
       tutorial_status: ["not_started", "active", "paused", "completed"],
+      user_oauth_connection_status: [
+        "connected",
+        "needs_reauthentication",
+        "disconnected",
+      ],
       user_role: ["administrator", "staff"],
       yacht_contact_responsibility: [
         "captain",

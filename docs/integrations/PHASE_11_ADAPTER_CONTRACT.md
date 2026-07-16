@@ -7,7 +7,22 @@ All endpoints require `Authorization: Bearer <AUTOMATION_SHARED_SECRET>`.
 `POST /api/integrations/automation/tick`
 
 Creates due notifications, Gmail provider actions, and internal calendar records.
-The operation is idempotent.
+It also processes at most one pending email AI summary per tick before
+notifications are materialised. The operation is idempotent.
+
+## Personal staff delivery
+
+`POST /api/integrations/automation/dispatch-alerts`
+
+Claims and delivers only:
+
+- internal Telegram alerts through the server-side company bot;
+- internal email alerts through the recipient staff member's encrypted Gmail
+  OAuth credentials;
+- approved Gmail drafts for external contacts.
+
+The route never sends an external email. Gmail drafts still require a person to
+review and send them from Gmail.
 
 ## Claim
 

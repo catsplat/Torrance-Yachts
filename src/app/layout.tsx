@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { cookies } from "next/headers";
 import { connection } from "next/server";
 
 import { cn } from "@/lib/utils";
@@ -30,8 +31,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   await connection();
+  const theme = (await cookies()).get("ty-theme")?.value === "dark" ? "dark" : "light";
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
+    <html
+      lang="en"
+      className={cn("font-sans", geist.variable, theme === "dark" && "dark")}
+      suppressHydrationWarning
+    >
       <body className="min-h-svh bg-background text-foreground antialiased">
         {children}
       </body>

@@ -1,12 +1,14 @@
-import { Bell, LockKeyhole, LogOut, Search, ShieldCheck, ShipWheel } from "lucide-react";
+import { Bell, LockKeyhole, LogOut, ShieldCheck, ShipWheel } from "lucide-react";
+import Link from "next/link";
 
 import { signOutAction } from "@/app/actions/auth";
 import { MobileNavigation } from "@/components/layout/mobile-navigation";
 import { PrimaryNavigation } from "@/components/layout/primary-navigation";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { WorkspaceSearch } from "@/components/layout/workspace-search";
 import { TutorialSpotlight } from "@/components/tutorial/tutorial-spotlight";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
 type AppShellProps = {
@@ -16,6 +18,8 @@ type AppShellProps = {
     role: "administrator" | "staff";
   };
   environmentLabel: string;
+  initialTheme: "dark" | "light";
+  unreadNotificationCount: number;
 };
 
 function getInitials(displayName: string) {
@@ -27,7 +31,13 @@ function getInitials(displayName: string) {
     .join("") || "TY";
 }
 
-export function AppShell({ children, currentUser, environmentLabel }: AppShellProps) {
+export function AppShell({
+  children,
+  currentUser,
+  environmentLabel,
+  initialTheme,
+  unreadNotificationCount,
+}: AppShellProps) {
   return (
     <div className="min-h-svh lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-svh flex-col border-r border-sidebar-border bg-sidebar px-3 py-5 text-sidebar-foreground lg:flex">
@@ -63,37 +73,29 @@ export function AppShell({ children, currentUser, environmentLabel }: AppShellPr
         <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur md:px-6">
           <MobileNavigation />
 
-          <div className="relative hidden w-full max-w-md md:block">
-            <Search
-              aria-hidden="true"
-              className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              aria-label="Search the workspace"
-              placeholder="Search enquiries, bookings, yachts..."
-              className="h-9 bg-card pl-9"
-              readOnly
-              title="Search will be connected when the database is added"
-            />
-          </div>
+          <WorkspaceSearch />
 
           <div className="ml-auto flex items-center gap-2.5">
             <Badge
               variant="outline"
-              className="hidden border-teal-700/20 bg-teal-50 text-teal-800 sm:inline-flex"
+              className="hidden border-teal-700/20 bg-teal-50 text-teal-800 sm:inline-flex dark:border-teal-300/20 dark:bg-teal-950/45 dark:text-teal-200"
             >
               {environmentLabel}
             </Badge>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Notifications preview"
-              title="Notifications will be enabled in a later slice"
-              className="relative"
+            <ThemeToggle initialTheme={initialTheme} />
+            <Link
+              aria-label={`${unreadNotificationCount} unread notifications`}
+              className="relative inline-flex size-9 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              href="/notifications"
+              title="Open notifications"
             >
-              <Bell aria-hidden="true" />
-              <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-rose-500" />
-            </Button>
+              <Bell aria-hidden="true" className="size-4" />
+              {unreadNotificationCount ? (
+                <span className="absolute -top-1 -right-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[0.625rem] font-semibold leading-4 text-white">
+                  {Math.min(unreadNotificationCount, 99)}
+                </span>
+              ) : null}
+            </Link>
             <Separator orientation="vertical" className="mx-1 h-7" />
             <div className="flex items-center gap-2.5">
               <div className="flex size-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
+import { generateNextPendingEmailSuggestion } from "@/lib/ai/service"
 import { getInvoiceGenerationContext } from "@/lib/integrations/data"
 import { generateInvoicePdf } from "@/lib/integrations/invoice"
 import {
@@ -156,6 +157,7 @@ export async function runAutomationNowAction(
   if ("message" in context) return context
   if (context.role !== "administrator") return { message: "Administrator access is required." }
   try {
+    await generateNextPendingEmailSuggestion()
     const admin = createAdminClient()
     const { data, error } = await admin.rpc("run_automation_tick", {
       p_as_of: new Date().toISOString(),

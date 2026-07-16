@@ -32,7 +32,8 @@ Use a currently supported Ubuntu LTS or Debian release with:
 2. Copy this folder to the server with the repository checkout.
 3. Copy `.env.example` to the ignored `.env` and fill every required value.
 4. Generate independent high-entropy values for every shared secret and the n8n
-   encryption key.
+   encryption key. Create a company Telegram bot token only if Telegram alerts
+   are approved for launch.
 5. Set `DEPLOYMENT_VERSION` to the exact Git tag or commit being deployed.
 6. Validate without starting:
 
@@ -51,6 +52,8 @@ Use a currently supported Ubuntu LTS or Debian release with:
 9. Apply migrations to the reviewed production Supabase project through the
    documented CI/release process.
 10. Complete every item in `/settings/launch` before entering live data.
+11. Each staff member opens `/settings/alerts`, records their own alert routes,
+    and connects Gmail only if email alerts or Gmail draft creation are required.
 
 ## Deployment and rollback
 
