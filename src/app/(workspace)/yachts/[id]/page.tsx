@@ -1,4 +1,4 @@
-import { ArrowLeft, BellRing, CheckCircle2, FileText, History, UserRound } from "lucide-react"
+import { ArrowLeft, BellRing, CalendarRange, CheckCircle2, FileText, History, UserRound } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { yachtResponsibilityLabels } from "@/lib/contacts/options"
+import { formatBookingDate } from "@/lib/bookings/options"
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
 
@@ -41,6 +42,14 @@ export default async function YachtDetailPage({ params, searchParams }: YachtDet
     .eq("entity_type", "yacht")
     .eq("entity_id", id)
 
+  const { data: reservations, error: reservationsError } = await supabase
+    .from("booking_reservations")
+    .select("id,reserved_from,reserved_through,booking:bookings!booking_reservations_booking_id_fkey(id,reference,status,charter_start_date,charter_end_date)")
+    .eq("yacht_id", id)
+    .eq("active", true)
+    .order("reserved_from")
+  if (reservationsError) throw new Error("Unable to load yacht availability.")
+
   return (
     <div className="mx-auto max-w-5xl space-y-5">
       <Link className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground" href="/yachts"><ArrowLeft className="size-4" aria-hidden="true" />Back to yachts</Link>
@@ -60,6 +69,11 @@ export default async function YachtDetailPage({ params, searchParams }: YachtDet
           </div>
         </CardHeader>
         <CardContent className="pt-6"><YachtForm mode="edit" yacht={yacht} /></CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><CalendarRange className="size-4 text-primary" />Protected availability</CardTitle><CardDescription>Live booking reservations include the required one-day operating buffer on both sides.</CardDescription></CardHeader>
+        <CardContent className="p-0">{reservations.length ? <div className="divide-y">{reservations.map((reservation) => <Link className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 hover:bg-muted/40" href={`/bookings/${reservation.booking.id}`} key={reservation.id}><div><p className="font-medium">{reservation.booking.reference}</p><p className="mt-1 text-xs text-muted-foreground">Charter {formatBookingDate(reservation.booking.charter_start_date)} – {formatBookingDate(reservation.booking.charter_end_date)}</p></div><Badge variant="outline">Reserved {formatBookingDate(reservation.reserved_from)} – {formatBookingDate(reservation.reserved_through)}</Badge></Link>)}</div> : <p className="px-5 py-10 text-center text-sm text-muted-foreground">No active booking reservations for this yacht.</p>}</CardContent>
       </Card>
 
       <Card>

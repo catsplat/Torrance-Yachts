@@ -4,6 +4,31 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-16
+
+### Added
+
+- Human-confirmed authoritative bookings linked to their originating enquiry and sent offer.
+- Atomic one-day availability buffers before and after every charter, with database-enforced overlap prevention.
+- Controlled booking amendments, charter start/completion/cancellation lifecycle, permanent reasons, and enquiry synchronisation.
+- Live booking register, availability checker, confirmation review, booking detail, yacht reservation, and dashboard views.
+- Explicit pending/completed/reopened Yachtfolio actions with evidence and history.
+- Phase 6 architecture, schema, decision, development, verification, and portfolio documentation.
+
+### Security
+
+- Required active internal identity, a sent matching offer, awaiting-signatures state, explicit all-party signature attestation, and reviewed terms for confirmation.
+- Blocked direct booking/reservation/status/history mutation and all application deletion paths.
+- Added RLS and least-privilege grants to every Phase 6 record.
+- Made the database transaction—not an advisory page check—the authority for conflict prevention.
+
+### Known limitations
+
+- Phase 6 remains local-only, synthetic-only, and not approved for live contracts or bookings.
+- Booking confirmation does not yet create the operational task sequence, document checklist, payment schedule, reminders, notifications, or calendar records.
+- Yachtfolio work is deliberately manual and must be recorded by a staff member; no Yachtfolio API is connected.
+- n8n and all other external integrations remain disconnected until Phase 11.
+
 ## [0.5.0] - 2026-07-15
 
 ### Added

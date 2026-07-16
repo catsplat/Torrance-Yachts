@@ -2,11 +2,11 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** Version `0.5.0` is ready for release with yacht commercial profiles and human-reviewed offer preparation. Phase 6 adds confirmed bookings and buffered availability. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
+> **Development status:** Version `0.6.0` is release-ready with human-confirmed bookings, conflict-safe buffered availability, lifecycle controls, and explicit Yachtfolio action tracking. Production services, file storage, and external integrations are not connected. Do not deploy or enter real client data yet.
 
 ## Current milestone
 
-Version `0.5.0` provides the secured operational master-data, enquiry, and offer layers:
+The current candidate provides the secured operational master-data, enquiry, offer, and booking layers:
 
 - local Supabase/PostgreSQL development infrastructure;
 - individual email/password identities with public registration disabled;
@@ -21,12 +21,16 @@ Version `0.5.0` provides the secured operational master-data, enquiry, and offer
 - structured manual enquiries linked to customers/charterers, brokers, companies, yachts, and internal owners;
 - enquiry dates, guests, ports, budget, priority, notes, search, and filters;
 - database-enforced lifecycle transitions with mandatory reasons, immutable history, durable events, and audit attribution;
-- live enquiry and pipeline dashboard counts while unfinished modules remain visibly labelled synthetic;
+- human-confirmed bookings linked to sent offers and enquiries, with all-party signature attestation;
+- one-day yacht availability buffers on both sides, database-enforced overlap prevention, and live availability checking;
+- controlled booking amendments and lifecycle changes with reasons, history, durable events, and enquiry synchronisation;
+- explicit pending/completed/reopened Yachtfolio manual actions;
+- live enquiry, offer, booking, and upcoming-charter dashboard counts while unfinished modules remain visibly labelled synthetic;
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
-- unit tests, 79 database permission/behaviour tests, database linting, and matching CI gates.
+- 37 unit tests, 167 database permission/behaviour tests, database linting, and matching CI gates.
 
-Phase 5 adds dated yacht rates, approved public sales materials, versioned templates, deterministic fee suggestions, immutable numbered offer snapshots, explicit approval/sent recording, and live offer approval counts. It does not send email or reserve availability.
+Phase 6 does not yet generate booking tasks, documents, payment schedules, reminders, calendar entries, or notifications. Those arrive in the next dependency-aware phases. It does not send email or update Yachtfolio automatically.
 
 ## Technology foundation
 
@@ -79,22 +83,26 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Contact-directory architecture](docs/architecture/CONTACT_DIRECTORY_SLICE.md)
 - [Enquiry-pipeline architecture](docs/architecture/ENQUIRY_PIPELINE_SLICE.md)
 - [Commercial-offers architecture](docs/architecture/COMMERCIAL_OFFERS_SLICE.md)
+- [Booking and availability architecture](docs/architecture/BOOKING_AVAILABILITY_SLICE.md)
 - [Automation and n8n boundary](docs/architecture/AUTOMATION_AND_N8N.md)
 - [Phase 2 database schema](docs/database/PHASE_2_SCHEMA.md)
 - [Phase 3 contact-directory schema](docs/database/PHASE_3_CONTACT_DIRECTORY_SCHEMA.md)
 - [Phase 4 enquiry schema](docs/database/PHASE_4_ENQUIRY_SCHEMA.md)
 - [Phase 5 commercial-offers schema](docs/database/PHASE_5_COMMERCIAL_OFFERS_SCHEMA.md)
+- [Phase 6 booking and availability schema](docs/database/PHASE_6_BOOKING_AVAILABILITY_SCHEMA.md)
 - [Architecture decisions](docs/decisions/0001-application-foundation.md)
 - [Supabase identity and RLS decision](docs/decisions/0002-supabase-identity-and-rls.md)
 - [Contact-directory modelling decision](docs/decisions/0003-contact-directory-model.md)
 - [Enquiry state-machine decision](docs/decisions/0004-enquiry-state-machine.md)
 - [Human-reviewed offer snapshots decision](docs/decisions/0005-human-reviewed-offer-snapshots.md)
+- [Transactional booking reservations decision](docs/decisions/0006-transactional-booking-reservations.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)
 - [Phase 2 development diary](docs/development/2026-07-15-auth-yacht-slice.md)
 - [Phase 3 development diary](docs/development/2026-07-15-contact-directory-slice.md)
 - [Phase 4 development diary](docs/development/2026-07-15-enquiry-pipeline-slice.md)
 - [Phase 5 development diary](docs/development/2026-07-15-commercial-offers-slice.md)
+- [Phase 6 development diary](docs/development/2026-07-15-booking-availability-slice.md)
 - [Foundation verification record](docs/audit/2026-07-15-foundation-verification.md)
 - [Phase 2 verification record](docs/audit/2026-07-15-phase-2-verification.md)
 - [Phase 3 verification record](docs/audit/2026-07-15-phase-3-verification.md)

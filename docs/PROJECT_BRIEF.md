@@ -2,7 +2,7 @@
 
 ## Project brief and source of truth
 
-**Status:** Phases 1-5 released; Phase 6 authorised
+**Status:** Phases 1-5 released; Phase 6 release-ready as `v0.6.0`
 
 **Owner/developer:** Thom, working with Codex
 

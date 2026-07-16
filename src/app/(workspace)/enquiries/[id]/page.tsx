@@ -76,6 +76,7 @@ export default async function EnquiryDetailPage({
     auditResult,
     workflowResult,
     offersResult,
+    bookingsResult,
     options,
   ] = await Promise.all([
     supabase
@@ -119,11 +120,16 @@ export default async function EnquiryDetailPage({
       .select("id, reference, version_number, status, proposed_charter_fee, currency, updated_at")
       .eq("enquiry_id", id)
       .order("version_number", { ascending: false }),
+    supabase
+      .from("bookings")
+      .select("id, reference, status")
+      .eq("enquiry_id", id)
+      .order("created_at", { ascending: false }),
     getEnquiryFormOptions(),
   ])
 
   if (enquiryResult.error || !enquiryResult.data) notFound()
-  if (notesResult.error || historyResult.error || auditResult.error || workflowResult.error || offersResult.error) {
+  if (notesResult.error || historyResult.error || auditResult.error || workflowResult.error || offersResult.error || bookingsResult.error) {
     throw new Error("Unable to load the enquiry history.")
   }
 
@@ -169,6 +175,15 @@ export default async function EnquiryDetailPage({
               </div>
             </div>
             <div className="flex flex-col items-start gap-3 lg:items-end">
+              {bookingsResult.data[0] ? (
+                <Link className={cn(buttonVariants())} href={`/bookings/${bookingsResult.data[0].id}`}>
+                  <CalendarDays aria-hidden="true" />Open {bookingsResult.data[0].reference}
+                </Link>
+              ) : enquiry.status === "awaiting_signatures" && offersResult.data.some((offer) => offer.status === "sent") ? (
+                <Link className={cn(buttonVariants())} href={`/bookings/new?enquiry=${enquiry.id}`}>
+                  <CheckCircle2 aria-hidden="true" />Confirm signed booking
+                </Link>
+              ) : null}
               {enquiry.requested_yacht_id && enquiry.charter_start_date && enquiry.charter_end_date && ["new", "waiting_for_reply", "offer_sent", "negotiating"].includes(enquiry.status) ? (
                 <Link className={cn(buttonVariants())} href={`/offers/new?enquiry=${enquiry.id}`}><FileText aria-hidden="true" />Prepare offer</Link>
               ) : null}
@@ -236,8 +251,8 @@ export default async function EnquiryDetailPage({
             />
             {enquiry.status === "awaiting_signatures" ? (
               <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">
-                Booked is intentionally unavailable until the human-confirmed booking and
-                availability slice exists.
+                Booked is available only through “Confirm signed booking”. That command
+                verifies a sent offer, records human attestation, and reserves buffered dates atomically.
               </p>
             ) : null}
           </CardContent>
