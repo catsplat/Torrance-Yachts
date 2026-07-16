@@ -13,16 +13,16 @@ The first complete production release is divided into twelve dependency-aware ve
 | 5 | Yacht commercial profiles, seasonal rates, approved sales materials, versioned offer templates, and reviewable offers | Released as `v0.5.0` |
 | 6 | Human-confirmed bookings, charter periods, 24-hour availability buffers, conflict detection, and Yachtfolio action tracking | Released as `v0.6.0` |
 | 7 | Configurable task templates, dependencies, generated booking checklists, reminders, assignees, and completion/reopening audit | Released as `v0.7.0` |
-| 8 | Private document storage, booking document requirements, contract-field review, payment schedules, and deterministic commission calculations | `v0.8.0` release candidate; automated and local acceptance passed |
-| 9 | Idempotent Gmail ingestion, message/thread storage, deterministic routing, manual classification, and follow-up association | Planned |
-| 10 | Provider-neutral AI extraction, classification, summaries, and drafts with confidence, source evidence, correction, and human approval | Planned |
-| 11 | Central notifications plus Telegram, calendar, Google Drive/Sheets, n8n, and controlled external-system adapters | Planned |
+| 8 | Private document storage, booking document requirements, contract-field review, payment schedules, and deterministic commission calculations | Released as `v0.8.0` |
+| 9 | Idempotent Gmail ingestion, message/thread storage, deterministic routing, manual classification, follow-up association, and configurable inactivity timeouts | Released as `v0.9.0` |
+| 10 | Provider-neutral AI extraction, classification, summaries, yacht-specific drafts, and editable KYC/follow-up templates with confidence, source evidence, correction, and human approval | Planned |
+| 11 | Central notifications plus Telegram, calendar, Google Drive/Sheets, n8n, invoice PDF generation, and controlled external-system adapters | Planned |
 | 12 | Production hosting, backups and restore test, monitoring, security/privacy review, staff acceptance, migration, training, and launch | Planned |
 
 ## Interpretation
 
 - Phase count is a delivery map, not a claim that every phase has equal effort.
-- Seven of twelve phases are released and Phase 8 is in development. The remaining document, email, AI, automation, integration, packaging, and production work contains more of the programme's operational complexity.
+- Nine of twelve phases are released. The remaining AI, automation, integration, packaging, and production work contains more of the programme's operational complexity.
 - The dashboard is upgraded incrementally as real records become available; final operational reporting and polish are completed in Phase 12.
 - No later integration becomes a source of truth. PostgreSQL remains authoritative throughout.
 - AI is deliberately Phase 10: it assists a workflow that is already functional and testable without AI.

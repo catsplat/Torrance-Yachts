@@ -1,0 +1,17 @@
+import { Clock3, MailCheck, ShieldCheck } from "lucide-react"
+
+import { OperationalSettingsForm, TimeoutSweepForm } from "@/components/emails/email-forms"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { getCurrentUser } from "@/lib/auth/current-user"
+import { getOperationalSettings } from "@/lib/emails/data"
+
+export default async function SettingsPage() {
+  const [settings, user] = await Promise.all([getOperationalSettings(), getCurrentUser()])
+  return (
+    <div className="mx-auto max-w-5xl space-y-5">
+      <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Operational controls</p><h1 className="mt-1 text-3xl font-semibold">Settings</h1><p className="mt-2 text-sm text-muted-foreground">Configure safe routing and lifecycle rules without changing application code.</p></div>
+      <Card><CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><Clock3 className="size-5" />Enquiry inactivity timeouts</CardTitle><CardDescription>Dead-end requests are archived, never deleted. New email activity, notes, or lifecycle changes reset the inactivity clock.</CardDescription></CardHeader><CardContent className="space-y-5 pt-5">{user?.role === "administrator" ? <OperationalSettingsForm settings={settings} /> : <p className="text-sm text-muted-foreground">Only an administrator can change timeout rules.</p>}<div className="border-t pt-5"><TimeoutSweepForm /></div></CardContent></Card>
+      <div className="grid gap-5 md:grid-cols-2"><Card><CardContent className="flex gap-3 pt-5"><MailCheck className="size-5 text-primary" /><div><p className="font-medium">Gmail routing boundary</p><p className="mt-1 text-sm text-muted-foreground">n8n will submit validated messages through the authenticated ingestion endpoint in Phase 11.</p></div></CardContent></Card><Card><CardContent className="flex gap-3 pt-5"><ShieldCheck className="size-5 text-primary" /><div><p className="font-medium">Human approval retained</p><p className="mt-1 text-sm text-muted-foreground">Circular and known-thread rules are deterministic. New enquiries and uncertain mail remain reviewable.</p></div></CardContent></Card></div>
+    </div>
+  )
+}

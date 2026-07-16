@@ -2,7 +2,7 @@
 
 ## Project brief and source of truth
 
-**Status:** Phases 1-7 released; Phase 8 `v0.8.0` release candidate passed acceptance
+**Status:** Phases 1-9 released through `v0.9.0`
 
 **Owner/developer:** Thom, working with Codex
 
@@ -179,6 +179,11 @@ Incoming mail is classified into:
 5. **Unrecognised/low confidence:** create a manual-review item and notification.
 
 The system must prevent duplicate processing when Gmail or n8n retries a message.
+
+Pre-contract enquiries that receive no recorded activity must be archived after
+administrator-configured timeouts so low-conversion dead ends do not clutter normal
+operational views. Archival preserves the full record and is reversible through an
+audited lifecycle action; it never deletes the enquiry.
 
 ### 6.6 Enquiries and offers
 

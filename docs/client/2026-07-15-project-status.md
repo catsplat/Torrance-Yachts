@@ -2,7 +2,7 @@
 
 **Updated:** 16 July 2026
 
-The project has moved from planning into a working, secured internal application. Seven of twelve planned delivery phases are released and Phase 8 is in development.
+The project has moved from planning into a working, secured internal application. Nine of twelve planned delivery phases are released through version 0.9.0.
 
 ## Completed
 
@@ -17,7 +17,7 @@ The project has moved from planning into a working, secured internal application
 
 All development and demonstrations currently use synthetic information. No live client, broker, captain, contract, identity-document, banking, or confidential commercial data has been entered.
 
-## Released through Phase 7
+## Released through Phase 8
 
 The application can now create a booking only after a staff member confirms that the charter agreement is signed by all required parties and records what they reviewed. It links the booking to its enquiry and sent offer, blocks the yacht from 24 hours before until 24 hours after the charter, prevents overlapping reservations at database level, and creates a visible manual action to add the dates and Booked status in Yachtfolio. Booking amendments, charter start/completion/cancellation, Yachtfolio completion/reopening, the live register, availability checker, yacht view, enquiry link, and dashboard are all audited and verified with synthetic data.
 
@@ -25,16 +25,18 @@ The booking now receives the complete operational checklist automatically. Tasks
 
 The task register, booking checklist, dashboard priorities, notes, reminders, escalation settings, and permitted ad-hoc work are implemented. Booking date amendments reschedule relevant tasks and booking cancellation closes remaining open work.
 
-## Phase 8 in development
+## Released Phase 9
 
-Private booking-document storage, automatic document requirements, short-lived file access, human verification, reviewed contract fields, reconciled payment schedules, and deterministic commission calculations are implemented on the development branch. Approved contract dates synchronise the booking, its protected availability period, and relevant workflow tasks.
+The application now accepts authenticated, retry-safe email deliveries; stores immutable Gmail messages and threads; routes known follow-ups, internal domains, and circulars deterministically; and presents uncertain mail for human review. Staff can create or reuse a sender contact and enquiry from the email record, link follow-ups, and correct classifications with history.
 
-Current verification includes 46 application tests and 287 database security/behaviour assertions.
+Configurable inactivity settings automatically archive low-conversion pre-contract enquiries after different periods for New, Waiting for reply, Offer sent, and Negotiating. Records remain searchable and auditable.
+
+Current verification includes 49 application tests and 349 database security/behaviour assertions.
 
 ## Still to come
 
-The later phases add email ingestion, AI-assisted classification and drafting, notifications and calendar/Google integrations, local n8n automation, desktop packaging, followed by production security, backups, staff acceptance, training, and launch.
+The later phases add AI-assisted extraction and drafting, notifications and calendar/Google integrations, local n8n automation, invoice generation, optional desktop packaging, followed by production security, backups, staff acceptance, training, and launch.
 
 ## Current status
 
-The technical foundation and operational workflow from manual enquiry through human-confirmed booking, generated tasks, protected documents, and reviewed payment schedules is working with synthetic data. The system is not yet approved for production or live data, and it does not yet process real emails or notifications. Development remains on the agreed dependency-safe path toward the complete enquiry-to-charter workflow.
+The technical foundation and operational workflow from imported email through enquiry, offer, human-confirmed booking, generated tasks, protected documents, and reviewed payment schedules is working with synthetic data. The system is not yet approved for production or live data, and it does not yet connect to the real Gmail mailbox or send notifications. Development remains on the agreed dependency-safe path toward the complete enquiry-to-charter workflow.

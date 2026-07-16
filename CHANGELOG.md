@@ -4,6 +4,25 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-16
+
+### Added
+
+- Phase 9 authenticated Gmail/n8n ingestion endpoint with bounded payload validation
+  and idempotency across provider events and Gmail message IDs.
+- Durable email threads, immutable message content, attachment metadata,
+  classification history, and provider-action outbox records.
+- Deterministic routing for known enquiry threads, configured internal domains, and
+  circular/newsletter headers, with a human review queue for uncertain messages.
+- Human-approved new-enquiry creation that creates or reuses the sender contact, and
+  both automatic and manual follow-up association.
+- Settings controls for status-specific inactivity timeouts and internal email
+  domains, plus audited archival sweeps that remove dead ends from normal views
+  without deleting history.
+- Client requirements traceability across the full twelve-phase programme.
+
+## [0.8.0] - 2026-07-16
+
 ### Added
 
 - Phase 8 private booking-document storage with booking-scoped paths, controlled
@@ -14,6 +33,8 @@ All notable project changes are recorded here. The format follows Keep a Changel
   payment schedules, deterministic commission calculations, and task due-date
   synchronisation.
 - Live document/payment dashboard counts and protected booking workspaces.
+
+## [0.7.0] - 2026-07-16
 
 ### Added
 
