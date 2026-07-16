@@ -939,6 +939,480 @@ export type Database = {
         }
         Relationships: []
       }
+      task_dependencies: {
+        Row: {
+          created_at: string
+          depends_on_task_id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          depends_on_task_id: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          depends_on_task_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_dependencies_depends_on_task_id_fkey"
+            columns: ["depends_on_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_dependencies_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_history: {
+        Row: {
+          action: string
+          changed_by: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["task_status"] | null
+          id: number
+          metadata: Json
+          reason: string
+          task_id: string
+          to_status: Database["public"]["Enums"]["task_status"] | null
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["task_status"] | null
+          id?: never
+          metadata?: Json
+          reason: string
+          task_id: string
+          to_status?: Database["public"]["Enums"]["task_status"] | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["task_status"] | null
+          id?: never
+          metadata?: Json
+          reason?: string
+          task_id?: string
+          to_status?: Database["public"]["Enums"]["task_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_history_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_notes: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          task_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          task_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_notes_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_template_step_dependencies: {
+        Row: {
+          created_at: string
+          depends_on_step_id: string
+          step_id: string
+        }
+        Insert: {
+          created_at?: string
+          depends_on_step_id: string
+          step_id: string
+        }
+        Update: {
+          created_at?: string
+          depends_on_step_id?: string
+          step_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_template_step_dependencies_depends_on_step_id_fkey"
+            columns: ["depends_on_step_id"]
+            isOneToOne: false
+            referencedRelation: "task_template_steps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_template_step_dependencies_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "task_template_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_template_steps: {
+        Row: {
+          auto_complete_on_generation: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date_required: boolean
+          due_offset_days: number
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reminder_lead_days: number | null
+          required: boolean
+          sort_order: number
+          step_code: string
+          template_id: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          auto_complete_on_generation?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_anchor?: Database["public"]["Enums"]["task_due_anchor"]
+          due_date_required?: boolean
+          due_offset_days?: number
+          escalation_after_days?: number | null
+          external_action?: Database["public"]["Enums"]["task_external_action"]
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          reminder_lead_days?: number | null
+          required?: boolean
+          sort_order?: number
+          step_code: string
+          template_id: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          auto_complete_on_generation?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_anchor?: Database["public"]["Enums"]["task_due_anchor"]
+          due_date_required?: boolean
+          due_offset_days?: number
+          escalation_after_days?: number | null
+          external_action?: Database["public"]["Enums"]["task_external_action"]
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          reminder_lead_days?: number | null
+          required?: boolean
+          sort_order?: number
+          step_code?: string
+          template_id?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_template_steps_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_template_steps_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "task_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_template_steps_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_templates: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_default: boolean
+          name: string
+          source_template_id: string | null
+          status: Database["public"]["Enums"]["task_template_status"]
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          source_template_id?: string | null
+          status?: Database["public"]["Enums"]["task_template_status"]
+          updated_at?: string
+          updated_by?: string | null
+          version_number: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          source_template_id?: string | null
+          status?: Database["public"]["Enums"]["task_template_status"]
+          updated_at?: string
+          updated_by?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_templates_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_templates_source_template_id_fkey"
+            columns: ["source_template_id"]
+            isOneToOne: false
+            referencedRelation: "task_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_templates_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          assigned_user_id: string | null
+          blocked_reason: string | null
+          booking_id: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date: string | null
+          due_date_required: boolean
+          due_offset_days: number
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reference: string
+          reminder_lead_days: number | null
+          required: boolean
+          source: Database["public"]["Enums"]["task_source"]
+          status: Database["public"]["Enums"]["task_status"]
+          step_code: string | null
+          template_id: string | null
+          template_step_id: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          assigned_user_id?: string | null
+          blocked_reason?: string | null
+          booking_id: string
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_anchor?: Database["public"]["Enums"]["task_due_anchor"]
+          due_date?: string | null
+          due_date_required?: boolean
+          due_offset_days?: number
+          escalation_after_days?: number | null
+          external_action?: Database["public"]["Enums"]["task_external_action"]
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          reference?: string
+          reminder_lead_days?: number | null
+          required?: boolean
+          source: Database["public"]["Enums"]["task_source"]
+          status?: Database["public"]["Enums"]["task_status"]
+          step_code?: string | null
+          template_id?: string | null
+          template_step_id?: string | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          assigned_user_id?: string | null
+          blocked_reason?: string | null
+          booking_id?: string
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_anchor?: Database["public"]["Enums"]["task_due_anchor"]
+          due_date?: string | null
+          due_date_required?: boolean
+          due_offset_days?: number
+          escalation_after_days?: number | null
+          external_action?: Database["public"]["Enums"]["task_external_action"]
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          reference?: string
+          reminder_lead_days?: number | null
+          required?: boolean
+          source?: Database["public"]["Enums"]["task_source"]
+          status?: Database["public"]["Enums"]["task_status"]
+          step_code?: string | null
+          template_id?: string | null
+          template_step_id?: string | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_user_id_fkey"
+            columns: ["assigned_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_cancelled_by_fkey"
+            columns: ["cancelled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "task_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_template_step_id_fkey"
+            columns: ["template_step_id"]
+            isOneToOne: false
+            referencedRelation: "task_template_steps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflow_events: {
         Row: {
           actor_user_id: string | null
@@ -1549,6 +2023,112 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_ad_hoc_task: {
+        Args: {
+          p_assigned_user_id: string
+          p_booking_id: string
+          p_description: string
+          p_due_date: string
+          p_priority: Database["public"]["Enums"]["task_priority"]
+          p_title: string
+        }
+        Returns: {
+          assigned_user_id: string | null
+          blocked_reason: string | null
+          booking_id: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date: string | null
+          due_date_required: boolean
+          due_offset_days: number
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reference: string
+          reminder_lead_days: number | null
+          required: boolean
+          source: Database["public"]["Enums"]["task_source"]
+          status: Database["public"]["Enums"]["task_status"]
+          step_code: string | null
+          template_id: string | null
+          template_step_id: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      add_task_note: {
+        Args: { p_body: string; p_task_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          task_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "task_notes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      add_task_template_step: {
+        Args: {
+          p_description: string
+          p_due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          p_due_date_required: boolean
+          p_due_offset_days: number
+          p_escalation_after_days: number
+          p_priority: Database["public"]["Enums"]["task_priority"]
+          p_reminder_lead_days: number
+          p_required: boolean
+          p_sort_order: number
+          p_step_code: string
+          p_template_id: string
+          p_title: string
+        }
+        Returns: {
+          auto_complete_on_generation: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date_required: boolean
+          due_offset_days: number
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reminder_lead_days: number | null
+          required: boolean
+          sort_order: number
+          step_code: string
+          template_id: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "task_template_steps"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       amend_confirmed_booking: {
         Args: {
           p_booking_id: string
@@ -1636,6 +2216,30 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      approve_task_template: {
+        Args: { p_template_id: string }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_default: boolean
+          name: string
+          source_template_id: string | null
+          status: Database["public"]["Enums"]["task_template_status"]
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "task_templates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       approve_yacht_offer_template: {
         Args: { p_template_id: string }
         Returns: {
@@ -1668,6 +2272,54 @@ export type Database = {
         }
         Returns: number
       }
+      calculate_template_task_due_date: {
+        Args: {
+          p_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          p_booking: Database["public"]["Tables"]["bookings"]["Row"]
+          p_offset: number
+        }
+        Returns: string
+      }
+      cancel_ad_hoc_task: {
+        Args: { p_reason: string; p_task_id: string }
+        Returns: {
+          assigned_user_id: string | null
+          blocked_reason: string | null
+          booking_id: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date: string | null
+          due_date_required: boolean
+          due_offset_days: number
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reference: string
+          reminder_lead_days: number | null
+          required: boolean
+          source: Database["public"]["Enums"]["task_source"]
+          status: Database["public"]["Enums"]["task_status"]
+          step_code: string | null
+          template_id: string | null
+          template_step_id: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       check_yacht_availability: {
         Args: {
           p_charter_end_date: string
@@ -1682,6 +2334,70 @@ export type Database = {
           reserved_from: string
           reserved_through: string
         }[]
+      }
+      clone_task_template: {
+        Args: { p_name: string; p_source_template_id: string }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_default: boolean
+          name: string
+          source_template_id: string | null
+          status: Database["public"]["Enums"]["task_template_status"]
+          updated_at: string
+          updated_by: string | null
+          version_number: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "task_templates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      complete_task: {
+        Args: { p_reason: string; p_task_id: string }
+        Returns: {
+          assigned_user_id: string | null
+          blocked_reason: string | null
+          booking_id: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date: string | null
+          due_date_required: boolean
+          due_offset_days: number
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reference: string
+          reminder_lead_days: number | null
+          required: boolean
+          source: Database["public"]["Enums"]["task_source"]
+          status: Database["public"]["Enums"]["task_status"]
+          step_code: string | null
+          template_id: string | null
+          template_step_id: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       confirm_booking: {
         Args: {
@@ -1781,6 +2497,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      delete_task_template_step: {
+        Args: { p_reason: string; p_step_id: string }
+        Returns: undefined
+      }
+      generate_booking_tasks: {
+        Args: { p_booking_id: string; p_template_id?: string }
+        Returns: number
+      }
       is_active_staff: { Args: never; Returns: boolean }
       is_administrator: { Args: never; Returns: boolean }
       is_valid_enquiry_transition: {
@@ -1830,6 +2554,54 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      refresh_booking_task_states: {
+        Args: { p_booking_id: string }
+        Returns: undefined
+      }
+      reopen_task: {
+        Args: { p_reason: string; p_task_id: string }
+        Returns: {
+          assigned_user_id: string | null
+          blocked_reason: string | null
+          booking_id: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date: string | null
+          due_date_required: boolean
+          due_offset_days: number
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reference: string
+          reminder_lead_days: number | null
+          required: boolean
+          source: Database["public"]["Enums"]["task_source"]
+          status: Database["public"]["Enums"]["task_status"]
+          step_code: string | null
+          template_id: string | null
+          template_step_id: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      replace_task_template_dependencies: {
+        Args: { p_depends_on_step_ids: string[]; p_step_id: string }
+        Returns: number
+      }
       set_yachtfolio_action_status: {
         Args: {
           p_action_id: string
@@ -1854,6 +2626,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      sync_booking_anchored_task_dates: {
+        Args: { p_booking_id: string; p_reason: string }
+        Returns: number
       }
       transition_booking_status: {
         Args: {
@@ -1977,6 +2753,93 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_task_schedule: {
+        Args: {
+          p_assigned_user_id: string
+          p_due_date: string
+          p_priority: Database["public"]["Enums"]["task_priority"]
+          p_reason: string
+          p_task_id: string
+        }
+        Returns: {
+          assigned_user_id: string | null
+          blocked_reason: string | null
+          booking_id: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date: string | null
+          due_date_required: boolean
+          due_offset_days: number
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reference: string
+          reminder_lead_days: number | null
+          required: boolean
+          source: Database["public"]["Enums"]["task_source"]
+          status: Database["public"]["Enums"]["task_status"]
+          step_code: string | null
+          template_id: string | null
+          template_step_id: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_task_template_step: {
+        Args: {
+          p_description: string
+          p_due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          p_due_date_required: boolean
+          p_due_offset_days: number
+          p_escalation_after_days: number
+          p_priority: Database["public"]["Enums"]["task_priority"]
+          p_reminder_lead_days: number
+          p_required: boolean
+          p_step_id: string
+          p_title: string
+        }
+        Returns: {
+          auto_complete_on_generation: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date_required: boolean
+          due_offset_days: number
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reminder_lead_days: number | null
+          required: boolean
+          sort_order: number
+          step_code: string
+          template_id: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "task_template_steps"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       booking_status: "confirmed" | "charter_active" | "completed" | "cancelled"
@@ -2014,6 +2877,19 @@ export type Database = {
         | "specifications"
         | "deck_plan"
         | "other"
+      task_due_anchor:
+        | "none"
+        | "booking_confirmed"
+        | "charter_start"
+        | "charter_end"
+        | "contract_payment_1"
+        | "contract_payment_2"
+        | "contract_payment_3"
+      task_external_action: "none" | "yachtfolio_booking"
+      task_priority: "low" | "normal" | "high" | "urgent"
+      task_source: "template" | "ad_hoc"
+      task_status: "blocked" | "ready" | "completed" | "cancelled"
+      task_template_status: "draft" | "approved" | "retired"
       user_role: "administrator" | "staff"
       yacht_contact_responsibility:
         | "captain"
@@ -2189,6 +3065,20 @@ export const Constants = {
         "deck_plan",
         "other",
       ],
+      task_due_anchor: [
+        "none",
+        "booking_confirmed",
+        "charter_start",
+        "charter_end",
+        "contract_payment_1",
+        "contract_payment_2",
+        "contract_payment_3",
+      ],
+      task_external_action: ["none", "yachtfolio_booking"],
+      task_priority: ["low", "normal", "high", "urgent"],
+      task_source: ["template", "ad_hoc"],
+      task_status: ["blocked", "ready", "completed", "cancelled"],
+      task_template_status: ["draft", "approved", "retired"],
       user_role: ["administrator", "staff"],
       yacht_contact_responsibility: [
         "captain",

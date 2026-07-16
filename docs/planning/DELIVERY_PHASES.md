@@ -12,7 +12,7 @@ The first complete production release is divided into twelve dependency-aware ve
 | 4 | Manual enquiry pipeline with linked contacts/yachts, controlled states, notes, history, events, search, and real dashboard counts | Released as `v0.4.0` |
 | 5 | Yacht commercial profiles, seasonal rates, approved sales materials, versioned offer templates, and reviewable offers | Released as `v0.5.0` |
 | 6 | Human-confirmed bookings, charter periods, 24-hour availability buffers, conflict detection, and Yachtfolio action tracking | Release-ready as `v0.6.0` |
-| 7 | Configurable task templates, dependencies, generated booking checklists, reminders, assignees, and completion/reopening audit | Planned |
+| 7 | Configurable task templates, dependencies, generated booking checklists, reminders, assignees, and completion/reopening audit | `v0.7.0` release candidate; automated acceptance passed |
 | 8 | Private document storage, booking document requirements, contract-field review, payment schedules, and deterministic commission calculations | Planned |
 | 9 | Idempotent Gmail ingestion, message/thread storage, deterministic routing, manual classification, and follow-up association | Planned |
 | 10 | Provider-neutral AI extraction, classification, summaries, and drafts with confidence, source evidence, correction, and human approval | Planned |

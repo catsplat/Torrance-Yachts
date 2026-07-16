@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(33);
+select plan(34);
 
 select has_table('public', 'bookings', 'bookings table exists');
 select has_table('public', 'booking_reservations', 'booking reservations table exists');
@@ -16,6 +16,7 @@ values
   ('14000000-0000-0000-0000-000000000001', 'booking.staff@example.test', '{"display_name":"Booking Staff"}'::jsonb),
   ('14000000-0000-0000-0000-000000000002', 'booking.inactive@example.test', '{"display_name":"Inactive Booking User"}'::jsonb);
 update public.profiles set active = false where id = '14000000-0000-0000-0000-000000000002';
+update public.profiles set role = 'administrator' where id = '14000000-0000-0000-0000-000000000001';
 
 set local role anon;
 set local "request.jwt.claim.sub" = '00000000-0000-0000-0000-000000000000';
@@ -63,6 +64,10 @@ select lives_ok(
 select lives_ok(
   $$ select public.transition_enquiry_status('70000000-0000-4000-8000-000000000001','awaiting_signatures','Synthetic contract sent for signatures') $$,
   'enquiry can move to awaiting signatures'
+);
+select lives_ok(
+  $$ select public.approve_task_template('90000000-0000-4000-8000-000000000001') $$,
+  'default booking task template can be approved'
 );
 
 select throws_ok(

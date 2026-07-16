@@ -12,7 +12,7 @@ export default function EnquiriesError({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error("The enquiry pipeline failed to load", error)
+    void error
   }, [error])
 
   return (

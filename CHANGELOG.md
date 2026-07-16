@@ -4,6 +4,27 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Added
+
+- Versioned configurable booking-task templates with editable draft steps, dependency graphs, reminders, escalation settings, due-date anchors, optionality, and administrator approval.
+- Atomic and idempotent generation of the supplied sixteen-record booking workflow when a signed booking is confirmed.
+- Dependency-aware task blocking, completion, reopening, assignment, priority, schedule changes, append-only notes, and permanent history.
+- Booking checklist, unified task register, task detail, template management, search, filters, live dashboard metrics, and ad-hoc task creation/cancellation.
+- Automatic task rescheduling after reviewed charter-date amendments and cancellation of open work when a booking is cancelled.
+- Global recovery UI and defensive HTTP response headers.
+
+### Security
+
+- Added RLS and least-privilege grants to every task-engine table.
+- Blocked direct task/template lifecycle changes, deletion, history writes, dependency cycles, cross-booking dependencies, and approved-template mutation.
+- Restricted template configuration to administrators and retained active-user validation inside every task command.
+
+### Known limitations
+
+- Payment tasks remain blocked until Phase 8 supplies reviewed contract instalment dates.
+- Reminder and escalation settings are stored but do not send notifications until Phase 11.
+- Phase 7 remains local-only, synthetic-only, and not approved for live booking operations.
+
 ## [0.6.0] - 2026-07-16
 
 ### Added

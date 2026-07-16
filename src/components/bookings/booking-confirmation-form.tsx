@@ -35,7 +35,7 @@ export function BookingConfirmationForm({ values }: { values: BookingConfirmatio
     </div>
     <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
       <label className="flex items-start gap-3 text-sm font-medium"><input className="mt-1 size-4" name="signed_agreement_confirmed" required type="checkbox" />I have reviewed the charter agreement and confirm it is signed by every required party.</label>
-      <p className="mt-2 pl-7 text-xs leading-5">Confirmation immediately creates the authoritative booking, reserves the yacht from one day before until one day after the charter, and creates a pending manual Yachtfolio action.</p>
+      <p className="mt-2 pl-7 text-xs leading-5">Confirmation immediately creates the authoritative booking, reserves the yacht from one day before until one day after the charter, applies the approved task workflow, and creates a pending manual Yachtfolio action.</p>
     </div>
     <Field error={state.fieldErrors?.confirmation_reason?.[0]} label="Confirmation record"><textarea className="min-h-24 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={1000} name="confirmation_reason" placeholder="Record what signed agreement and details you reviewed" required /></Field>
     <p aria-live="polite" className={state.success ? "text-sm text-emerald-700" : "text-sm text-destructive"}>{state.message}</p>
