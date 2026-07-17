@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(60);
+select plan(62);
 
 select has_table('public', 'integration_connections', 'integration connections table exists');
 select has_table('public', 'notifications', 'notifications table exists');
@@ -260,10 +260,19 @@ select results_eq(
 );
 
 set local role service_role;
+select lives_ok(
+  $$ select * from public.claim_integration_deliveries('test-worker', 20) $$,
+  'trusted worker claims available deliveries'
+);
 select results_eq(
-  $$ select count(*) from public.claim_integration_deliveries('test-worker', 20) $$,
+  $$ select count(*) from public.integration_deliveries
+     where idempotency_key = (
+       select 'notification:' || id::text from public.notifications
+     where idempotency_key = 'test:review:notification'
+     )
+       and claimed_by = 'test-worker' and status = 'claimed' $$,
   array[1::bigint],
-  'trusted worker claims pending delivery'
+  'trusted worker claims the intended notification delivery'
 );
 select results_eq(
   $$ select count(*) from public.claim_integration_deliveries('other-worker', 20) $$,
@@ -272,7 +281,10 @@ select results_eq(
 );
 select lives_ok(
   $$ select public.complete_integration_delivery(
-    (select id from public.integration_deliveries where idempotency_key like 'notification:%'),
+    (select id from public.integration_deliveries where idempotency_key = (
+      select 'notification:' || id::text from public.notifications
+      where idempotency_key = 'test:review:notification'
+    )),
     'test-worker', 'telegram-message-1', 'https://example.test/message/1'
   ) $$,
   'trusted worker records provider success'
@@ -285,7 +297,10 @@ select results_eq(
 );
 select results_eq(
   $$ select external_id from public.integration_deliveries
-     where idempotency_key like 'notification:%' $$,
+     where idempotency_key = (
+       select 'notification:' || id::text from public.notifications
+       where idempotency_key = 'test:review:notification'
+     ) $$,
   array['telegram-message-1'],
   'provider identifier is retained'
 );
@@ -394,18 +409,28 @@ select lives_ok(
   $$ select public.queue_operations_sheet_snapshot() $$,
   'administrator can queue a one-way workbook snapshot'
 );
+select lives_ok(
+  $$ select public.queue_operations_sheet_snapshot() $$,
+  'unchanged workbook snapshot can be queued again safely'
+);
 select results_eq(
-  $$ select count(*) from public.integration_snapshots $$,
+  $$ select count(*) from public.integration_snapshots
+     where requested_by = '19000000-0000-0000-0000-000000000001' $$,
   array[1::bigint],
-  'one workbook snapshot is recorded'
+  'one workbook snapshot is recorded for the unchanged request'
 );
 select ok(
-  (select row_count > 0 from public.integration_snapshots limit 1),
+  (select row_count > 0 from public.integration_snapshots
+   where requested_by = '19000000-0000-0000-0000-000000000001' limit 1),
   'workbook snapshot contains operational rows'
 );
 select results_eq(
   $$ select count(*) from public.integration_deliveries
-     where operation = 'sheets_snapshot' $$,
+     where operation = 'sheets_snapshot'
+       and source_id = (
+         select id from public.integration_snapshots
+         where requested_by = '19000000-0000-0000-0000-000000000001'
+       ) $$,
   array[1::bigint],
   'workbook snapshot has one delivery'
 );

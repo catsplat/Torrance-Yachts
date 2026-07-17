@@ -4,6 +4,29 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Added
+
+- A documented four-point operations design system and an audit record for the
+  post-workflow interface refinement.
+- Accessible shared loading skeletons for booking, document, email, and task
+  registers.
+- A content-idempotent Google Sheets workbook snapshot command and a regression
+  test for safe unchanged retries.
+
+### Changed
+
+- Standardised the authenticated shell, navigation, cards, controls, semantic
+  colour tokens, dark palette, and dashboard action queue around the actual
+  daily charter workflow.
+- Removed the obsolete generic module placeholder route now that every
+  authorised operational module has a concrete screen.
+- Replaced the client-only dark-mode toggle with a persistent server-action
+  preference and HttpOnly cookie.
+- Updated local setup documentation with the token-protected administrator
+  bootstrap and a non-destructive Studio recovery procedure.
+- Made integration database tests independent of existing synthetic local
+  delivery history.
+
 ## [0.14.0] - 2026-07-17
 
 ### Added

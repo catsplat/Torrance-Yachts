@@ -1,3 +1,5 @@
+import { RegisterLoading } from "@/components/ui/register-loading"
+
 export default function Loading() {
-  return <p className="text-sm text-muted-foreground">Loading protected document records…</p>
+  return <RegisterLoading label="Loading protected document records" />
 }

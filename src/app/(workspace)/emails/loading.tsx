@@ -1,3 +1,5 @@
+import { RegisterLoading } from "@/components/ui/register-loading"
+
 export default function Loading() {
-  return <p className="text-sm text-muted-foreground">Loading imported email records…</p>
+  return <RegisterLoading label="Loading imported email records" />
 }

@@ -14,11 +14,11 @@ export function PrimaryNavigation({ onNavigate }: PrimaryNavigationProps) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Primary navigation" className="space-y-5">
+    <nav aria-label="Primary navigation" className="space-y-6">
       {navigationGroups.map((group, groupIndex) => (
         <div key={group.label ?? `navigation-${groupIndex}`} className="space-y-1">
           {group.label ? (
-            <p className="px-3 pb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-sidebar-foreground/40">
+            <p className="px-3 pb-1 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/45">
               {group.label}
             </p>
           ) : null}
@@ -36,10 +36,10 @@ export function PrimaryNavigation({ onNavigate }: PrimaryNavigationProps) {
                 aria-current={isActive ? "page" : undefined}
                 onClick={onNavigate}
                 className={cn(
-                  "group flex min-h-9 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  "group flex min-h-9 items-center gap-3 rounded-lg border border-transparent px-3 py-2 text-sm font-medium transition-colors",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                    ? "border-sidebar-border bg-sidebar-accent text-sidebar-accent-foreground shadow-sm shadow-black/10"
                     : "text-sidebar-foreground/72 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
                 )}
               >

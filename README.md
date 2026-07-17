@@ -102,7 +102,7 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-The Docker network command is a one-time setup recommended by Supabase. On Windows, verify the resulting port bindings and use a trusted/private network because Docker Desktop may still publish development ports on all host interfaces. Use synthetic data only. Fill the two blank values in the ignored `.env.local` using the API URL and publishable key printed by `npm run db:status`; never use the service-role key in the web application. Open `http://127.0.0.1:54323` to create a local internal user, then `http://localhost:3000` to sign in. The complete bootstrap and network-verification procedure is in [local development setup](docs/development/LOCAL_SETUP.md).
+The Docker network command is a one-time setup recommended by Supabase. On Windows, verify the resulting port bindings and use a trusted/private network because Docker Desktop may still publish development ports on all host interfaces. Use synthetic data only. Fill the two blank values in the ignored `.env.local` using the API URL and publishable key printed by `npm run db:status`; never use the service-role key in the web application. Studio at `http://127.0.0.1:54323` is for local inspection. Create the first administrator through the temporary token-protected `http://localhost:3000/setup` route, then sign in normally. The complete bootstrap, Studio recovery, and network-verification procedure is in [local development setup](docs/development/LOCAL_SETUP.md).
 
 Before committing changes, run:
 

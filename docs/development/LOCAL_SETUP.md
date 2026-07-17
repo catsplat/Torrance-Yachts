@@ -55,17 +55,15 @@ This procedure creates an isolated development environment. It must contain synt
 
    Do not use or commit the service-role key.
 
-7. Open Supabase Studio at `http://127.0.0.1:54323`. Under Authentication, create a synthetic local user with a unique password of at least 12 characters.
+7. Open Supabase Studio at `http://127.0.0.1:54323` only to inspect local
+   synthetic data, migrations, and service status. Do not use Studio SQL to
+   promote users.
 
-8. Bootstrap the first local administrator through Studio's SQL editor, substituting the synthetic email just created:
-
-   ```sql
-   update public.profiles
-   set role = 'administrator'
-   where email = 'your-local-user@example.test';
-   ```
-
-   This is an explicit bootstrap operation. Later users remain staff unless an administrator changes them through an approved management path.
+8. For a fresh local environment, set a temporary 32+ character
+   `INITIAL_ADMIN_SETUP_TOKEN` in the ignored `.env.local`, restart the web
+   application, and complete `http://localhost:3000/setup`. Remove the token
+   and restart the application once the first administrator exists. Later users
+   are invited by an administrator through Settings.
 
 9. Start the web application:
 
@@ -108,3 +106,9 @@ npm audit --audit-level=high
 - If authentication unexpectedly fails after a reset, recreate the local user because auth rows are local data.
 - If the application reports missing environment variables, check `.env.local` against `npm run db:status` and restart the dev server.
 - If port 3000 is already occupied, stop the existing local Next.js process rather than silently changing the documented URL.
+- If Studio displays an API communication error, first hard-refresh
+  `http://127.0.0.1:54323`. If it persists, run `npm run db:stop`, then
+  `npm run db:start`, wait for the core services to become healthy, and reload
+  Studio. This preserves local volumes and is the safe recovery after a Docker
+  or Windows restart. Do not use `db:reset` merely to recover Studio; reset
+  destroys local synthetic data.

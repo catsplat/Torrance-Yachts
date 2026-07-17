@@ -39,10 +39,10 @@ export function AppShell({
   unreadNotificationCount,
 }: AppShellProps) {
   return (
-    <div className="min-h-svh lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
-      <aside className="sticky top-0 hidden h-svh flex-col border-r border-sidebar-border bg-sidebar px-3 py-5 text-sidebar-foreground lg:flex">
+    <div className="min-h-svh bg-background lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+      <aside className="sticky top-0 hidden h-svh flex-col border-r border-sidebar-border bg-sidebar px-3 py-6 text-sidebar-foreground lg:flex">
         <div className="flex items-center gap-3 px-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm shadow-black/10">
             <ShipWheel aria-hidden="true" className="size-5" />
           </div>
           <div>
@@ -53,12 +53,12 @@ export function AppShell({
           </div>
         </div>
 
-        <Separator className="my-5 bg-sidebar-border" />
+        <Separator className="my-6 bg-sidebar-border" />
         <div className="flex-1 overflow-y-auto">
           <PrimaryNavigation />
         </div>
 
-        <div className="mt-4 rounded-xl border border-sidebar-border bg-sidebar-accent/45 p-3">
+        <div className="mt-4 rounded-xl border border-sidebar-border bg-sidebar-accent/45 p-4">
           <div className="flex items-center gap-2 text-xs font-medium">
             <ShieldCheck aria-hidden="true" className="size-4 text-sidebar-primary" />
             Private workspace
@@ -70,7 +70,7 @@ export function AppShell({
       </aside>
 
       <div className="min-w-0">
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur md:px-6">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-border/80 bg-background/95 px-4 backdrop-blur md:px-6 lg:px-8">
           <MobileNavigation />
 
           <WorkspaceSearch />
@@ -85,7 +85,7 @@ export function AppShell({
             <ThemeToggle initialTheme={initialTheme} />
             <Link
               aria-label={`${unreadNotificationCount} unread notifications`}
-              className="relative inline-flex size-9 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="relative inline-flex size-9 items-center justify-center rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               href="/notifications"
               title="Open notifications"
             >
