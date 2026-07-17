@@ -4,6 +4,47 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-07-17
+
+### Added
+
+- Token-protected, request-time `/setup` workflow for creating the first
+  administrator on an empty installation without public registration.
+- Auth-triggered inactive bootstrap profiles and an atomic, least-privilege
+  database command for uniqueness, role promotion, and workflow audit.
+- Administrator integration-readiness page covering Gmail ingestion, personal
+  Gmail alerts, Telegram, n8n, account email delivery, AI, and Yachtfolio.
+- Local Mailpit and production SMTP guidance plus a complete provider-activation
+  runbook.
+- 15 additional PostgreSQL privilege/behaviour assertions and nine additional
+  application tests for activation state, token handling, and validation.
+
+### Changed
+
+- Aligned profile phone and Telegram validation with PostgreSQL constraints.
+- Added production environment controls for the temporary setup token, private
+  n8n health endpoint, SMTP verification, and explicit AI provider.
+- Distinguished credential presence from recent successful Gmail ingestion and
+  provider health.
+
+### Security
+
+- Kept raw operational tables unavailable to the trusted service role; setup and
+  readiness use narrow security-definer functions with redacted output.
+- Compared the setup token in constant time, kept candidates inactive until the
+  atomic promotion succeeds, and closed setup permanently once any profile exists.
+- Kept SMTP and provider credentials outside browser-readable settings, logs,
+  audit payloads, and source control.
+- Retained explicit operator activation for n8n and human completion/audit for
+  Yachtfolio.
+
+### Known limitations
+
+- Provider credentials, client-owned accounts, SMTP, infrastructure, synthetic
+  provider acceptance, policies, training, and sign-off remain required before
+  live data is permitted.
+- The packaged desktop edition remains a separately documented future version.
+
 ## [0.13.0] - 2026-07-16
 
 ### Added

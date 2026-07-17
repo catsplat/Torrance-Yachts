@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  initialAdministratorSetupSchema,
   internalUserUpdateSchema,
   passwordUpdateSchema,
 } from "./validation"
@@ -26,6 +27,30 @@ describe("internal user validation", () => {
     expect(passwordUpdateSchema.safeParse({
       confirmPassword: "weak",
       password: "weak",
+    }).success).toBe(false)
+  })
+
+  it("accepts a complete first-administrator setup request", () => {
+    expect(initialAdministratorSetupSchema.safeParse({
+      confirmPassword: "Strong!Synthetic2026",
+      displayName: "Initial Administrator",
+      email: "initial.admin@example.test",
+      password: "Strong!Synthetic2026",
+      phone: "+44000000002",
+      setupToken: "local-development-bootstrap-token-0123456789",
+      telegramChatId: "200000002",
+    }).success).toBe(true)
+  })
+
+  it("rejects contact values that violate profile database constraints", () => {
+    expect(initialAdministratorSetupSchema.safeParse({
+      confirmPassword: "Strong!Synthetic2026",
+      displayName: "Initial Administrator",
+      email: "initial.admin@example.test",
+      password: "Strong!Synthetic2026",
+      phone: "123",
+      setupToken: "local-development-bootstrap-token-0123456789",
+      telegramChatId: "",
     }).success).toBe(false)
   })
 })

@@ -6,11 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 type LoginPageProps = {
   searchParams: Promise<{
     recovery?: string | string[]
+    setup?: string | string[]
   }>
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const recovery = (await searchParams).recovery
+  const params = await searchParams
+  const recovery = params.recovery
   const recoveryMessage = recovery === "complete"
     ? {
         className: "border-emerald-200 bg-emerald-50 text-emerald-900",
@@ -22,6 +24,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           text: "That recovery link is invalid or has expired. Ask an administrator to send a new one.",
         }
       : null
+  const setupComplete = params.setup === "complete"
 
   return (
     <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-slate-950 px-4 py-10 text-slate-950">
@@ -68,6 +71,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </div>
           </CardHeader>
           <CardContent>
+            {setupComplete ? <p aria-live="polite" className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-900" role="status">Administrator created. Sign in with the account you just configured, then remove the setup token from the deployment environment.</p> : null}
             {recoveryMessage ? (
               <p
                 aria-live="polite"

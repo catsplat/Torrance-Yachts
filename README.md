@@ -2,8 +2,8 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** All twelve implementation phases and the `v0.13.0`
-> workflow-hardening release are complete in the release candidate. Production
+> **Development status:** All twelve implementation phases and the `v0.14.0`
+> activation-readiness release are complete in the release candidate. Production
 > activation remains blocked until client-owned infrastructure, credentials,
 > policies, staff acceptance, training, and launch sign-off are recorded. Do not
 > enter real client data yet.
@@ -54,11 +54,14 @@ The current candidate provides the secured operational master-data, enquiry, off
 - administrator invitations, access management, and secure password recovery;
 - launch acceptance, backup/restore evidence, health monitoring, incident,
   maintenance, retention/privacy, deployment, and staff-training runbooks;
+- token-protected one-time first-administrator setup with no public registration;
+- truthful integration-readiness status for Gmail, Telegram, n8n, Auth email,
+  AI, and the audited manual Yachtfolio boundary;
 - a standalone Next.js/n8n/Caddy Linux production package and a separately
   documented future desktop distribution;
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
-- 70 unit tests, 593 database permission/behaviour tests, database linting,
+- 79 unit tests, 608 database permission/behaviour tests, database linting,
   deployment-package validation, and matching CI gates.
 
 Confirmed bookings generate their workflow, private document checklist, reviewed contract data, payments, calendar records, reminders, and controlled delivery work. External adapters remain observable and cannot change operational authority. The application does not send consequential communications or update Yachtfolio automatically. Production approval is evidence-driven in `/settings/launch`; code completion alone does not permit live data.
@@ -157,6 +160,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Transactional integration outbox decision](docs/decisions/0012-transactional-integration-outbox.md)
 - [Production hosting topology decision](docs/decisions/0013-production-hosting-topology.md)
 - [Personal alerts and encrypted OAuth decision](docs/decisions/0014-personal-alerts-encrypted-oauth.md)
+- [One-time administrator bootstrap decision](docs/decisions/0015-one-time-administrator-bootstrap.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)
 - [Phase 2 development diary](docs/development/2026-07-15-auth-yacht-slice.md)
@@ -192,6 +196,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 11 portfolio case study](docs/portfolio/INTEGRATIONS_AUTOMATION_CASE_STUDY.md)
 - [Phase 12 portfolio case study](docs/portfolio/LAUNCH_READINESS_CASE_STUDY.md)
 - [Production operations runbooks](docs/operations/PRODUCTION_DEPLOYMENT.md)
+- [Email and integration activation](docs/operations/EMAIL_AND_INTEGRATION_ACTIVATION.md)
 - [Staff quick-start guide](docs/client/STAFF_QUICK_START.md)
 - [Security policy](SECURITY.md)
 - [Contribution guide](CONTRIBUTING.md)

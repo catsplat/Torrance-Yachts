@@ -23,11 +23,16 @@
 8. Start the tagged image and n8n/Caddy stack.
 9. Verify HTTPS, security headers, login, liveness, authenticated readiness, n8n
    owner access, and disabled workflows.
-10. Configure provider credentials with minimum scopes inside n8n.
-11. Import workflows, run `n8n audit`, execute synthetic provider tests, and
+10. Set a temporary high-entropy `INITIAL_ADMIN_SETUP_TOKEN`, create the named
+    first administrator at `/setup`, remove the token, restart the app, and
+    confirm setup is closed.
+11. Configure production SMTP and provider credentials with minimum scopes.
+12. Follow `EMAIL_AND_INTEGRATION_ACTIVATION.md`, inspect `/settings/activation`,
+    and confirm secret values never appear in the interface or logs.
+13. Import workflows, run `n8n audit`, execute synthetic provider tests, and
     activate one workflow at a time.
-12. Complete `/settings/launch`; live data remains prohibited until final client
-    sign-off.
+14. Complete `/settings/launch`; live data remains prohibited until final client
+   sign-off.
 
 ## Release
 
