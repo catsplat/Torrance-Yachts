@@ -7,11 +7,17 @@ select has_function('public', 'complete_initial_administrator', array['uuid','te
 select has_function('public', 'get_activation_readiness_snapshot', array[]::text[], 'redacted activation snapshot exists');
 
 insert into auth.users (id, email, raw_user_meta_data)
-values (
-  '22000000-0000-4000-8000-000000000001',
-  'pending.setup@example.test',
-  '{"display_name":"Pending Setup","_initial_setup_pending":"true"}'::jsonb
-);
+values
+  (
+    '22000000-0000-4000-8000-000000000002',
+    'existing.setup@example.test',
+    '{"display_name":"Existing Setup User"}'::jsonb
+  ),
+  (
+    '22000000-0000-4000-8000-000000000001',
+    'pending.setup@example.test',
+    '{"display_name":"Pending Setup","_initial_setup_pending":"true"}'::jsonb
+  );
 
 select results_eq(
   $$ select active from public.profiles where id = '22000000-0000-4000-8000-000000000001' $$,
