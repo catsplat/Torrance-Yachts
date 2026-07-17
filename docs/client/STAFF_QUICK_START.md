@@ -37,6 +37,8 @@ and commission-document work after charter end.
 - AI suggests; staff decide.
 - Gmail drafts are not automatically sent.
 - Configure personal channels in Settings -> My alerts and connections.
+- Administrators verify connected services in Settings -> Integration readiness;
+  a green status does not replace the formal launch sign-off.
 - Google/Telegram/n8n failures do not change the booking record.
 - Never create public links for contracts, passports, KYC/CDD, or invoices.
 - Report suspected mistakes or access issues immediately; do not delete evidence.

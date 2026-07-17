@@ -3934,6 +3934,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_initial_administrator: {
+        Args: {
+          p_display_name: string
+          p_phone: string
+          p_telegram_chat_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      get_activation_readiness_snapshot: { Args: never; Returns: Json }
+      get_initial_setup_profile_count: { Args: never; Returns: number }
       add_ad_hoc_task: {
         Args: {
           p_assigned_user_id: string

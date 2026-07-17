@@ -40,7 +40,8 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/api/integrations/") ||
     request.nextUrl.pathname.startsWith("/api/health/")
   const publicAuthCallback = request.nextUrl.pathname === "/auth/callback"
-  const response = trustedApi || publicAuthCallback
+  const publicInitialSetup = request.nextUrl.pathname === "/setup"
+  const response = trustedApi || publicAuthCallback || publicInitialSetup
     ? NextResponse.next({ request: { headers: requestHeaders } })
     : await updateSession(request, requestHeaders)
   response.headers.set("Content-Security-Policy", contentSecurityPolicy)
