@@ -74,9 +74,17 @@ mail automatically.
 
 1. Create one company-controlled bot with BotFather.
 2. Store `TELEGRAM_BOT_TOKEN` only in deployment secret storage.
-3. Enable the Telegram integration record.
-4. Each staff member adds their own chat ID and preferences in Settings.
-5. Send a synthetic internal alert and verify delivery/failure history.
+3. Set the non-secret bot username as `TELEGRAM_BOT_USERNAME` and create a
+   high-entropy `TELEGRAM_WEBHOOK_SECRET` in deployment secret storage.
+4. Register `https://<approved-app-host>/api/integrations/telegram/webhook` as
+   the Telegram webhook with that same secret token. The endpoint must be HTTPS
+   and must not be exposed through an untrusted proxy.
+5. Enable the Telegram integration record.
+6. Each staff member opens **Settings -> Your alerts and connections** and
+   selects **Connect Telegram**, then presses Start in the company bot. The
+   manual chat-ID field is only a documented recovery fallback.
+7. Send a synthetic internal alert and verify pairing, delivery, and failure
+   history. Confirm that a reused pairing link is ignored.
 
 Broker, captain, booking, invoice, and status communications remain reviewable
 even when Telegram is connected.

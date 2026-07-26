@@ -8,13 +8,44 @@ import {
   gmailOauthDisconnectSchema,
 } from "@/lib/alerts/validation"
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
+import {
+  createTelegramPairingToken,
+  createTelegramPairingUrl,
+  getTelegramPairingConfiguration,
+  hashTelegramPairingToken,
+} from "@/lib/integrations/telegram-pairing"
 
 export type AlertSettingsActionState = {
   message?: string
+  pairingUrl?: string
   success?: boolean
 }
 
 const expired = { message: "Your session has expired. Sign in again." }
+
+export async function createMyTelegramPairingAction(
+  _state: AlertSettingsActionState,
+  _formData: FormData,
+): Promise<AlertSettingsActionState> {
+  void _state
+  void _formData
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return expired
+  const configuration = getTelegramPairingConfiguration()
+  if (!configuration.configured) {
+    return { message: "Telegram pairing is not configured for this workspace yet." }
+  }
+  const token = createTelegramPairingToken()
+  const { error } = await context.supabase.rpc("create_my_telegram_pairing_request", {
+    p_token_hash: hashTelegramPairingToken(token),
+  })
+  if (error) return { message: "A secure Telegram pairing link could not be created." }
+  return {
+    message: "Open the company bot and press Start within 10 minutes. This link is private to you.",
+    pairingUrl: createTelegramPairingUrl(configuration.botUsername, token),
+    success: true,
+  }
+}
 
 export async function updateMyAlertPreferencesAction(
   _state: AlertSettingsActionState,

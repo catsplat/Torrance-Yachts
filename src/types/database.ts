@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -3111,6 +3111,41 @@ export type Database = {
           },
         ]
       }
+      telegram_pairing_requests: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_pairing_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tutorial_history: {
         Row: {
           created_at: string
@@ -3934,17 +3969,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      complete_initial_administrator: {
-        Args: {
-          p_display_name: string
-          p_phone: string
-          p_telegram_chat_id: string
-          p_user_id: string
-        }
-        Returns: boolean
-      }
-      get_activation_readiness_snapshot: { Args: never; Returns: Json }
-      get_initial_setup_profile_count: { Args: never; Returns: number }
       add_ad_hoc_task: {
         Args: {
           p_assigned_user_id: string
@@ -4433,6 +4457,15 @@ export type Database = {
         }
         Returns: string
       }
+      complete_initial_administrator: {
+        Args: {
+          p_display_name: string
+          p_phone: string
+          p_telegram_chat_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       complete_integration_delivery: {
         Args: {
           p_delivery_id: string
@@ -4481,6 +4514,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      complete_telegram_pairing: {
+        Args: { p_telegram_chat_id: string; p_token_hash: string }
+        Returns: string
       }
       confirm_booking: {
         Args: {
@@ -4551,6 +4588,10 @@ export type Database = {
           p_recipient_name: string
           p_service_description_template: string
         }
+        Returns: string
+      }
+      create_my_telegram_pairing_request: {
+        Args: { p_token_hash: string }
         Returns: string
       }
       create_notification: {
@@ -4650,6 +4691,7 @@ export type Database = {
         Args: { p_booking_id: string; p_template_id?: string }
         Returns: number
       }
+      get_activation_readiness_snapshot: { Args: never; Returns: Json }
       get_delivery_oauth_credentials: {
         Args: { p_delivery_id: string }
         Returns: {
@@ -4659,6 +4701,7 @@ export type Database = {
           refresh_token: string
         }[]
       }
+      get_initial_setup_profile_count: { Args: never; Returns: number }
       get_launch_readiness_summary: { Args: never; Returns: Json }
       get_my_oauth_connections: {
         Args: never

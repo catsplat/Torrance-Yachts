@@ -4,6 +4,7 @@ import Link from "next/link"
 import {
   AlertPreferencesForm,
   GmailOauthDisconnectForm,
+  TelegramPairingForm,
 } from "@/components/alerts/alert-settings-forms"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/card"
 import { getCurrentUser } from "@/lib/auth/current-user"
 import { getGoogleOAuthConfiguration } from "@/lib/integrations/google-oauth-server"
+import { getTelegramPairingConfiguration } from "@/lib/integrations/telegram-pairing"
 import { createClient } from "@/lib/supabase/server"
 
 type PageProps = { searchParams: Promise<{ google?: string }> }
@@ -52,6 +54,7 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
   const gmail = oauthResult.data?.find((connection) => connection.provider === "gmail")
   const gmailConnected = gmail?.status === "connected"
   const googleConfigured = getGoogleOAuthConfiguration().configured
+  const telegramPairingConfigured = getTelegramPairingConfiguration().configured
   const contactReady = Boolean(profileResult.data.phone || preferenceResult.data.notification_email)
   const telegramReady = Boolean(profileResult.data.telegram_chat_id && preferenceResult.data.telegram_enabled)
   return (
@@ -88,6 +91,10 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,.85fr)]">
         <Card>
+          <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><Send className="size-5 text-primary" />Telegram delivery</CardTitle><CardDescription>Pair your private Telegram chat with the company bot in one short, secure step.</CardDescription></CardHeader>
+          <CardContent className="pt-5"><TelegramPairingForm configured={telegramPairingConfigured} connected={telegramReady} /></CardContent>
+        </Card>
+        <Card>
           <CardHeader className="border-b">
             <CardTitle className="flex items-center gap-2">
               <Mail className="size-5 text-primary" />
@@ -121,8 +128,9 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
           </CardHeader>
           <CardContent className="space-y-4 pt-5 text-sm text-muted-foreground">
             <p>
-              Telegram uses one company-controlled bot token stored on the server.
-              You provide only a private destination chat ID after starting the bot.
+              Telegram pairing happens through one company-controlled bot. Its
+              token and webhook secret stay on the server; the normal setup path
+              does not expose a chat ID.
             </p>
             <p>
               Google approval is completed on Google&apos;s own page. Ongoing access is encrypted in Supabase Vault; it is never shown back in Settings.

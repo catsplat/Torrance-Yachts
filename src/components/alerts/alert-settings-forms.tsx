@@ -1,8 +1,10 @@
 "use client"
 
 import { useActionState } from "react"
+import { useRouter } from "next/navigation"
 
 import {
+  createMyTelegramPairingAction,
   disconnectMyGmailOauthAction,
   updateMyAlertPreferencesAction,
   type AlertSettingsActionState,
@@ -22,6 +24,30 @@ function Feedback({ state }: { state: AlertSettingsActionState }) {
       {state.message}
     </p>
   )
+}
+
+export function TelegramPairingForm({
+  configured,
+  connected,
+}: {
+  configured: boolean
+  connected: boolean
+}) {
+  const router = useRouter()
+  const [state, action, pending] = useActionState(createMyTelegramPairingAction, initialState)
+
+  if (connected) {
+    return <p className="text-sm leading-6 text-muted-foreground">Telegram is connected to your private chat. You can change delivery topics above or disconnect it by clearing the chat ID and saving your preferences.</p>
+  }
+  if (!configured) {
+    return <p className="rounded-lg border bg-muted/30 p-4 text-sm leading-6 text-muted-foreground">Telegram pairing will appear here once an administrator has connected the company bot. You can still enter a chat ID manually if an administrator provides one.</p>
+  }
+  return <form action={action} className="space-y-3">
+    <p className="text-sm leading-6 text-muted-foreground">Open the company bot from this private link, then press <strong>Start</strong>. The platform will attach that chat to your staff account automatically.</p>
+    {state.pairingUrl ? <a className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50" href={state.pairingUrl} rel="noreferrer" target="_blank">Open company bot</a> : <Button disabled={pending} type="submit">{pending ? "Creating private link…" : "Connect Telegram"}</Button>}
+    {state.pairingUrl ? <Button onClick={() => router.refresh()} type="button" variant="outline">I&apos;ve pressed Start — check connection</Button> : null}
+    <Feedback state={state} />
+  </form>
 }
 
 function Toggle({
@@ -122,7 +148,7 @@ export function AlertPreferencesForm({
         />
         <Toggle
           defaultChecked={preferences.telegram_enabled}
-          description="Uses the shared company bot. Start a chat with it, then enter the chat ID supplied by your administrator."
+          description="Uses the shared company bot. Pair it below; the manual chat-ID field is only a fallback."
           label="Telegram"
           name="telegramEnabled"
         />
@@ -135,9 +161,9 @@ export function AlertPreferencesForm({
         />
         </div>
         <label className="grid max-w-md gap-2 text-sm font-medium">
-          Telegram chat ID
-          <Input defaultValue={telegramChatId ?? ""} name="telegramChatId" placeholder="Provided after you start the company bot" />
-          <span className="text-xs font-normal leading-5 text-muted-foreground">Telegram bots do not support a staff sign-in. This private destination ID tells the company bot where to deliver your alerts.</span>
+          Telegram chat ID (manual fallback)
+          <Input defaultValue={telegramChatId ?? ""} name="telegramChatId" placeholder="Only enter this if an administrator provides it" />
+          <span className="text-xs font-normal leading-5 text-muted-foreground">Normally, use the secure pairing step below. This field remains available for a supported manual recovery path.</span>
         </label>
       </section>
 

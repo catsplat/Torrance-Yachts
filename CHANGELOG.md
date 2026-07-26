@@ -6,6 +6,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- Secure one-click Telegram staff pairing through the company bot, with
+  expiring deep links, token hashes, webhook-secret verification, one-time
+  database completion, and replay protection.
 - A guided personal setup experience for staff phone, alert email, Telegram
   delivery, notification topics, and Google inbox connections.
 - Official Google OAuth authorisation-code flow with PKCE, verified-account
