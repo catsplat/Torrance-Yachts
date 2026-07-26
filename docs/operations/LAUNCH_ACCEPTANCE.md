@@ -21,3 +21,22 @@ The final client acceptance session must demonstrate with synthetic data:
 
 Record attendees, environment, release tag, date, evidence, defects, accepted
 limitations, support owner, recurring costs, and go-live decision.
+
+## Local offline prerequisite
+
+Before any live activation, an administrator must complete the local rehearsal
+from **Settings -> Offline workflow rehearsal**. Capture the following evidence:
+
+1. the five fictional email routes and a replayed provider event;
+2. a local Ollama proposal, human correction/rejection, and a recorded failed
+   analysis case;
+3. a fictional offer-to-booking sequence with the 24-hour availability buffer;
+4. task dependencies 0.A-7, document requirements, contract review, payment
+   schedule, invoice PDF, Yachtfolio task, charter start/end, and broker
+   follow-up;
+5. conflict, cancellation, amendment, missing-document, overdue-payment, and
+   delivery-recovery paths; and
+6. an inactive imported n8n set plus one manual development-simulator run.
+
+No real documents, external credentials, or recipient contact is permitted in
+this local prerequisite.

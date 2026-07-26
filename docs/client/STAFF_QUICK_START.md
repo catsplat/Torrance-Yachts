@@ -1,5 +1,13 @@
 # Staff quick start
 
+## Before live activation: local rehearsal
+
+An administrator can open **Settings -> Offline workflow rehearsal** to practise
+the daily flow using only records labelled **Fictional rehearsal**. Start with
+the five-route suite, inspect the AI proposal as a proposal only, and follow
+the charter-rehearsal map. Do not upload identity documents or add live provider
+credentials during this exercise.
+
 ## Every morning
 
 1. Sign in with your individual account.

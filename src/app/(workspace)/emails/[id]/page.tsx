@@ -74,6 +74,11 @@ export default async function EmailDetailPage({ params }: Props) {
               </p>
             </div>
             <div className="flex gap-2">
+              {message.gmail_label_ids.includes("OFFLINE_REHEARSAL") ? (
+                <Badge className="border-sky-200 bg-sky-50 text-sky-900" variant="outline">
+                  Fictional rehearsal
+                </Badge>
+              ) : null}
               <Badge variant="outline">
                 {emailClassificationLabels[message.classification]}
               </Badge>

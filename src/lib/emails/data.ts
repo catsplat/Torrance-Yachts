@@ -8,7 +8,7 @@ export const getEmailInbox = cache(async () => {
   const supabase = await createClient()
   const { data, error } = await supabase.from("email_messages").select(`
     id, thread_id, provider_message_id, received_at, sender_name, sender_email,
-    subject, snippet, has_attachments, classification, processing_status,
+    subject, snippet, has_attachments, gmail_label_ids, classification, processing_status,
     deterministic_rule,
     thread:email_threads!email_messages_thread_id_fkey(
       enquiry_id,

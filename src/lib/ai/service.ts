@@ -34,7 +34,10 @@ function safeFailure(error: unknown) {
   if (error instanceof Error) {
     return {
       code: error.name === "Error" ? "provider_error" : error.name.toLowerCase().slice(0, 100),
-      message: error.message.replaceAll(process.env.OPENAI_API_KEY ?? "\0", "[redacted]").slice(0, 1000),
+      message: [process.env.OPENAI_API_KEY, process.env.OLLAMA_API_KEY]
+        .filter((secret): secret is string => Boolean(secret))
+        .reduce((message, secret) => message.replaceAll(secret, "[redacted]"), error.message)
+        .slice(0, 1000),
     }
   }
   return { code: "provider_error", message: "The configured AI provider failed." }

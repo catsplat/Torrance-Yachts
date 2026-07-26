@@ -6,6 +6,15 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- Development-only Offline Rehearsal controls that inject a clearly fictional
+  email through the real local inbox/AI-review boundary without external
+  providers.
+- A local Ollama structured-output provider for offline AI assurance, plus
+  launch-gap and acceptance documentation.
+- Local-only five-route email rehearsal, stable replay identifiers, a
+  schema-valid Ollama acceptance test, and a fictional charter rehearsal map.
+- Document quarantine/scanning production-gate documentation; real identity or
+  client documents remain prohibited during local assurance.
 - A documented four-point operations design system and an audit record for the
   post-workflow interface refinement.
 - Accessible shared loading skeletons for booking, document, email, and task
@@ -26,6 +35,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
   bootstrap and a non-destructive Studio recovery procedure.
 - Made integration database tests independent of existing synthetic local
   delivery history.
+- Updated Next.js, its ESLint configuration, and audited transitive runtime
+  dependencies to compatible patched releases. The remaining audit findings are
+  moderate and confined to the development-only shadcn CLI dependency chain.
 
 ## [0.14.0] - 2026-07-17
 
