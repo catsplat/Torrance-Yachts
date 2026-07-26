@@ -1,6 +1,6 @@
 # Torrance Yachts platform: client progress summary
 
-**Updated:** 16 July 2026
+**Updated:** 26 July 2026
 
 The project has moved from planning into a working, secured internal application.
 All twelve planned implementation phases are complete, followed by the
@@ -67,8 +67,8 @@ Local n8n Community Edition is installed through Docker, and the complete
 application-to-n8n delivery contract has been tested with synthetic data. Real
 provider accounts remain disconnected until deployment acceptance.
 
-Current verification includes 66 application tests and 549 database
-security/behaviour assertions.
+Current verification includes 85 application tests, a local Ollama acceptance
+test, and 610 database security/behaviour assertions.
 
 ## Phase 12 release candidate
 
@@ -116,6 +116,7 @@ communications from approved templates and authoritative records.
 The full technical workflow from imported email through enquiry, offer,
 human-confirmed booking, generated tasks, protected documents, reviewed payments,
 notifications, calendar, charter completion, and follow-up is working with
-synthetic data. The software release candidate is complete, but it is not yet
-approved for live data because client-owned services and final acceptance are
-external launch gates rather than coding tasks.
+synthetic data. Local offline assurance, backup/restore, and provider-contract
+rehearsals are complete. The software is not yet approved for live data because
+client-owned services and final acceptance are external launch gates rather than
+coding tasks. Use `LIVE_ACTIVATION_UAT.md` for the next stage.

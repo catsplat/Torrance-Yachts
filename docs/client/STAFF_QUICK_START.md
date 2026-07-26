@@ -8,6 +8,9 @@ the five-route suite, inspect the AI proposal as a proposal only, and follow
 the charter-rehearsal map. Do not upload identity documents or add live provider
 credentials during this exercise.
 
+For the subsequent client-owned provider test, follow the separate
+`LIVE_ACTIVATION_UAT.md` script with a test mailbox and test Telegram chat.
+
 ## Every morning
 
 1. Sign in with your individual account.
