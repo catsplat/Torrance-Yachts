@@ -6,6 +6,13 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- A guided personal setup experience for staff phone, alert email, Telegram
+  delivery, notification topics, and Google inbox connections.
+- Official Google OAuth authorisation-code flow with PKCE, verified-account
+  lookup, encrypted Vault storage, secure state validation, and a company-owned
+  server-only OAuth application configuration.
+- Administrator-only Company connections settings, separating provider/n8n
+  controls from the daily notification delivery centre.
 - Development-only Offline Rehearsal controls that inject a clearly fictional
   email through the real local inbox/AI-review boundary without external
   providers.
@@ -24,6 +31,10 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Changed
 
+- Reorganised Settings around personal setup, workspace workflow, and company
+  delivery/launch controls; removed OAuth secret entry from the staff interface.
+- Refocused Integrations on notification approval and delivery health while
+  retaining all company adapter controls in the administrator settings area.
 - Standardised the authenticated shell, navigation, cards, controls, semantic
   colour tokens, dark palette, and dashboard action queue around the actual
   daily charter workflow.

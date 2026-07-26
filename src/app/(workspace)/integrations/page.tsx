@@ -1,8 +1,7 @@
-import { AlertTriangle, CheckCircle2, PlugZap, Send, Sheet } from "lucide-react"
+import { AlertTriangle, CheckCircle2, ExternalLink, Send, Settings2, Sheet } from "lucide-react"
+import Link from "next/link"
 
 import {
-  AutomationControls,
-  ConnectionForm,
   DeliveryRetryForm,
   NotificationDraftForm,
   NotificationReviewForm,
@@ -28,12 +27,10 @@ export default async function IntegrationsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Controlled adapters</p>
-        <h1 className="mt-1 text-3xl font-semibold">Notifications and integrations</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Delivery centre</p>
+        <h1 className="mt-1 text-3xl font-semibold">Notification delivery</h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-          PostgreSQL creates idempotent delivery work. n8n schedules the safe
-          application adapters and shared provider workers; neither can change
-          authoritative booking state.
+          Review communication awaiting approval, create internal alerts, and resolve delivery problems. Company provider settings are kept separate from this daily workspace.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
@@ -42,29 +39,15 @@ export default async function IntegrationsPage() {
         <Metric icon={Sheet} label="Workbook snapshots" value={workspace.snapshots.length} />
       </div>
 
-      {user?.role === "administrator" ? <AutomationControls /> : null}
-
       <Card data-tutorial-anchor="integration-approvals">
         <CardHeader className="border-b"><CardTitle>Create controlled notification</CardTitle><CardDescription>Telegram and Gmail drafts are held for a separate approval. Gmail creates a draft only and never sends automatically.</CardDescription></CardHeader>
         <CardContent className="pt-5"><NotificationDraftForm contacts={workspace.contacts} users={workspace.users} /></CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2"><PlugZap className="size-5 text-primary" />Provider configuration</CardTitle>
-          <CardDescription>Personal Gmail credentials are encrypted in Vault; shared provider secrets stay server-side or in n8n. These records contain only operational metadata.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-5 pt-5 lg:grid-cols-2">
-          {workspace.connections.map((connection) => (
-            <div className="rounded-lg border p-4" key={connection.provider}>
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div><p className="font-medium">{connection.display_name}</p><p className="mt-1 text-xs text-muted-foreground">Last success: {formatDateTime(connection.last_success_at)}</p></div>
-                <Badge variant={connection.enabled ? "default" : "outline"}>{connection.enabled ? "Enabled" : "Disabled"}</Badge>
-              </div>
-              {connection.last_error ? <p className="mb-3 text-sm text-destructive">{connection.last_error}</p> : null}
-              {user?.role === "administrator" ? <ConnectionForm connection={connection} /> : <p className="text-sm text-muted-foreground">Administrator configuration only.</p>}
-            </div>
-          ))}
+        <CardContent className="flex flex-col gap-4 pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-3"><div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Settings2 className="size-4" /></div><div><p className="font-medium">Company connections</p><p className="mt-1 text-sm text-muted-foreground">Provider activation, n8n controls, and technical errors are administrator-only settings.</p></div></div>
+          {user?.role === "administrator" ? <Link className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline" href="/settings/integrations">Manage connections <ExternalLink className="size-3.5" /></Link> : null}
         </CardContent>
       </Card>
 

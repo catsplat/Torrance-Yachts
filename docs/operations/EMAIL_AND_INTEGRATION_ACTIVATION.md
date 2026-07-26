@@ -51,12 +51,24 @@ web interface. Test both a staff invitation and password recovery, then set
 The app cannot create a Google Cloud project or consent screen on the operator's
 behalf. That boundary is intentional.
 
-## 4. Personal Gmail alerts
+## 4. Personal Google inbox connections
 
-Each employee opens **Settings -> My alerts and connections** and stores their
-own Gmail OAuth values. Supabase Vault encrypts the credentials and the interface
-cannot read them back. Complete a synthetic internal alert before enabling the
-email route. External recipient operations create drafts; they do not send mail.
+1. In the client-owned Google Cloud project, create one Web OAuth application.
+2. Add the exact callback URL
+   `https://<approved-app-host>/api/integrations/google/callback` (or the local
+   `http://localhost:3000/...` equivalent) to Google&apos;s authorised redirect URIs.
+3. Store `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` only in
+   deployment secret storage, then restart the application.
+4. Each employee opens **Settings -> Your alerts and connections** and selects
+   **Connect Google inbox**. Google, not Torrance Yachts, presents the consent
+   screen.
+5. Confirm the connected account appears in Settings and complete a synthetic
+   internal alert before enabling the email route.
+
+The app encrypts ongoing access in Supabase Vault and never shows a refresh token
+or client secret in the interface. The granted scope permits approved inbox
+routing and controlled Gmail drafts; external recipient operations do not send
+mail automatically.
 
 ## 5. Telegram
 

@@ -27,6 +27,17 @@ export async function updateMyAlertPreferencesAction(
   const context = await getAuthenticatedRequestContext()
   if (!context) return expired
   const values = parsed.data
+  if (values.emailEnabled) {
+    const { data: connections, error: connectionError } = await context.supabase.rpc(
+      "get_my_oauth_connections",
+    )
+    const gmailConnected = connections?.some(
+      (connection) => connection.provider === "gmail" && connection.status === "connected",
+    )
+    if (connectionError || !gmailConnected) {
+      return { message: "Connect a Google inbox before turning on email alerts." }
+    }
+  }
   const { error } = await context.supabase.rpc("update_my_alert_preferences", {
     p_ai_summary_enabled: values.aiSummaryEnabled,
     p_charter_enabled: values.charterEnabled,
