@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(9);
+select plan(11);
 
 insert into auth.users (id, email, raw_user_meta_data)
 values ('25000000-0000-4000-8000-000000000001', 'full.rehearsal.admin@example.test', '{"display_name":"Full Rehearsal Admin"}'::jsonb);
@@ -80,6 +80,25 @@ select results_eq(
   array[6::bigint],
   'fictional booking generated the protected document checklist'
 );
+select public.register_quarantined_booking_document(
+  (select id from public.bookings where enquiry_id = '25000000-0000-4000-8000-000000000003'),
+  'charter_agreement', 'Fictional reset agreement', 'fictional-reset-agreement.pdf',
+  (select id::text from public.bookings where enquiry_id = '25000000-0000-4000-8000-000000000003') || '/25000000-0000-4000-8000-000000000004/fictional-reset-agreement.pdf',
+  'application/pdf', 128, 'booking_record', repeat('a', 64)
+);
+select public.record_document_scan_result((select id from public.documents where title = 'Fictional reset agreement'), 'clean', 'Fictional clean scanner result for reset coverage.');
+select public.release_clean_booking_document(
+  (select id from public.documents where title = 'Fictional reset agreement'),
+  (select booking_id::text from public.documents where title = 'Fictional reset agreement') || '/25000000-0000-4000-8000-000000000004/released-fictitious-reset-agreement.pdf',
+  'Fictional release evidence for reset coverage.'
+);
+select public.review_booking_document((select id from public.documents where title = 'Fictional reset agreement'), true, 'Fictional verified agreement for reset coverage.');
+select public.register_rehearsal_record((select id from public.rehearsal_runs where label = 'Full charter database rehearsal'), 'document', (select id from public.documents where title = 'Fictional reset agreement'));
+select results_eq(
+  $$ select count(*) from public.documents where title = 'Fictional reset agreement' and verification_status = 'verified' $$,
+  array[1::bigint],
+  'full rehearsal can own a verified fictional document before reset'
+);
 select lives_ok(
   $$ select public.reset_rehearsal_run((select id from public.rehearsal_runs where label = 'Full charter database rehearsal'), 'Full fictional charter rehearsal is complete.') $$,
   'full rehearsal reset removes its booking workflow atomically'
@@ -88,6 +107,11 @@ select results_eq(
   $$ select count(*) from public.bookings where enquiry_id = '25000000-0000-4000-8000-000000000003' $$,
   array[0::bigint],
   'reset removes only the fictional booking'
+);
+select results_eq(
+  $$ select count(*) from public.documents where title = 'Fictional reset agreement' $$,
+  array[0::bigint],
+  'reset removes a verified fictional document after detaching its requirement reference'
 );
 select results_eq(
   $$ select status from public.rehearsal_runs where label = 'Full charter database rehearsal' $$,

@@ -6,11 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getCurrentUser } from "@/lib/auth/current-user"
 import { getAiConfigurationSummary } from "@/lib/ai/config"
 import { offlineRehearsalEnabled } from "@/lib/rehearsal/offline-email"
+import { createClient } from "@/lib/supabase/server"
 
 export default async function OfflineRehearsalPage() {
+  const supabase = await createClient()
   const [user, ai] = await Promise.all([getCurrentUser(), Promise.resolve(getAiConfigurationSummary())])
   const enabled = offlineRehearsalEnabled()
   const administrator = user?.role === "administrator"
+  const { data: activeRuns } = administrator
+    ? await supabase.from("rehearsal_runs").select("id,label,created_at").eq("status", "active").order("created_at", { ascending: false })
+    : { data: [] }
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -28,7 +33,7 @@ export default async function OfflineRehearsalPage() {
           <CardDescription>Development-only. The test stops at the same human-review boundaries used in production.</CardDescription>
         </CardHeader>
         <CardContent className="pt-5">
-          {administrator ? <OfflineRehearsalForm enabled={enabled} /> : <p className="text-sm text-muted-foreground">Only an administrator may create development rehearsal records.</p>}
+          {administrator ? <OfflineRehearsalForm activeRuns={activeRuns ?? []} enabled={enabled} /> : <p className="text-sm text-muted-foreground">Only an administrator may create development rehearsal records.</p>}
         </CardContent>
       </Card>
 

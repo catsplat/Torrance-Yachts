@@ -22,8 +22,9 @@ using a hidden fixture.
 All generated entities are mapped to one `rehearsal_run`. An administrator may
 reset that run atomically after review; reset removes its booking, reservations,
 tasks, commercial fixture and related fictional records, but retains aggregate
-audit evidence that the rehearsal occurred. No provider, recipient, document
-upload, payment or charter-life-cycle event is called by the one-click command.
+audit evidence that the rehearsal occurred. The one-click command does not call
+a provider or recipient. ADR 0030 records the separate local-only extension
+through fictional document and contract-review boundaries.
 
 ## Consequences
 
@@ -31,5 +32,6 @@ upload, payment or charter-life-cycle event is called by the one-click command.
   weakening approval or provider boundaries.
 - The rehearsal verifies the actual availability buffer, document requirements
   and task engine rather than duplicating their behaviour in UI-only demo code.
-- Later document, payment and post-charter rehearsal actions remain explicit
-  human exercises until their synthetic paths are expanded and tested.
+- Invoice, Yachtfolio, payment settlement and post-charter rehearsal actions
+  remain explicit human exercises until their synthetic paths are expanded and
+  tested.

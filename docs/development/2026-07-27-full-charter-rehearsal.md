@@ -27,6 +27,8 @@ Evidence after a clean local reset:
 - `npm run db:test` — 20 suites / 683 assertions passed, including isolated
   booking generation, buffered reservation, checklist and reset coverage.
 
-The next extension is an interactive, synthetic completion of contract,
-document, payment and post-charter actions. It must retain the same run-scoped
-reset and no-provider guarantees.
+The next extension was delivered in
+`2026-07-27-post-booking-rehearsal.md`: fictional compliance documents,
+contract review, instalments and commission now use the same run-scoped reset
+and no-provider guarantees. Invoice, Yachtfolio, payment settlement and
+post-charter actions remain next.

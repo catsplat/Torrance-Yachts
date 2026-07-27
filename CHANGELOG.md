@@ -30,6 +30,10 @@ All notable project changes are recorded here. The format follows Keep a Changel
   enquiry, offer, booking, availability-buffer, document-checklist and
   dependency-aware task commands with a separate fictional yacht, plus an
   atomic run-scoped reset.
+- A local post-booking rehearsal extension for fictional KYC, passport, CDD and
+  signed agreement quarantine/verification, approved contract facts, two
+  scheduled instalments and commission calculation, with run-scoped document
+  cleanup on reset.
 
 - A definitive project completion register separating locally complete hosted
   scope, optional mirrors, the future desktop edition, and eight client-owned

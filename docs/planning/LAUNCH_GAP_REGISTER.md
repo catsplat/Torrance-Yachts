@@ -59,8 +59,9 @@ record changes.
 ### L2 — Synthetic charter rehearsal
 
 **Outcome:** A fictional enquiry can be progressed through a reviewable offer,
-confirmed booking, task generation, availability buffer and document checklist
-using the live commands, then safely reset. Contract, payment, Yachtfolio and
+confirmed booking, task generation, availability buffer, compliance-document
+quarantine/verification, signed-contract review, two instalments and commission
+using the live commands, then safely reset. Yachtfolio, messages and
 post-charter actions remain interactive fictional exercises until their
 run-scoped automation is expanded.
 

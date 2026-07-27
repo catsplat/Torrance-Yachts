@@ -1,5 +1,7 @@
 "use server"
 
+import { createHash, randomUUID } from "node:crypto"
+
 import { revalidatePath } from "next/cache"
 
 import { generateEmailSuggestion } from "@/lib/ai/service"
@@ -12,6 +14,7 @@ import {
 import { createAdminClient } from "@/lib/supabase/admin"
 
 export type OfflineRehearsalActionState = {
+  bookingId?: string
   fixtureKind?: OfflineEmailKind
   message?: string
   messageId?: string
@@ -104,7 +107,7 @@ function refreshRehearsalPaths() {
 async function registerRehearsalRecord(
   context: NonNullable<Awaited<ReturnType<typeof getAuthenticatedRequestContext>>>,
   runId: string,
-  entityType: "booking" | "contact" | "email_message" | "email_thread" | "enquiry" | "offer" | "task" | "yacht",
+  entityType: "booking" | "commission_calculation" | "contact" | "contract_review" | "document" | "email_message" | "email_thread" | "enquiry" | "generated_invoice" | "notification" | "offer" | "payment" | "task" | "yacht" | "yachtfolio_action",
   entityId: string,
 ) {
   const { error } = await context.supabase.rpc("register_rehearsal_record", {
@@ -382,6 +385,7 @@ export async function createFullCharterRehearsalAction(
     refreshRehearsalPaths()
     return {
       fixtureKind: "new_enquiry",
+      bookingId: booking.id,
       message: "Full fictional charter rehearsal created: enquiry, sent offer, confirmed booking, 24-hour reservation buffer, document checklist, and dependent tasks 0.A–7. No provider or real recipient was contacted.",
       messageId: email.messageId,
       runId,
@@ -389,6 +393,182 @@ export async function createFullCharterRehearsalAction(
     }
   } catch {
     return { message: "The full fictional charter rehearsal could not be created. No external service was contacted." }
+  }
+}
+
+async function completeFictionalTask(
+  context: NonNullable<Awaited<ReturnType<typeof getAuthenticatedRequestContext>>>,
+  bookingId: string,
+  stepCode: string,
+  reason: string,
+) {
+  const { data: task, error: taskError } = await context.supabase
+    .from("tasks")
+    .select("id,status")
+    .eq("booking_id", bookingId)
+    .eq("step_code", stepCode)
+    .single()
+  if (taskError || !task) throw new Error(`Task ${stepCode} is unavailable.`)
+  if (task.status === "completed") return
+  const { error } = await context.supabase.rpc("complete_task", { p_reason: reason, p_task_id: task.id })
+  if (error) throw new Error(`Task ${stepCode} could not be completed.`)
+}
+
+async function createSyntheticVerifiedDocument(
+  context: NonNullable<Awaited<ReturnType<typeof getAuthenticatedRequestContext>>>,
+  runId: string,
+  bookingId: string,
+  documentType: "broker_kyc_statement" | "cdd_check" | "charter_agreement" | "client_passport",
+  title: string,
+  retentionClass: "booking_record" | "identity_sensitive",
+) {
+  const { data: existing } = await context.supabase
+    .from("documents")
+    .select("id")
+    .eq("booking_id", bookingId)
+    .eq("document_type", documentType)
+    .eq("verification_status", "verified")
+    .maybeSingle()
+  if (existing) return existing.id
+
+  const fileId = randomUUID()
+  const filename = `${documentType}-fictional-rehearsal.pdf`
+  const bytes = new TextEncoder().encode(`%PDF-1.4\n% Fictional local rehearsal document: ${title}\n%%EOF\n`)
+  const checksum = createHash("sha256").update(bytes).digest("hex")
+  const quarantinePath = `${bookingId}/${fileId}/${filename}`
+  const privatePath = `${bookingId}/${fileId}/released-${filename}`
+  const upload = await context.supabase.storage.from("booking-quarantine").upload(
+    quarantinePath,
+    new Blob([bytes], { type: "application/pdf" }),
+    { contentType: "application/pdf", upsert: false },
+  )
+  if (upload.error) throw new Error(`The fictional ${documentType} could not enter quarantine.`)
+
+  const { data: documentId, error: registrationError } = await context.supabase.rpc("register_quarantined_booking_document", {
+    p_booking_id: bookingId,
+    p_content_sha256: checksum,
+    p_document_type: documentType,
+    p_mime_type: "application/pdf",
+    p_original_filename: filename,
+    p_quarantine_path: quarantinePath,
+    p_retention_class: retentionClass,
+    p_size_bytes: bytes.byteLength,
+    p_title: title,
+  })
+  if (registrationError || !documentId) throw new Error(`The fictional ${documentType} metadata was rejected.`)
+  await registerRehearsalRecord(context, runId, "document", documentId)
+
+  const scanning = await context.supabase.rpc("record_document_scan_result", {
+    p_document_id: documentId,
+    p_reason: "Local rehearsal scanner started on a fictional PDF only.",
+    p_status: "scanning",
+  })
+  const clean = await context.supabase.rpc("record_document_scan_result", {
+    p_document_id: documentId,
+    p_reason: "Local rehearsal scanner accepted a fictional PDF with no active content.",
+    p_status: "clean",
+  })
+  if (scanning.error || clean.error) throw new Error(`The fictional ${documentType} scan could not be recorded.`)
+
+  const releasedUpload = await context.supabase.storage.from("booking-private").upload(
+    privatePath,
+    new Blob([bytes], { type: "application/pdf" }),
+    { contentType: "application/pdf", upsert: false },
+  )
+  if (releasedUpload.error) throw new Error(`The fictional ${documentType} could not enter private storage.`)
+  const released = await context.supabase.rpc("release_clean_booking_document", {
+    p_document_id: documentId,
+    p_private_path: privatePath,
+    p_reason: "Local rehearsal released a clean fictional PDF to private storage.",
+  })
+  if (released.error) throw new Error(`The fictional ${documentType} could not be released.`)
+  await context.supabase.storage.from("booking-quarantine").remove([quarantinePath])
+  const reviewed = await context.supabase.rpc("review_booking_document", {
+    p_approved: true,
+    p_document_id: documentId,
+    p_reason: "Reviewed and accepted as a fictional local rehearsal document.",
+  })
+  if (reviewed.error) throw new Error(`The fictional ${documentType} could not be verified.`)
+  return documentId
+}
+
+export async function advanceFullCharterRehearsalAction(
+  _state: OfflineRehearsalActionState,
+  formData: FormData,
+): Promise<OfflineRehearsalActionState> {
+  void _state
+  const context = await getAuthenticatedRequestContext()
+  if (!context || context.role !== "administrator") return { message: "Administrator access is required." }
+  if (!offlineRehearsalEnabled()) return { message: "Offline rehearsal is available only in local development." }
+  const runId = formData.get("runId")
+  if (typeof runId !== "string" || !runId) return { message: "Create a full fictional charter rehearsal first." }
+
+  const { data: bookingRecord, error: bookingRecordError } = await context.supabase
+    .from("rehearsal_run_records")
+    .select("entity_id")
+    .eq("rehearsal_run_id", runId)
+    .eq("entity_type", "booking")
+    .maybeSingle()
+  if (bookingRecordError || !bookingRecord) return { message: "This rehearsal does not contain a fictional booking." }
+  const bookingId = bookingRecord.entity_id
+
+  try {
+    await completeFictionalTask(context, bookingId, "0.A", "Fictional KYC request prepared for local rehearsal.")
+    await createSyntheticVerifiedDocument(context, runId, bookingId, "broker_kyc_statement", "Fictional broker KYC statement", "identity_sensitive")
+    await createSyntheticVerifiedDocument(context, runId, bookingId, "client_passport", "Fictional client passport", "identity_sensitive")
+    await createSyntheticVerifiedDocument(context, runId, bookingId, "cdd_check", "Fictional CDD check", "identity_sensitive")
+    await completeFictionalTask(context, bookingId, "0.B", "Fictional KYC, passport, and CDD records were verified locally.")
+
+    const agreementId = await createSyntheticVerifiedDocument(context, runId, bookingId, "charter_agreement", "Fictional fully signed charter agreement", "booking_record")
+    await completeFictionalTask(context, bookingId, "1.A", "Fictional signed agreement entered the private local document workflow.")
+
+    const { data: existingReview } = await context.supabase.from("contract_reviews")
+      .select("id,status").eq("booking_id", bookingId).eq("status", "approved").maybeSingle()
+    if (!existingReview) {
+      const { data: reviewId, error: reviewError } = await context.supabase.rpc("save_contract_review", {
+        p_booking_id: bookingId,
+        p_charter_end_date: "2027-08-21",
+        p_charter_fee: 168000,
+        p_charter_start_date: "2027-08-14",
+        p_commission_rate: 2,
+        p_currency: "EUR",
+        p_disembarkation_port: "Athens",
+        p_embarkation_port: "Athens",
+        p_review_notes: "Fictional local rehearsal contract facts reviewed by an administrator.",
+        p_source_document_id: agreementId,
+        p_tax_rate: 5,
+      })
+      if (reviewError || !reviewId) throw new Error("The fictional contract review could not be saved.")
+      await registerRehearsalRecord(context, runId, "contract_review", reviewId)
+      const { error: approvalError } = await context.supabase.rpc("approve_contract_review", {
+        p_payment_amounts: [84000, 84000],
+        p_payment_dates: ["2027-07-15", "2027-08-07"],
+        p_review_id: reviewId,
+      })
+      if (approvalError) throw new Error("The fictional payment schedule could not be approved.")
+    }
+
+    const [{ data: payments }, { data: commission }] = await Promise.all([
+      context.supabase.from("payment_schedules").select("id").eq("booking_id", bookingId),
+      context.supabase.from("commission_calculations").select("id").eq("booking_id", bookingId).maybeSingle(),
+    ])
+    await Promise.all([
+      ...(payments ?? []).map((payment) => registerRehearsalRecord(context, runId, "payment", payment.id)),
+      ...(commission ? [registerRehearsalRecord(context, runId, "commission_calculation", commission.id)] : []),
+    ])
+    await completeFictionalTask(context, bookingId, "1.B", "Fictional signed-contract facts and two instalments were reviewed and approved.")
+    refreshRehearsalPaths()
+    revalidatePath(`/bookings/${bookingId}`)
+    revalidatePath(`/bookings/${bookingId}/documents`)
+    revalidatePath(`/bookings/${bookingId}/tasks`)
+    return {
+      bookingId,
+      message: "Fictional KYC, passport, CDD, and signed agreement completed the quarantine-to-verification path. Contract facts, two instalments, and commission were approved through the normal commands. Continue remaining external/manual tasks from the fictional booking.",
+      runId,
+      success: true,
+    }
+  } catch {
+    return { bookingId, message: "The fictional compliance and contract rehearsal could not be advanced safely. No provider or real recipient was contacted.", runId }
   }
 }
 
@@ -407,13 +587,39 @@ export async function resetOfflineRehearsalAction(
   const runId = formData.get("runId")
   if (typeof runId !== "string" || !runId) return { message: "Choose a fictional rehearsal run to remove." }
 
+  const { data: bookingRecords, error: bookingRecordsError } = await context.supabase
+    .from("rehearsal_run_records")
+    .select("entity_id")
+    .eq("rehearsal_run_id", runId)
+    .eq("entity_type", "booking")
+  if (bookingRecordsError) return { message: "The fictional run could not be inspected before reset." }
+
+  const bookingIds = bookingRecords.map((record) => record.entity_id)
+  if (bookingIds.length) {
+    const { data: documents, error: documentsError } = await context.supabase
+      .from("documents")
+      .select("storage_bucket,storage_path")
+      .in("booking_id", bookingIds)
+    if (documentsError) return { message: "The fictional document list could not be inspected before reset." }
+    const pathsByBucket = new Map<string, string[]>()
+    for (const document of documents) {
+      const paths = pathsByBucket.get(document.storage_bucket) ?? []
+      paths.push(document.storage_path)
+      pathsByBucket.set(document.storage_bucket, paths)
+    }
+    for (const [bucket, paths] of pathsByBucket) {
+      const { error: removeError } = await context.supabase.storage.from(bucket).remove(paths)
+      if (removeError) return { message: "Some fictional files could not be removed. The database run remains available, so retry after reviewing the local Storage boundary." }
+    }
+  }
+
   const { error } = await context.supabase.rpc("reset_rehearsal_run", {
     p_reason: "Administrator removed the completed fictional rehearsal run.",
     p_rehearsal_run_id: runId,
   })
   if (error) {
     return {
-      message: "This run cannot be reset yet because it contains a later fictional workflow record. Use the full workflow reset once that scenario is complete.",
+      message: "The fictional run could not be reset. Its database records remain available; some synthetic files may already have been removed. Review the local boundary error before trying again.",
     }
   }
   refreshRehearsalPaths()

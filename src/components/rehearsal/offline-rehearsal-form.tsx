@@ -7,6 +7,7 @@ import {
   createOfflineRehearsalEmailAction,
   createOfflineRehearsalSuiteAction,
   createFullCharterRehearsalAction,
+  advanceFullCharterRehearsalAction,
   resetOfflineRehearsalAction,
   type OfflineRehearsalActionState,
 } from "@/app/(workspace)/settings/rehearsal/actions"
@@ -23,12 +24,20 @@ function ActionFeedback({ state }: { state: OfflineRehearsalActionState }) {
   )
 }
 
-export function OfflineRehearsalForm({ enabled }: { enabled: boolean }) {
+type ActiveRehearsalRun = { created_at: string; id: string; label: string }
+
+export function OfflineRehearsalForm({ activeRuns, enabled }: { activeRuns: ActiveRehearsalRun[]; enabled: boolean }) {
   const [state, action, pending] = useActionState(createOfflineRehearsalEmailAction, initialState)
   const [suiteState, suiteAction, suitePending] = useActionState(createOfflineRehearsalSuiteAction, initialState)
   const [fullState, fullAction, fullPending] = useActionState(createFullCharterRehearsalAction, initialState)
+  const [advanceState, advanceAction, advancePending] = useActionState(advanceFullCharterRehearsalAction, initialState)
   const [resetState, resetAction, resetPending] = useActionState(resetOfflineRehearsalAction, initialState)
-  const activeRunId = fullState.runId ?? suiteState.runId ?? state.runId
+  const transientRunIds = [fullState.runId, suiteState.runId, state.runId].filter((runId): runId is string => Boolean(runId))
+  const resetRuns = [...activeRuns]
+  for (const runId of transientRunIds) {
+    if (!resetRuns.some((run) => run.id === runId)) resetRuns.unshift({ created_at: "", id: runId, label: "Current fictional rehearsal" })
+  }
+  const fullRunId = fullState.runId ?? activeRuns.find((run) => run.label === "Full fictional charter rehearsal")?.id
 
   if (!enabled) {
     return <p className="text-sm text-muted-foreground">This control is disabled outside the local development environment.</p>
@@ -69,9 +78,12 @@ export function OfflineRehearsalForm({ enabled }: { enabled: boolean }) {
         </form>
       ) : null}
 
-      {activeRunId ? (
-        <form action={resetAction} className="border-t pt-5">
-          <input name="runId" type="hidden" value={activeRunId} />
+      {resetRuns.length ? (
+        <div className="space-y-3 border-t pt-5">
+          <p className="text-sm font-medium">Active fictional rehearsals</p>
+          {resetRuns.map((run) => <form action={resetAction} className="rounded-lg border p-4" key={run.id}>
+          <input name="runId" type="hidden" value={run.id} />
+          <p className="text-sm font-medium">{run.label}</p>
           <p className="mb-3 text-xs leading-5 text-muted-foreground">
             Removes this completed fictional run only. Its audit evidence remains; real operational records are never included.
           </p>
@@ -79,14 +91,15 @@ export function OfflineRehearsalForm({ enabled }: { enabled: boolean }) {
             {resetPending ? "Removing fictional run…" : "Remove this fictional run"}
           </Button>
           <ActionFeedback state={resetState} />
-        </form>
+          </form>)}
+        </div>
       ) : null}
 
       <div className="border-t pt-5">
         <form action={fullAction} className="space-y-3">
           <p className="text-sm font-medium">Full charter rehearsal</p>
           <p className="text-xs leading-5 text-muted-foreground">
-            Creates a separate fictional yacht and drives the genuine enquiry, offer, booking, availability-buffer, checklist, and task-engine commands. It stops before documents, payments, messages, and lifecycle actions so you can rehearse each human approval yourself.
+            Creates a separate fictional yacht and drives the genuine enquiry, offer, booking, availability-buffer, checklist, and task-engine commands. The optional local extension then rehearses compliance documents, contract review, instalments, and commission. Messages and post-charter lifecycle actions remain deliberately human-controlled.
           </p>
           <p className="text-xs leading-5 text-muted-foreground">
             Prerequisite: an administrator must have approved the intended default workflow in <Link className="font-medium text-primary underline" href="/tasks/templates">Task templates</Link>. This deliberate approval prevents a draft process from generating operational work.
@@ -101,6 +114,13 @@ export function OfflineRehearsalForm({ enabled }: { enabled: boolean }) {
             </Link>
           ) : null}
         </form>
+        {fullRunId ? <form action={advanceAction} className="mt-4 border-t pt-4">
+            <input name="runId" type="hidden" value={fullRunId} />
+            <p className="mb-3 text-xs leading-5 text-muted-foreground">Next, rehearse the fictional KYC, passport, CDD, signed agreement, malware-quarantine, contract-review, payment-schedule, and commission boundaries. This is still local only.</p>
+            <Button disabled={advancePending} type="submit" variant="outline">{advancePending ? "Advancing fictional contract rehearsal…" : "Rehearse compliance and contract review"}</Button>
+            <ActionFeedback state={advanceState} />
+            {advanceState.bookingId ? <Link className="mt-3 inline-flex text-sm font-medium text-primary underline" href={`/bookings/${advanceState.bookingId}/documents`}>Open fictional document workspace</Link> : null}
+        </form> : null}
       </div>
 
       <div className="border-t pt-5">
