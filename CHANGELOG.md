@@ -26,6 +26,10 @@ All notable project changes are recorded here. The format follows Keep a Changel
 - A private production deployment topology using an outbound-only Cloudflare
   Tunnel, no direct application/n8n ingress, bounded containers, least-privilege
   runtime settings, health checks, and rotating local logs.
+- An administrator-only, local full-charter rehearsal which exercises the live
+  enquiry, offer, booking, availability-buffer, document-checklist and
+  dependency-aware task commands with a separate fictional yacht, plus an
+  atomic run-scoped reset.
 
 - A definitive project completion register separating locally complete hosted
   scope, optional mirrors, the future desktop edition, and eight client-owned

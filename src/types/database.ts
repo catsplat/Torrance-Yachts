@@ -4659,6 +4659,10 @@ export type Database = {
         Args: { p_telegram_chat_id: string; p_token_hash: string }
         Returns: string
       }
+      configure_rehearsal_fixture_yacht: {
+        Args: { p_rehearsal_run_id: string }
+        Returns: Json
+      }
       confirm_booking: {
         Args: {
           p_charter_end_date: string

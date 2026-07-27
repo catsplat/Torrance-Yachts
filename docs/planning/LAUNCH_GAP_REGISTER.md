@@ -27,14 +27,14 @@ rehearsal, a staged external test, and recorded human acceptance.
 
 | Area | Current state | Local completion work | Live acceptance work |
 | --- | --- | --- | --- |
-| Enquiries, offers, bookings, buffered availability, tasks, payments | Implemented and database-tested | Fictional M/Y Asteria rehearsal map and normal/conflict/cancelled/amended/dependency tests are available locally. | Import approved business data and complete staff UAT. |
+| Enquiries, offers, bookings, buffered availability, tasks, payments | Implemented and database-tested | A resettable, run-isolated one-click fictional enquiry-to-booking rehearsal now exercises live offer, booking, buffer, checklist and task commands; normal/conflict/cancelled/amended/dependency tests remain available locally. Contract/payment/post-charter actions remain interactive synthetic exercises. | Import approved business data and complete staff UAT. |
 | Email intake | Gmail payload validation, durable ingestion, raw n8n normalisation and inactive credential-free intake/read/archive workflows exist. | Completed: five fictional routes use the same ingestion command; replay/idempotency and capability-scoped provider leases are covered by app and database tests. | Connect client-owned Gmail/n8n credentials and run a scoped acceptance set. |
 | AI | Deterministic provider and OpenAI adapter existed; local Ollama adapter is added for offline assurance. | Completed locally: valid response, malformed response, unavailable provider, timeout, evidence, correction/rejection, and human approval boundaries are covered. | Approve provider, data policy, model, spend limits, and service account. |
 | Notifications and provider deliveries | Outbox, retry, failure visibility, and development delivery simulator exist. | Completed: loopback success contract plus database coverage for leases, transient/permanent failure, retry/backoff, and recovery. The simulator worker is rejected at the app boundary outside `APP_ENVIRONMENT=development`. | Configure Telegram/Google/SMTP, verify recipient ownership and scopes. |
 | Documents and contract review | Private storage, document requirements, reviewed facts, payments, and invoice generation exist. | Use only fictional PDFs/text; exercise rejected type, verification, missing-document, and reviewed-contract cases. | Approve malware/quarantine treatment, retention policy, and production Storage access. |
 | Calendar, Drive, Sheets | The authoritative internal calendar/private storage/PostgreSQL records exist; optional external-mirror outbox contracts exist. | Snapshot/idempotency and simulated completion are covered locally. | Client first decides which mirrors are wanted; only selected provider workers and client-owned targets/scopes are then activated. |
 | Yachtfolio | Audited manual boundary is implemented. | Confirm the task/evidence/reopen flow in the rehearsal. | Train the named user; do not claim an unsupported API integration. |
-| Deployment, backup, monitoring | Release-candidate Compose/runbooks and a no-secret-value production preflight exist. | Completed: clean build, 631 database tests, database lint, local restore drill, loopback health, and production dependency audit. | Provision staging/production, off-site backup, monitoring, private ingress, restore drill. |
+| Deployment, backup, monitoring | Release-candidate Compose/runbooks and a no-secret-value production preflight exist. | Completed: clean build, 683 database assertions, database lint, local restore drill, loopback health, and production dependency audit. | Provision staging/production, off-site backup, monitoring, private ingress, restore drill. |
 
 ## Local completion sequence
 
@@ -58,9 +58,11 @@ record changes.
 
 ### L2 — Synthetic charter rehearsal
 
-**Outcome:** A fictional enquiry is manually progressed through a reviewable
-offer, signed-contract review, confirmed booking, task generation, payments,
-availability buffer, document checklist, and Yachtfolio task.
+**Outcome:** A fictional enquiry can be progressed through a reviewable offer,
+confirmed booking, task generation, availability buffer and document checklist
+using the live commands, then safely reset. Contract, payment, Yachtfolio and
+post-charter actions remain interactive fictional exercises until their
+run-scoped automation is expanded.
 
 **Acceptance checks:**
 

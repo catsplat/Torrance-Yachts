@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(13);
+select plan(17);
 
 select has_table('public', 'rehearsal_runs', 'rehearsal run table exists');
 select has_table('public', 'rehearsal_run_records', 'rehearsal record mapping table exists');
@@ -52,6 +52,35 @@ select results_eq(
   array[1::bigint],
   'fixture yacht is explicitly tagged to its rehearsal run'
 );
+select lives_ok(
+  $$
+    select public.configure_rehearsal_fixture_yacht(
+      (select id from public.rehearsal_runs where label = 'Database isolation rehearsal')
+    )
+  $$,
+  'administrator can configure isolated commercial fixture data'
+);
+select results_eq(
+  $$
+    select count(*)
+    from public.yacht_commercial_profiles profile
+    join public.rehearsal_run_records record on record.entity_id = profile.yacht_id
+    where record.rehearsal_run_id = (select id from public.rehearsal_runs where label = 'Database isolation rehearsal')
+  $$,
+  array[1::bigint],
+  'fixture commercial profile is bound to the run yacht'
+);
+select results_eq(
+  $$
+    select count(*)
+    from public.yacht_offer_templates template
+    join public.rehearsal_run_records record on record.entity_id = template.yacht_id
+    where record.rehearsal_run_id = (select id from public.rehearsal_runs where label = 'Database isolation rehearsal')
+      and template.status = 'approved'
+  $$,
+  array[1::bigint],
+  'fixture has an approved fictional offer template'
+);
 select results_eq(
   $$
     select count(*) from public.yachts
@@ -81,6 +110,11 @@ select results_eq(
   $$,
   array[0::bigint],
   'reset removes only the run mappings after fixture cleanup'
+);
+select results_eq(
+  $$ select count(*) from public.yacht_commercial_profiles where overview like 'Fictional charter yacht%' $$,
+  array[0::bigint],
+  'reset removes fixture commercial data with its fictional yacht'
 );
 
 reset role;

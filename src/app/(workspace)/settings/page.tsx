@@ -66,6 +66,7 @@ export default async function SettingsPage() {
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <SettingsLink description="Invite staff, manage roles, and maintain their operational contact routes." href="/settings/users" icon={UsersRound} title="Internal users" />
             <SettingsLink description="Maintain versioned KYC, captain-contact, and broker follow-up wording." href="/settings/communications" icon={FilePenLine} title="Communication templates" />
+            <SettingsLink description="Review and approve the dependency-aware booking workflow used for new confirmed charters." href="/tasks/templates" icon={Clock3} title="Task templates" />
             <SettingsLink description="Manage protected, versioned issuer and payment instructions." href="/settings/invoices" icon={FileText} title="Invoice profiles" />
           </div>
         </section>

@@ -101,6 +101,20 @@ function refreshRehearsalPaths() {
   revalidatePath("/settings/rehearsal")
 }
 
+async function registerRehearsalRecord(
+  context: NonNullable<Awaited<ReturnType<typeof getAuthenticatedRequestContext>>>,
+  runId: string,
+  entityType: "booking" | "contact" | "email_message" | "email_thread" | "enquiry" | "offer" | "task" | "yacht",
+  entityId: string,
+) {
+  const { error } = await context.supabase.rpc("register_rehearsal_record", {
+    p_entity_id: entityId,
+    p_entity_type: entityType,
+    p_rehearsal_run_id: runId,
+  })
+  if (error) throw new Error(`The fictional ${entityType.replace("_", " ")} could not be tagged.`)
+}
+
 export async function createOfflineRehearsalEmailAction(
   _state: OfflineRehearsalActionState,
   formData: FormData,
@@ -242,6 +256,139 @@ export async function createOfflineRehearsalSuiteAction(
     }
   } catch {
     return { message: "The fictional email suite could not be created. No external service was contacted." }
+  }
+}
+
+export async function createFullCharterRehearsalAction(
+  _state: OfflineRehearsalActionState,
+  _formData: FormData,
+): Promise<OfflineRehearsalActionState> {
+  void _state
+  void _formData
+  const context = await getAuthenticatedRequestContext()
+  if (!context || context.role !== "administrator") return { message: "Administrator access is required." }
+  if (!offlineRehearsalEnabled()) return { message: "Offline rehearsal is available only in local development." }
+
+  const { data: taskTemplate, error: taskTemplateError } = await context.supabase
+    .from("task_templates")
+    .select("id")
+    .eq("status", "approved")
+    .eq("is_default", true)
+    .maybeSingle()
+  if (taskTemplateError) return { message: "The approved workflow template could not be checked." }
+  if (!taskTemplate) {
+    return {
+      message: "Approve the intended task template as the default workflow in Tasks → Task templates before creating a full rehearsal.",
+    }
+  }
+
+  try {
+    const { data: runId, error: runError } = await context.supabase.rpc("create_rehearsal_run", {
+      p_label: "Full fictional charter rehearsal",
+    })
+    if (runError || !runId) throw new Error("Run creation failed.")
+
+    const { data: fixture, error: fixtureError } = await context.supabase.rpc("configure_rehearsal_fixture_yacht", {
+      p_rehearsal_run_id: runId,
+    })
+    const fixtureValues = fixture && typeof fixture === "object" && !Array.isArray(fixture)
+      ? fixture
+      : {}
+    const yachtId = typeof fixtureValues.yacht_id === "string" ? fixtureValues.yacht_id : ""
+    const rateId = typeof fixtureValues.rate_id === "string" ? fixtureValues.rate_id : ""
+    const templateId = typeof fixtureValues.template_id === "string" ? fixtureValues.template_id : ""
+    if (fixtureError || !yachtId || !rateId || !templateId) throw new Error("Fixture configuration failed.")
+
+    const email = await ingestFixture("new_enquiry", context, runId, `full-charter-rehearsal-${runId}`)
+    const { data: enquiryId, error: classificationError } = await context.supabase.rpc("classify_email_message_with_details", {
+      p_budget_amount: 168000,
+      p_charter_end_date: "2027-08-21",
+      p_charter_start_date: "2027-08-14",
+      p_classification: "new_enquiry",
+      p_contact_id: undefined,
+      p_currency: "EUR",
+      p_disembarkation_port: "Athens",
+      p_embarkation_port: "Athens",
+      p_enquiry_id: undefined,
+      p_enquiry_summary: "FULL REHEARSAL: fictional family charter from enquiry to post-charter follow-up.",
+      p_guest_count: 10,
+      p_message_id: email.messageId,
+      p_reason: "Administrator created an isolated fictional full-charter rehearsal.",
+      p_requested_yacht_id: yachtId,
+    })
+    if (classificationError || !enquiryId) throw new Error("Fictional enquiry classification failed.")
+    await registerRehearsalRecord(context, runId, "enquiry", enquiryId)
+
+    const { data: enquiry, error: enquiryError } = await context.supabase
+      .from("enquiries")
+      .select("customer_contact_id")
+      .eq("id", enquiryId)
+      .single()
+    if (enquiryError || !enquiry?.customer_contact_id) throw new Error("Fictional customer record is unavailable.")
+    await registerRehearsalRecord(context, runId, "contact", enquiry.customer_contact_id)
+
+    const { data: offer, error: offerError } = await context.supabase.rpc("create_offer_draft", {
+      p_body_snapshot: "This is a clearly labelled fictional local rehearsal offer. No email will be sent.",
+      p_enquiry_id: enquiryId,
+      p_proposed_charter_fee: 168000,
+      p_rate_period_id: rateId,
+      p_recipient_name: "Fictional Broker",
+      p_source_offer_id: null as unknown as string,
+      p_subject_snapshot: "Fictional charter rehearsal offer",
+      p_template_version_id: templateId,
+    })
+    if (offerError || !offer) throw new Error("Fictional offer creation failed.")
+    await registerRehearsalRecord(context, runId, "offer", offer.id)
+
+    const approvalReason = "Approved only for the isolated fictional local charter rehearsal."
+    const { error: approveError } = await context.supabase.rpc("approve_offer", { p_offer_id: offer.id, p_reason: approvalReason })
+    if (approveError) throw new Error("Fictional offer approval failed.")
+    const { error: sentError } = await context.supabase.rpc("mark_offer_sent", { p_offer_id: offer.id, p_reason: approvalReason })
+    if (sentError) throw new Error("Fictional sent-offer record failed.")
+    for (const nextStatus of ["contract_issued", "awaiting_signatures"] as const) {
+      const { error } = await context.supabase.rpc("transition_enquiry_status", {
+        p_enquiry_id: enquiryId,
+        p_new_status: nextStatus,
+        p_reason: approvalReason,
+      })
+      if (error) throw new Error("Fictional enquiry progression failed.")
+    }
+
+    const { data: booking, error: bookingError } = await context.supabase.rpc("confirm_booking", {
+      p_charter_end_date: "2027-08-21",
+      p_charter_fee: 168000,
+      p_charter_start_date: "2027-08-14",
+      p_confirmation_reason: "All fictional signatures were reviewed for the isolated local rehearsal.",
+      p_currency: "EUR",
+      p_disembarkation_port: "Athens",
+      p_embarkation_port: "Athens",
+      p_enquiry_id: enquiryId,
+      p_guest_count: 10,
+      p_signed_agreement_confirmed: true,
+      p_source_offer_id: offer.id,
+      p_tax_rate: 5,
+      p_yacht_id: yachtId,
+    })
+    if (bookingError || !booking) throw new Error("Fictional booking confirmation failed.")
+    await registerRehearsalRecord(context, runId, "booking", booking.id)
+
+    const { data: tasks, error: tasksError } = await context.supabase
+      .from("tasks")
+      .select("id")
+      .eq("booking_id", booking.id)
+    if (tasksError || !tasks?.length) throw new Error("Fictional booking tasks were not generated.")
+    await Promise.all(tasks.map((task) => registerRehearsalRecord(context, runId, "task", task.id)))
+
+    refreshRehearsalPaths()
+    return {
+      fixtureKind: "new_enquiry",
+      message: "Full fictional charter rehearsal created: enquiry, sent offer, confirmed booking, 24-hour reservation buffer, document checklist, and dependent tasks 0.A–7. No provider or real recipient was contacted.",
+      messageId: email.messageId,
+      runId,
+      success: true,
+    }
+  } catch {
+    return { message: "The full fictional charter rehearsal could not be created. No external service was contacted." }
   }
 }
 

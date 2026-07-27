@@ -6,6 +6,7 @@ import { useActionState } from "react"
 import {
   createOfflineRehearsalEmailAction,
   createOfflineRehearsalSuiteAction,
+  createFullCharterRehearsalAction,
   resetOfflineRehearsalAction,
   type OfflineRehearsalActionState,
 } from "@/app/(workspace)/settings/rehearsal/actions"
@@ -25,8 +26,9 @@ function ActionFeedback({ state }: { state: OfflineRehearsalActionState }) {
 export function OfflineRehearsalForm({ enabled }: { enabled: boolean }) {
   const [state, action, pending] = useActionState(createOfflineRehearsalEmailAction, initialState)
   const [suiteState, suiteAction, suitePending] = useActionState(createOfflineRehearsalSuiteAction, initialState)
+  const [fullState, fullAction, fullPending] = useActionState(createFullCharterRehearsalAction, initialState)
   const [resetState, resetAction, resetPending] = useActionState(resetOfflineRehearsalAction, initialState)
-  const activeRunId = suiteState.runId ?? state.runId
+  const activeRunId = fullState.runId ?? suiteState.runId ?? state.runId
 
   if (!enabled) {
     return <p className="text-sm text-muted-foreground">This control is disabled outside the local development environment.</p>
@@ -79,6 +81,27 @@ export function OfflineRehearsalForm({ enabled }: { enabled: boolean }) {
           <ActionFeedback state={resetState} />
         </form>
       ) : null}
+
+      <div className="border-t pt-5">
+        <form action={fullAction} className="space-y-3">
+          <p className="text-sm font-medium">Full charter rehearsal</p>
+          <p className="text-xs leading-5 text-muted-foreground">
+            Creates a separate fictional yacht and drives the genuine enquiry, offer, booking, availability-buffer, checklist, and task-engine commands. It stops before documents, payments, messages, and lifecycle actions so you can rehearse each human approval yourself.
+          </p>
+          <p className="text-xs leading-5 text-muted-foreground">
+            Prerequisite: an administrator must have approved the intended default workflow in <Link className="font-medium text-primary underline" href="/tasks/templates">Task templates</Link>. This deliberate approval prevents a draft process from generating operational work.
+          </p>
+          <Button disabled={fullPending} type="submit">
+            {fullPending ? "Creating full fictional charter…" : "Create full charter rehearsal"}
+          </Button>
+          <ActionFeedback state={fullState} />
+          {fullState.messageId ? (
+            <Link className="inline-flex text-sm font-medium text-primary underline" href={`/bookings`}>
+              Open the fictional booking
+            </Link>
+          ) : null}
+        </form>
+      </div>
 
       <div className="border-t pt-5">
         <form action={suiteAction} className="space-y-3">
