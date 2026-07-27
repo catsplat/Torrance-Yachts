@@ -60,9 +60,11 @@ that live provider accounts have been commissioned.
 ## Production topology
 
 Phase 12 selected managed Supabase Pro plus a protected Linux VPS running the
-standalone Next.js application, pinned n8n Community Edition, and Caddy as the
-primary hosted release. PostgreSQL remains authoritative and provider credentials
-remain outside the application database and source control.
+standalone Next.js application, pinned n8n Community Edition, ClamAV, and an
+outbound-only Cloudflare Tunnel as the primary hosted release. Cloudflare Access
+protects the sole application hostname; n8n has no public application route.
+PostgreSQL remains authoritative and provider credentials remain outside the
+application database and source control.
 
 The separately requested local packaged version remains documented as a future
 secondary distribution. It requires Windows and macOS packaging, signing,

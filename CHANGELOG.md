@@ -23,6 +23,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
   workers, a 25-second execution limit, short provider timeouts, jittered
   exponential retries, retry caps, permanent-failure visibility, and queue
   health metrics.
+- A private production deployment topology using an outbound-only Cloudflare
+  Tunnel, no direct application/n8n ingress, bounded containers, least-privilege
+  runtime settings, health checks, and rotating local logs.
 
 - A definitive project completion register separating locally complete hosted
   scope, optional mirrors, the future desktop edition, and eight client-owned

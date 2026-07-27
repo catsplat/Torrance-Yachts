@@ -3,8 +3,8 @@
 The recommended primary topology is:
 
 - managed Supabase Pro for PostgreSQL, Auth, and private Storage;
-- one protected Linux VPS for the standalone Next.js container, n8n, and Caddy;
-- Caddy-managed HTTPS on separate application and automation subdomains;
+- one protected Linux VPS for the standalone Next.js container, n8n, ClamAV, and Cloudflare Tunnel;
+- an outbound-only Cloudflare Tunnel with Cloudflare Access protecting the private application;
 - encrypted logical/database and private-storage exports stored off-site;
 - external uptime monitoring against the liveness endpoint and authenticated
   readiness monitoring through n8n.
@@ -21,14 +21,16 @@ Use a currently supported Ubuntu LTS or Debian release with:
 - Docker Engine and the Compose plugin;
 - an SSH key-only administrator account;
 - automatic security updates;
-- a provider firewall allowing inbound TCP 22 from an approved administrator
-  range and public TCP/UDP 80/443 only;
+- a provider firewall allowing inbound SSH only from an approved administrator
+  range; no application, n8n, HTTP, or HTTPS port is exposed from the VPS;
 - provider server backups enabled;
 - an off-site backup destination in a separate failure domain.
 
 ## First deployment
 
-1. Create client-owned DNS records for the application and n8n subdomains.
+1. Create a client-owned Cloudflare account, private application hostname, Access
+   policy, and Tunnel. Configure its single public hostname to route to
+   `http://app:3000`; do not create an n8n public hostname.
 2. Copy this folder to the server with the repository checkout.
 3. Copy `.env.example` to the ignored `.env` and fill every required value.
 4. Generate independent high-entropy values for every shared secret and the n8n
@@ -49,8 +51,9 @@ Use a currently supported Ubuntu LTS or Debian release with:
    docker compose --env-file .env up -d --build
    ```
 
-8. Confirm `https://<app-domain>/api/health/live`, create the n8n owner, import
-   the version-controlled workflows, and run `n8n audit`.
+8. Confirm `https://<app-domain>/api/health/live` through an allowed Cloudflare
+   Access identity, then create the n8n owner through the protected server
+   administration path, import the version-controlled workflows, and run `n8n audit`.
 9. Apply migrations to the reviewed production Supabase project through the
    documented CI/release process.
 10. Complete every item in `/settings/launch` before entering live data.

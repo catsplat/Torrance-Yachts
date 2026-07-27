@@ -46,5 +46,6 @@ credential has correct scope or ownership.
 
 Proxy creates a unique nonce and a strict script Content Security Policy for every
 dynamic request. The application also sets frame, MIME, referrer, browser-feature,
-cross-origin, and production HSTS headers. Caddy limits request bodies and is the
-only internet-facing service.
+cross-origin, and production HSTS headers. Server-side upload validation enforces
+document bounds. The outbound-only Cloudflare Tunnel is the only network path into
+the private application, with Cloudflare Access checked before application login.

@@ -8,6 +8,12 @@ services:
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:?Set NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
         NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?Set NEXT_PUBLIC_SUPABASE_URL}
     restart: unless-stopped
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 256
+    mem_limit: 1024m
+    cpus: 1.5
     environment:
       APP_BASE_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
       APP_ENVIRONMENT: production
@@ -36,12 +42,24 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    logging:
+      driver: local
+      options:
+        max-file: "3"
+        max-size: "10m"
     networks:
       - internal
 
   clamav:
     image: clamav/clamav:1.5-debian13-slim
     restart: unless-stopped
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 512
+    mem_limit: 1536m
+    cpus: 1.5
     healthcheck:
       test: ["CMD-SHELL", "clamdscan --ping 1 >/dev/null 2>&1"]
       interval: 30s
@@ -50,25 +68,36 @@ services:
       start_period: 180s
     volumes:
       - clamav_data:/var/lib/clamav
+    logging:
+      driver: local
+      options:
+        max-file: "3"
+        max-size: "10m"
     networks:
       - internal
 
   n8n:
     image: docker.n8n.io/n8nio/n8n:2.30.5
     restart: unless-stopped
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 384
+    mem_limit: 1024m
+    cpus: 1.5
     environment:
       AUTOMATION_SHARED_SECRET: ${AUTOMATION_SHARED_SECRET:?Set AUTOMATION_SHARED_SECRET}
       EMAIL_INGESTION_TOKEN: ${EMAIL_INGESTION_TOKEN:?Set EMAIL_INGESTION_TOKEN}
       GENERIC_TIMEZONE: Europe/London
       MONITORING_SHARED_SECRET: ${MONITORING_SHARED_SECRET:?Set MONITORING_SHARED_SECRET}
       N8N_DIAGNOSTICS_ENABLED: "false"
-      N8N_EDITOR_BASE_URL: https://${N8N_DOMAIN:?Set N8N_DOMAIN}
+      N8N_EDITOR_BASE_URL: http://n8n:5678
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?Set N8N_ENCRYPTION_KEY}
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
-      N8N_HOST: ${N8N_DOMAIN}
+      N8N_HOST: n8n
       N8N_COMMUNITY_PACKAGES_ENABLED: "false"
       N8N_PERSONALIZATION_ENABLED: "false"
-      N8N_PROTOCOL: https
+      N8N_PROTOCOL: http
       N8N_PUBLIC_API_DISABLED: "true"
       N8N_PUBLIC_API_SWAGGERUI_DISABLED: "true"
       N8N_RUNNERS_TASK_TIMEOUT: "60"
@@ -77,33 +106,42 @@ services:
       N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
       TORRANCE_APP_URL: http://app:3000
       TZ: Europe/London
-      WEBHOOK_URL: https://${N8N_DOMAIN}
+      WEBHOOK_URL: http://n8n:5678
     volumes:
       - n8n_data:/home/node/.n8n
       - ../../automation/workflows:/workflows:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    logging:
+      driver: local
+      options:
+        max-file: "3"
+        max-size: "10m"
     networks:
       - internal
 
-  caddy:
-    image: caddy:2.10.2-alpine
+  cloudflared:
+    image: cloudflare/cloudflared:2026.7.0
     restart: unless-stopped
     depends_on:
       app:
         condition: service_healthy
-      n8n:
-        condition: service_started
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?Set CLOUDFLARE_TUNNEL_TOKEN}
     environment:
-      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL}
-      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN}
-      N8N_DOMAIN: ${N8N_DOMAIN:?Set N8N_DOMAIN}
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_config:/config
-      - caddy_data:/data
+      TUNNEL_METRICS: 0.0.0.0:2000
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 128
+    mem_limit: 256m
+    cpus: 0.5
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    logging:
+      driver: local
+      options:
+        max-file: "3"
+        max-size: "10m"
     networks:
       - internal
 
@@ -113,6 +151,4 @@ networks:
 
 volumes:
   clamav_data:
-  caddy_config:
-  caddy_data:
   n8n_data:

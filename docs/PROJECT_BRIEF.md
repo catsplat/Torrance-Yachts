@@ -120,7 +120,7 @@ These are the current architectural defaults, not permission to create paid serv
 - **AI:** a provider-neutral application interface, with OpenAI the likely first provider and Anthropic or local Ollama possible later.
 - **Primary integrations:** Gmail, Telegram, Google Drive, Google Calendar, and controlled Google Sheets synchronisation.
 - **External operational system:** Yachtfolio. The initial integration is a human task and confirmation because no safe supported API has yet been established.
-- **Production hosting:** selected as managed Supabase Pro plus a protected Linux VPS running the standalone Next.js application, local n8n Community Edition, and Caddy. Production purchase and activation remain subject to client approval. The fully local desktop package remains a separately documented future distribution.
+- **Production hosting:** selected as managed Supabase Pro plus a protected Linux VPS running the standalone Next.js application, local n8n Community Edition, ClamAV, and an outbound-only Cloudflare Tunnel protected by Cloudflare Access. Production purchase and activation remain subject to client approval. The fully local desktop package remains a separately documented future distribution.
 
 Make.com may be used as a reference or prototype because an existing shared scenario was supplied, but it is not the intended core source of workflow logic. Logic essential to correctness must be represented in application code, database rules, or version-controlled n8n definitions.
 

@@ -20,9 +20,10 @@
 5. Populate `deploy/production/.env` from secret storage.
 6. Apply database migrations to staging, run acceptance, then apply to production.
 7. Run `docker compose config --quiet`.
-8. Start the tagged image and n8n/Caddy stack.
-9. Verify HTTPS, security headers, login, liveness, authenticated readiness, n8n
-   owner access, and disabled workflows.
+8. Start the tagged image, n8n, ClamAV, and Cloudflare Tunnel stack. No application
+   or n8n container port may be published on the VPS.
+9. Verify the Cloudflare Access policy, HTTPS, security headers, login, liveness,
+   authenticated readiness, protected n8n owner access, and disabled workflows.
 10. Set a temporary high-entropy `INITIAL_ADMIN_SETUP_TOKEN`, create the named
     first administrator at `/setup`, remove the token, restart the app, and
     confirm setup is closed.

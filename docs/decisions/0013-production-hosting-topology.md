@@ -10,8 +10,8 @@ Use:
 - Supabase Pro for managed PostgreSQL, Auth, private Storage, and daily database
   backups;
 - one small protected European Linux VPS for the standalone Next.js application,
-  n8n, and Caddy;
-- separate HTTPS subdomains for the application and n8n;
+  n8n, ClamAV, and an outbound-only Cloudflare Tunnel;
+- one Cloudflare Access-protected application hostname and no public n8n hostname;
 - encrypted daily logical/database and Storage-object exports to a second failure
   domain;
 - a staging project/environment before live mailbox or document activation.
@@ -22,6 +22,8 @@ This keeps the security-sensitive database, authentication, and object storage o
 a managed service while avoiding a second commercial application-hosting plan.
 The application and n8n are simple long-running containers that suit a small VPS.
 The topology supports background work while the employee's Mac is switched off.
+ADR 0028 supersedes the former direct Caddy ingress detail while preserving this
+managed-Supabase/VPS ownership decision.
 
 Vercel Hobby cannot host this commercial internal application under its current
 terms. Supabase Free can pause after inactivity and does not include downloadable

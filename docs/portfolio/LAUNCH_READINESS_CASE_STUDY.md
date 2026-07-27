@@ -4,7 +4,8 @@ Phase 12 turns a feature-complete internal application into an evidence-driven
 release candidate.
 
 The technical work includes a strict nonce-based Content Security Policy,
-standalone container deployment behind Caddy, authenticated health monitoring,
+standalone container deployment through a private outbound-only Cloudflare Tunnel,
+authenticated health monitoring,
 isolated tutorial state, a complete synthetic practice workflow, administrator
 launch acceptance, encrypted logical/document backup tooling, and a proven
 disposable restore drill.

@@ -1,7 +1,6 @@
 const required = [
-  ["ACME_EMAIL", "TLS certificate contact"],
   ["APP_DOMAIN", "private application hostname"],
-  ["N8N_DOMAIN", "automation hostname"],
+  ["CLOUDFLARE_TUNNEL_TOKEN", "outbound-only private application tunnel"],
   ["DEPLOYMENT_VERSION", "immutable release identifier"],
   ["NEXT_PUBLIC_SUPABASE_URL", "production Supabase URL"],
   ["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "Supabase publishable key"],

@@ -1,7 +1,7 @@
 # Phase 12 development diary
 
 - Converted the hosted deployment direction into a reproducible standalone
-  Next.js, n8n, and Caddy Compose package.
+  Next.js, n8n, ClamAV, and Cloudflare Tunnel Compose package.
 - Added nonce-based CSP, production HSTS, request-size limits, authenticated
   readiness, and session timeouts using the installed Next.js 16 guidance.
 - Kept tutorial/practice records completely separate from operational tables and
@@ -17,3 +17,7 @@
 - Validated the local desktop direction but retained hosted deployment as the
   first supported production form because the client uses macOS and scheduled
   automation must run while staff computers are off.
+- The production dependency audit contains no runtime findings. Current npm audit
+  findings are confined to development-only ESLint/shadcn dependency chains and
+  require unsupported major tooling changes; they remain documented for planned
+  review rather than being misrepresented as production exposure.

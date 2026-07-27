@@ -57,11 +57,11 @@ The current candidate provides the secured operational master-data, enquiry, off
 - token-protected one-time first-administrator setup with no public registration;
 - truthful integration-readiness status for Gmail, Telegram, n8n, Auth email,
   AI, and the audited manual Yachtfolio boundary;
-- a standalone Next.js/n8n/Caddy Linux production package and a separately
+- a standalone Next.js/n8n/Cloudflare-Tunnel Linux production package and a separately
   documented future desktop distribution;
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
-- 79 unit tests, 608 database permission/behaviour tests, database linting,
+- 102 unit tests, 670 database permission/behaviour tests, database linting,
   deployment-package validation, and matching CI gates.
 
 Confirmed bookings generate their workflow, private document checklist, reviewed contract data, payments, calendar records, reminders, and controlled delivery work. External adapters remain observable and cannot change operational authority. The application does not send consequential communications or update Yachtfolio automatically. Production approval is evidence-driven in `/settings/launch`; code completion alone does not permit live data.
@@ -85,7 +85,8 @@ acceptance. The deterministic local AI provider requires no paid service; OpenAI
 is optional and server-only.
 
 The recommended production topology is managed Supabase Pro plus a protected Linux
-VPS running the standalone application, n8n Community Edition, and Caddy. See
+VPS running the standalone application, n8n Community Edition, and an outbound-only
+Cloudflare Tunnel protected by Cloudflare Access. See
 [production deployment](docs/operations/PRODUCTION_DEPLOYMENT.md) and
 [launch acceptance](docs/operations/LAUNCH_ACCEPTANCE.md).
 
