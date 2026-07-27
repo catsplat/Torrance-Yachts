@@ -4628,6 +4628,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      count_enquiry_register: {
+        Args: {
+          p_open_only?: boolean
+          p_priority?: Database["public"]["Enums"]["enquiry_priority"]
+          p_query?: string
+          p_status?: Database["public"]["Enums"]["enquiry_status"]
+          p_yacht_id?: string
+        }
+        Returns: number
+      }
       create_communication_template_draft: {
         Args: {
           p_body_template: string
@@ -4812,6 +4822,34 @@ export type Database = {
           target_status: Database["public"]["Enums"]["enquiry_status"]
         }
         Returns: boolean
+      }
+      list_enquiry_register_page: {
+        Args: {
+          p_cursor_id?: string
+          p_cursor_updated_at?: string
+          p_limit?: number
+          p_open_only?: boolean
+          p_priority?: Database["public"]["Enums"]["enquiry_priority"]
+          p_query?: string
+          p_status?: Database["public"]["Enums"]["enquiry_status"]
+          p_yacht_id?: string
+        }
+        Returns: {
+          broker_company_name: string
+          broker_name: string
+          charter_end_date: string
+          charter_start_date: string
+          customer_name: string
+          guest_count: number
+          id: string
+          owner_name: string
+          priority: Database["public"]["Enums"]["enquiry_priority"]
+          reference: string
+          status: Database["public"]["Enums"]["enquiry_status"]
+          summary: string
+          updated_at: string
+          yacht_name: string
+        }[]
       }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_notification_read: {

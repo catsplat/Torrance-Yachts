@@ -6,6 +6,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- Server-side, cursor-paginated Enquiries register queries with PostgreSQL
+  filtering/search/counts, URL-preserved filters, supporting indexes and
+  database coverage for complete historical results.
 - A fail-closed private document quarantine pipeline: byte-signature validation,
   SHA-256 evidence, ClamAV scanning, explicit scan/release states, blocked
   signed URLs and Drive sync until clean release, and synthetic scanner tests.

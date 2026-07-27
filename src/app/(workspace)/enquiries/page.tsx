@@ -12,14 +12,15 @@ import { z } from "zod"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CursorPagination } from "@/components/ui/cursor-pagination"
 import { Input } from "@/components/ui/input"
+import { getEnquiryRegisterPage } from "@/lib/enquiries/data"
 import {
   enquiryPriorityLabels,
   enquiryPriorityTones,
   enquiryStatusLabels,
   enquiryStatusTones,
 } from "@/lib/enquiries/options"
-import { phaseFourOpenStatuses } from "@/lib/enquiries/state-machine"
 import {
   enquiryPriorityValues,
   enquiryStatusValues,
@@ -31,6 +32,7 @@ import type { Enums } from "@/types/database"
 
 type EnquiriesPageProps = {
   searchParams: Promise<{
+    cursor?: string
     priority?: string
     q?: string
     status?: string
@@ -64,63 +66,26 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
   const yachtId = z.uuid().safeParse(filters.yacht).success ? filters.yacht : undefined
 
   const supabase = await createClient()
-  let query = supabase
-    .from("enquiries")
-    .select(`
-      id,
-      reference,
-      summary,
-      status,
+  const [enquiryRegister, yachtsResult] = await Promise.all([
+    getEnquiryRegisterPage({
+      cursor: filters.cursor,
       priority,
-      charter_start_date,
-      charter_end_date,
-      guest_count,
-      updated_at,
-      customer:contacts!enquiries_customer_contact_id_fkey(id, full_name),
-      broker:contacts!enquiries_broker_contact_id_fkey(id, full_name),
-      broker_company:companies!enquiries_broker_company_id_fkey(id, name),
-      yacht:yachts!enquiries_requested_yacht_id_fkey(id, name),
-      owner:profiles!enquiries_owner_user_id_fkey(id, display_name)
-    `)
-    .order("updated_at", { ascending: false })
-    .limit(500)
-
-  if (status === "open") query = query.in("status", phaseFourOpenStatuses)
-  else if (status !== "all") query = query.eq("status", status)
-  if (priority) query = query.eq("priority", priority)
-  if (yachtId) query = query.eq("requested_yacht_id", yachtId)
-
-  const [enquiriesResult, yachtsResult] = await Promise.all([
-    query,
+      query: search,
+      status,
+      yachtId,
+    }),
     supabase.from("yachts").select("id, name").order("name"),
   ])
-  if (enquiriesResult.error || yachtsResult.error) {
-    throw new Error("Unable to load enquiry records.")
-  }
+  if (yachtsResult.error) throw new Error("Unable to load enquiry records.")
 
-  const visibleEnquiries = search
-    ? enquiriesResult.data.filter((enquiry) =>
-        [
-          enquiry.reference,
-          enquiry.summary,
-          enquiry.customer?.full_name,
-          enquiry.broker?.full_name,
-          enquiry.broker_company?.name,
-          enquiry.yacht?.name,
-          enquiry.owner?.display_name,
-        ]
-          .filter((value): value is string => Boolean(value))
-          .some((value) => value.toLocaleLowerCase("en-GB").includes(search)),
-      )
-    : enquiriesResult.data
-
+  const visibleEnquiries = enquiryRegister.enquiries
   const needsResponse = visibleEnquiries.filter((enquiry) =>
     ["new", "waiting_for_reply"].includes(enquiry.status),
   ).length
   const highPriority = visibleEnquiries.filter((enquiry) =>
     ["high", "urgent"].includes(enquiry.priority),
   ).length
-  const unassigned = visibleEnquiries.filter((enquiry) => !enquiry.owner).length
+  const unassigned = visibleEnquiries.filter((enquiry) => !enquiry.owner_name).length
 
   return (
     <div className="space-y-7">
@@ -129,11 +94,15 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
           <p className="text-sm font-medium text-primary">Manual operations pipeline</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">Enquiries</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Track every request against authoritative contacts and yachts before email or AI
-            automation is connected.
+            Search the complete authorised pipeline. Filters run in PostgreSQL so older requests
+            remain available for review.
           </p>
         </div>
-        <Link className={cn(buttonVariants({ size: "lg" }))} data-tutorial-anchor="enquiry-create" href="/enquiries/new">
+        <Link
+          className={cn(buttonVariants({ size: "lg" }))}
+          data-tutorial-anchor="enquiry-create"
+          href="/enquiries/new"
+        >
           <Plus aria-hidden="true" /> New enquiry
         </Link>
       </div>
@@ -208,25 +177,37 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
         <Card>
           <CardContent className="flex items-center gap-3 p-5">
             <Inbox aria-hidden="true" className="size-5 text-primary" />
-            <div><p className="text-2xl font-semibold">{visibleEnquiries.length}</p><p className="text-xs text-muted-foreground">Matching enquiries</p></div>
+            <div>
+              <p className="text-2xl font-semibold">{enquiryRegister.totalCount}</p>
+              <p className="text-xs text-muted-foreground">Matching enquiries</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 p-5">
             <AlertTriangle aria-hidden="true" className="size-5 text-amber-700" />
-            <div><p className="text-2xl font-semibold">{needsResponse}</p><p className="text-xs text-muted-foreground">Need response action</p></div>
+            <div>
+              <p className="text-2xl font-semibold">{needsResponse}</p>
+              <p className="text-xs text-muted-foreground">Need response on this page</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 p-5">
             <AlertTriangle aria-hidden="true" className="size-5 text-rose-700" />
-            <div><p className="text-2xl font-semibold">{highPriority}</p><p className="text-xs text-muted-foreground">High or urgent</p></div>
+            <div>
+              <p className="text-2xl font-semibold">{highPriority}</p>
+              <p className="text-xs text-muted-foreground">High or urgent on this page</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 p-5">
             <UserRoundCheck aria-hidden="true" className="size-5 text-slate-600" />
-            <div><p className="text-2xl font-semibold">{unassigned}</p><p className="text-xs text-muted-foreground">Without an owner</p></div>
+            <div>
+              <p className="text-2xl font-semibold">{unassigned}</p>
+              <p className="text-xs text-muted-foreground">Without an owner on this page</p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -263,8 +244,8 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
                   <div className="min-w-0">
                     <p className="line-clamp-2 font-medium">{enquiry.summary}</p>
                     <p className="mt-1 truncate text-xs text-muted-foreground">
-                      {enquiry.customer?.full_name || enquiry.broker?.full_name || enquiry.broker_company?.name || "Requester not resolved"}
-                      {enquiry.yacht ? ` · ${enquiry.yacht.name}` : " · Yacht not selected"}
+                      {enquiry.customer_name || enquiry.broker_name || enquiry.broker_company_name || "Requester not resolved"}
+                      {enquiry.yacht_name ? ` · ${enquiry.yacht_name}` : " · Yacht not selected"}
                     </p>
                   </div>
                   <div>
@@ -273,19 +254,35 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
                       {enquiry.charter_end_date ? ` – ${formatDate(enquiry.charter_end_date)}` : ""}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {enquiry.owner?.display_name || "Unassigned"}
+                      {enquiry.owner_name || "Unassigned"}
                     </p>
                   </div>
                   <div className="flex items-center justify-between gap-3 lg:justify-end">
                     <Badge className={enquiryStatusTones[enquiry.status]} variant="outline">
                       {enquiryStatusLabels[enquiry.status]}
                     </Badge>
-                    <ArrowRight aria-hidden="true" className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                    <ArrowRight
+                      aria-hidden="true"
+                      className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1"
+                    />
                   </div>
                 </Link>
               ))}
             </div>
           )}
+          <CursorPagination
+            currentCount={visibleEnquiries.length}
+            nextCursor={enquiryRegister.nextCursor}
+            pathname="/enquiries"
+            searchParams={{
+              cursor: filters.cursor,
+              priority,
+              q: search,
+              status,
+              yacht: yachtId,
+            }}
+            totalCount={enquiryRegister.totalCount}
+          />
         </CardContent>
       </Card>
     </div>
