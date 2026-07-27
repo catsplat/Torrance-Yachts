@@ -6,7 +6,7 @@ describe("offline rehearsal email", () => {
   it("uses a valid, clearly synthetic payload compatible with the Gmail boundary", () => {
     const email = createOfflineRehearsalEmail()
 
-    expect(email.sender_email).toBe("alex.morgan@example.test")
+    expect(email.sender_email).toMatch(/^alex\.[a-f0-9]{8}@example\.test$/)
     expect(email.provider_event_id).toMatch(/^offline-rehearsal:new_enquiry:/)
     expect(email.gmail_label_ids).toContain("OFFLINE_REHEARSAL")
     expect(email.body_text).toContain("M/Y Asteria")

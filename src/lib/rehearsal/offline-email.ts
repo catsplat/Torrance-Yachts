@@ -31,6 +31,7 @@ export function createOfflineRehearsalEmail(
   options: FixtureOptions = {},
 ) {
   const suffix = options.runId ?? randomUUID()
+  const senderLocalPart = `alex.${suffix.slice(0, 8)}`
   const receivedAt = new Date().toISOString()
   const common = {
     attachments: [],
@@ -53,7 +54,7 @@ export function createOfflineRehearsalEmail(
       has_list_unsubscribe: false,
       is_bulk: false,
       provider_thread_id: threadId,
-      sender_email: "alex.morgan@example.test",
+      sender_email: `${senderLocalPart}@example.test`,
       sender_name: "Alex Morgan",
       snippet: "Synthetic follow-up to the fictional Asteria enquiry.",
       subject: "Re: Offline rehearsal: August family charter enquiry",
@@ -124,7 +125,7 @@ export function createOfflineRehearsalEmail(
     has_list_unsubscribe: false,
     is_bulk: false,
     provider_thread_id: threadId,
-    sender_email: "alex.morgan@example.test",
+    sender_email: `${senderLocalPart}@example.test`,
     sender_name: "Alex Morgan",
     snippet: "Synthetic seven-night family charter enquiry for M/Y Asteria.",
     subject: "Offline rehearsal: August family charter enquiry",

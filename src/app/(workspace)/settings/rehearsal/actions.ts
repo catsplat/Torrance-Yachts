@@ -6,7 +6,6 @@ import { generateEmailSuggestion } from "@/lib/ai/service"
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 import {
   createOfflineRehearsalEmail,
-  createOfflineRehearsalRunId,
   type OfflineEmailKind,
   offlineRehearsalEnabled,
 } from "@/lib/rehearsal/offline-email"
@@ -71,6 +70,27 @@ async function ingestFixture(
     p_subject: email.subject,
   })
   if (error || !messageId) throw new Error("The synthetic email could not enter the local inbox.")
+  const { data: message, error: messageError } = await context.supabase
+    .from("email_messages")
+    .select("thread_id")
+    .eq("id", messageId)
+    .single()
+  if (messageError) throw new Error("The synthetic email could not be labelled as a rehearsal record.")
+  const registrations = await Promise.all([
+    context.supabase.rpc("register_rehearsal_record", {
+      p_entity_id: messageId,
+      p_entity_type: "email_message",
+      p_rehearsal_run_id: runId,
+    }),
+    context.supabase.rpc("register_rehearsal_record", {
+      p_entity_id: message.thread_id,
+      p_entity_type: "email_thread",
+      p_rehearsal_run_id: runId,
+    }),
+  ])
+  if (registrations.some((result) => result.error)) {
+    throw new Error("The synthetic email could not be labelled as a rehearsal record.")
+  }
   return { email, messageId }
 }
 
@@ -96,9 +116,16 @@ export async function createOfflineRehearsalEmailAction(
 
   const kind = parseFixtureKind(formData.get("fixtureKind"))
   const submittedRunId = formData.get("runId")
-  const runId = typeof submittedRunId === "string" && submittedRunId
+  let runId = typeof submittedRunId === "string" && submittedRunId
     ? submittedRunId
-    : createOfflineRehearsalRunId()
+    : ""
+  if (!runId) {
+    const { data, error } = await context.supabase.rpc("create_rehearsal_run", {
+      p_label: "Offline email rehearsal: " + kind,
+    })
+    if (error || !data) return { message: "The fictional rehearsal run could not be started." }
+    runId = data
+  }
   let messageId: string
   try {
     messageId = (await ingestFixture(kind, context, runId)).messageId
@@ -139,31 +166,19 @@ export async function createOfflineRehearsalSuiteAction(
   if (!context || context.role !== "administrator") return { message: "Administrator access is required." }
   if (!offlineRehearsalEnabled()) return { message: "Offline rehearsal is available only in local development." }
 
-  const settingsResult = await context.supabase
-    .from("operational_settings")
-    .select("internal_email_domains, enquiry_timeout_enabled, negotiating_timeout_days, new_enquiry_timeout_days, offer_sent_timeout_days, waiting_reply_timeout_days")
-    .single()
-  if (settingsResult.error || !settingsResult.data) return { message: "Local operational settings could not be loaded." }
-  const domains = settingsResult.data.internal_email_domains.includes("example.test")
-    ? settingsResult.data.internal_email_domains
-    : [...settingsResult.data.internal_email_domains, "example.test"]
-  const { error: settingsError } = await context.supabase.rpc("update_operational_settings", {
-    p_enquiry_timeout_enabled: settingsResult.data.enquiry_timeout_enabled,
-    p_internal_email_domains: domains,
-    p_negotiating_timeout_days: settingsResult.data.negotiating_timeout_days,
-    p_new_enquiry_timeout_days: settingsResult.data.new_enquiry_timeout_days,
-    p_offer_sent_timeout_days: settingsResult.data.offer_sent_timeout_days,
-    p_waiting_reply_timeout_days: settingsResult.data.waiting_reply_timeout_days,
+  const { data: runId, error: runError } = await context.supabase.rpc("create_rehearsal_run", {
+    p_label: "Five-route fictional workflow rehearsal",
   })
-  if (settingsError) return { message: "The local internal-domain fixture setting could not be applied." }
-
-  const runId = createOfflineRehearsalRunId()
+  if (runError || !runId) return { message: "The fictional rehearsal run could not be started." }
   const primaryThread = `offline-rehearsal-thread-${runId}`
   try {
     const newEnquiry = await ingestFixture("new_enquiry", context, runId, primaryThread)
-    const yacht = await context.supabase.from("yachts").select("id").eq("name", "M/Y Asteria").maybeSingle()
-    if (yacht.error || !yacht.data) throw new Error("Synthetic yacht is unavailable.")
-    const { error: classifyError } = await context.supabase.rpc("classify_email_message_with_details", {
+    const { data: yachtId, error: yachtError } = await context.supabase.rpc(
+      "create_rehearsal_fixture_yacht",
+      { p_rehearsal_run_id: runId },
+    )
+    if (yachtError || !yachtId) throw new Error("Synthetic yacht fixture is unavailable.")
+    const { data: enquiryId, error: classifyError } = await context.supabase.rpc("classify_email_message_with_details", {
       p_budget_amount: 180000,
       p_charter_end_date: "2026-08-21",
       p_charter_start_date: "2026-08-14",
@@ -177,9 +192,40 @@ export async function createOfflineRehearsalSuiteAction(
       p_guest_count: 10,
       p_message_id: newEnquiry.messageId,
       p_reason: "Administrator started the fictional local follow-up-routing rehearsal.",
-      p_requested_yacht_id: yacht.data.id,
+      p_requested_yacht_id: yachtId,
     })
     if (classifyError) throw new Error("Synthetic enquiry could not be linked.")
+    if (enquiryId) {
+      const { error: enquiryRegistrationError } = await context.supabase.rpc(
+        "register_rehearsal_record",
+        {
+          p_entity_id: enquiryId,
+          p_entity_type: "enquiry",
+          p_rehearsal_run_id: runId,
+        },
+      )
+      if (enquiryRegistrationError) {
+        throw new Error("Synthetic enquiry could not be labelled as a rehearsal record.")
+      }
+      const { data: enquiry } = await context.supabase
+        .from("enquiries")
+        .select("customer_contact_id")
+        .eq("id", enquiryId)
+        .single()
+      if (enquiry?.customer_contact_id) {
+        const { error: contactRegistrationError } = await context.supabase.rpc(
+          "register_rehearsal_record",
+          {
+            p_entity_id: enquiry.customer_contact_id,
+            p_entity_type: "contact",
+            p_rehearsal_run_id: runId,
+          },
+        )
+        if (contactRegistrationError) {
+          throw new Error("Synthetic contact could not be labelled as a rehearsal record.")
+        }
+      }
+    }
     await Promise.all([
       ingestFixture("enquiry_follow_up", context, runId, primaryThread),
       ingestFixture("internal", context, runId),
@@ -197,4 +243,32 @@ export async function createOfflineRehearsalSuiteAction(
   } catch {
     return { message: "The fictional email suite could not be created. No external service was contacted." }
   }
+}
+
+export async function resetOfflineRehearsalAction(
+  _state: OfflineRehearsalActionState,
+  formData: FormData,
+): Promise<OfflineRehearsalActionState> {
+  void _state
+  const context = await getAuthenticatedRequestContext()
+  if (!context || context.role !== "administrator") {
+    return { message: "Administrator access is required." }
+  }
+  if (!offlineRehearsalEnabled()) {
+    return { message: "Offline rehearsal is available only in local development." }
+  }
+  const runId = formData.get("runId")
+  if (typeof runId !== "string" || !runId) return { message: "Choose a fictional rehearsal run to remove." }
+
+  const { error } = await context.supabase.rpc("reset_rehearsal_run", {
+    p_reason: "Administrator removed the completed fictional rehearsal run.",
+    p_rehearsal_run_id: runId,
+  })
+  if (error) {
+    return {
+      message: "This run cannot be reset yet because it contains a later fictional workflow record. Use the full workflow reset once that scenario is complete.",
+    }
+  }
+  refreshRehearsalPaths()
+  return { message: "The fictional run was removed. Its reset audit evidence remains.", success: true }
 }

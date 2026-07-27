@@ -2661,6 +2661,86 @@ export type Database = {
         }
         Relationships: []
       }
+      rehearsal_run_records: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          rehearsal_run_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          rehearsal_run_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          rehearsal_run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rehearsal_run_records_rehearsal_run_id_fkey"
+            columns: ["rehearsal_run_id"]
+            isOneToOne: false
+            referencedRelation: "rehearsal_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rehearsal_runs: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          label: string
+          record_counts: Json
+          reset_at: string | null
+          reset_by: string | null
+          reset_reason: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          label: string
+          record_counts?: Json
+          reset_at?: string | null
+          reset_by?: string | null
+          reset_reason?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          label?: string
+          record_counts?: Json
+          reset_at?: string | null
+          reset_by?: string | null
+          reset_reason?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rehearsal_runs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rehearsal_runs_reset_by_fkey"
+            columns: ["reset_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_dependencies: {
         Row: {
           created_at: string
@@ -4738,6 +4818,11 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_rehearsal_fixture_yacht: {
+        Args: { p_rehearsal_run_id: string }
+        Returns: string
+      }
+      create_rehearsal_run: { Args: { p_label: string }; Returns: string }
       delete_task_template_step: {
         Args: { p_reason: string; p_step_id: string }
         Returns: undefined
@@ -5066,6 +5151,14 @@ export type Database = {
         }
         Returns: string
       }
+      register_rehearsal_record: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_rehearsal_run_id: string
+        }
+        Returns: undefined
+      }
       register_trusted_generated_document: {
         Args: {
           p_booking_id: string
@@ -5144,6 +5237,10 @@ export type Database = {
           p_source_type: string
         }
         Returns: string
+      }
+      reset_rehearsal_run: {
+        Args: { p_reason: string; p_rehearsal_run_id: string }
+        Returns: Json
       }
       reset_tutorial: {
         Args: { p_reason: string }

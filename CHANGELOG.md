@@ -11,6 +11,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
   database coverage for complete historical results.
 - Server-side, cursor-paginated Email inbox queries with PostgreSQL
   classification/search/counts and a separately accurate review-required count.
+- Administrator-only rehearsal runs with their own fictional yacht/contact/email
+  fixtures, protected record mapping, and a fail-closed reset for the supported
+  pre-booking rehearsal scope.
 - A fail-closed private document quarantine pipeline: byte-signature validation,
   SHA-256 evidence, ClamAV scanning, explicit scan/release states, blocked
   signed URLs and Drive sync until clean release, and synthetic scanner tests.

@@ -6,6 +6,7 @@ import { useActionState } from "react"
 import {
   createOfflineRehearsalEmailAction,
   createOfflineRehearsalSuiteAction,
+  resetOfflineRehearsalAction,
   type OfflineRehearsalActionState,
 } from "@/app/(workspace)/settings/rehearsal/actions"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,8 @@ function ActionFeedback({ state }: { state: OfflineRehearsalActionState }) {
 export function OfflineRehearsalForm({ enabled }: { enabled: boolean }) {
   const [state, action, pending] = useActionState(createOfflineRehearsalEmailAction, initialState)
   const [suiteState, suiteAction, suitePending] = useActionState(createOfflineRehearsalSuiteAction, initialState)
+  const [resetState, resetAction, resetPending] = useActionState(resetOfflineRehearsalAction, initialState)
+  const activeRunId = suiteState.runId ?? state.runId
 
   if (!enabled) {
     return <p className="text-sm text-muted-foreground">This control is disabled outside the local development environment.</p>
@@ -61,6 +64,19 @@ export function OfflineRehearsalForm({ enabled }: { enabled: boolean }) {
           <input name="fixtureKind" type="hidden" value={state.fixtureKind} />
           <input name="runId" type="hidden" value={state.runId} />
           <Button disabled={pending} type="submit" variant="outline">Replay the same provider event</Button>
+        </form>
+      ) : null}
+
+      {activeRunId ? (
+        <form action={resetAction} className="border-t pt-5">
+          <input name="runId" type="hidden" value={activeRunId} />
+          <p className="mb-3 text-xs leading-5 text-muted-foreground">
+            Removes this completed fictional run only. Its audit evidence remains; real operational records are never included.
+          </p>
+          <Button disabled={resetPending} type="submit" variant="destructive">
+            {resetPending ? "Removing fictional run…" : "Remove this fictional run"}
+          </Button>
+          <ActionFeedback state={resetState} />
         </form>
       ) : null}
 
