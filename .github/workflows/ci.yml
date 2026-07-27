@@ -77,10 +77,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Validate automation workflow JSON
-        run: |
-          for workflow in automation/workflows/*.json; do
-            node -e "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))" "$workflow"
-          done
+        run: npm run automation:validate
 
       - name: Validate backup tooling
         run: |
@@ -100,7 +97,17 @@ jobs:
           EMAIL_INGESTION_TOKEN: synthetic-ingestion-token
           MONITORING_SHARED_SECRET: synthetic-monitoring-secret
           N8N_ENCRYPTION_KEY: synthetic-n8n-encryption-key
-        run: docker compose -f deploy/production/docker-compose.yml config --quiet
+          AUTH_SMTP_CONFIGURED: "true"
+          AI_PROVIDER: openai
+          OPENAI_API_KEY: synthetic-openai-key
+          GOOGLE_OAUTH_CLIENT_ID: synthetic-google-client
+          GOOGLE_OAUTH_CLIENT_SECRET: synthetic-google-secret
+          TELEGRAM_BOT_TOKEN: synthetic-telegram-token
+          TELEGRAM_BOT_USERNAME: synthetic_bot
+          TELEGRAM_WEBHOOK_SECRET: synthetic-telegram-webhook-secret
+        run: |
+          node ops/production-preflight.mjs
+          docker compose -f deploy/production/docker-compose.yml config --quiet
 
       - name: Build production application image
         run: |

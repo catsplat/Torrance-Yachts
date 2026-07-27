@@ -9,10 +9,10 @@ consequential actions remain subject to human approval.
 
 | Client request | Implementation |
 | --- | --- |
-| Read and categorise emails into enquiries, internal mail, circulars, and unknowns | Phase 9 stores messages/threads and deterministically routes safe cases; Phase 10 adds evidence-backed AI suggestions; uncertain mail remains human-reviewed |
+| Read and categorise emails into enquiries, internal mail, circulars, and unknowns | Phase 9 stores messages/threads and deterministically routes safe cases; Phase 10 adds evidence-backed AI suggestions; the credential-free Phase 11 n8n Gmail Trigger bridge now posts real provider events through the same validated/idempotent boundary; uncertain mail remains human-reviewed |
 | Track enquiry data in a presentable Sheet/website | Phase 4 enquiry database and UI are authoritative; Phase 11 provides a controlled one-way workbook snapshot |
 | Telegram notification for enquiries, internal mail, unknown mail, and non-circular mail | Phase 11/`v0.13` materialises per-user notifications with optional AI summary/draft content and queues idempotent Telegram delivery through the local n8n scheduler |
-| Ignore, mark read, and archive circulars | Phase 9 creates idempotent actions; Phase 11 queues them through the Gmail adapter |
+| Ignore, mark read, and archive circulars | Phase 9 creates idempotent actions; dedicated inactive Phase 11 n8n workers claim only `gmail_mark_read` or `gmail_archive`, retry provider failures and report outcomes |
 | Distinguish new enquiries from follow-ups | Phase 9 links Gmail threads, automatically recognises known threads, and lets staff create/reuse sender contacts and enquiries |
 | Draft the yacht-specific new-enquiry response | Phase 5/10 prepare the reviewed content; `v0.13` automatically analyses one pending email per tick and includes the clearly labelled draft in the staff alert without sending it |
 | Notify sender and summary for other relevant emails | Phase 9 stores and classifies them; Phase 10 supplies a reviewable summary; Phase 11 sends notifications |

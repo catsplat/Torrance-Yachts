@@ -24,10 +24,16 @@ export async function POST(request: Request) {
   }
   try {
     const supabase = createAdminClient()
-    const { data, error } = await supabase.rpc("claim_integration_deliveries", {
-      p_limit: parsed.data.limit,
-      p_worker_id: parsed.data.workerId,
-    })
+    const { data, error } = parsed.data.operations
+      ? await supabase.rpc("claim_integration_deliveries_for_operations", {
+        p_limit: parsed.data.limit,
+        p_operations: parsed.data.operations,
+        p_worker_id: parsed.data.workerId,
+      })
+      : await supabase.rpc("claim_integration_deliveries", {
+        p_limit: parsed.data.limit,
+        p_worker_id: parsed.data.workerId,
+      })
     if (error) return NextResponse.json({ error: "Delivery claim failed" }, { status: 500 })
     const origin = new URL(request.url).origin
     return NextResponse.json({

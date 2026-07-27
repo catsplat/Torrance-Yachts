@@ -35,9 +35,11 @@ Use a currently supported Ubuntu LTS or Debian release with:
    encryption key. Create a company Telegram bot token only if Telegram alerts
    are approved for launch.
 5. Set `DEPLOYMENT_VERSION` to the exact Git tag or commit being deployed.
-6. Validate without starting:
+6. Validate the environment contract without printing secret values, then validate
+   Compose without starting:
 
    ```bash
+   npm run production:preflight
    docker compose --env-file .env config --quiet
    ```
 

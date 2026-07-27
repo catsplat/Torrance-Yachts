@@ -6,6 +6,14 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- A definitive project completion register separating locally complete hosted
+  scope, optional mirrors, the future desktop edition, and eight client-owned
+  activation gates.
+- Executable inactive n8n Gmail intake, mark-read, and archive workflows, raw
+  trigger payload normalisation, authenticated shared ingestion, replay tests,
+  and capability-scoped provider leases.
+- Static n8n workflow validation and a production environment preflight which
+  reports missing configuration without printing secret values.
 - A production-environment guard at every automation delivery claim/result
   boundary, so the explicitly named local n8n simulator cannot claim or mark
   real provider work complete outside `APP_ENVIRONMENT=development`.

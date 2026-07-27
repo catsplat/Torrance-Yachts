@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -4324,6 +4324,42 @@ export type Database = {
       }
       claim_integration_deliveries: {
         Args: { p_limit?: number; p_worker_id: string }
+        Returns: {
+          attempt_count: number
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          credential_user_id: string | null
+          delivered_at: string | null
+          external_id: string | null
+          external_url: string | null
+          id: string
+          idempotency_key: string
+          last_error_code: string | null
+          last_error_message: string | null
+          lease_expires_at: string | null
+          next_attempt_at: string
+          operation: Database["public"]["Enums"]["integration_operation"]
+          payload: Json
+          provider: Database["public"]["Enums"]["integration_provider"]
+          source_id: string
+          source_type: string
+          status: Database["public"]["Enums"]["integration_delivery_status"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "integration_deliveries"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_integration_deliveries_for_operations: {
+        Args: {
+          p_limit: number
+          p_operations: Database["public"]["Enums"]["integration_operation"][]
+          p_worker_id: string
+        }
         Returns: {
           attempt_count: number
           claimed_at: string | null

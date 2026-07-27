@@ -10,6 +10,13 @@ import { developmentSimulatorWorkerId, isAllowedAutomationWorker } from "./autom
 describe("Phase 11 integration validation", () => {
   it("bounds delivery claims", () => {
     expect(deliveryClaimSchema.safeParse({ limit: 20, workerId: "local-n8n" }).success).toBe(true)
+    expect(deliveryClaimSchema.safeParse({
+      limit: 20,
+      operations: ["gmail_mark_read", "gmail_archive"],
+      workerId: "gmail-actions-worker",
+    }).success).toBe(true)
+    expect(deliveryClaimSchema.safeParse({ limit: 20, operations: [], workerId: "local-n8n" }).success).toBe(false)
+    expect(deliveryClaimSchema.safeParse({ limit: 20, operations: ["book_yacht"], workerId: "local-n8n" }).success).toBe(false)
     expect(deliveryClaimSchema.safeParse({ limit: 101, workerId: "local-n8n" }).success).toBe(false)
   })
 

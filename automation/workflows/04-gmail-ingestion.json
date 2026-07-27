@@ -1,0 +1,88 @@
+{
+  "id": "TYGmailIntake001",
+  "name": "Torrance Yachts - Gmail ingestion",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "maxResults": 20,
+        "filters": {
+          "includeDrafts": false,
+          "includeSpamTrash": false,
+          "q": "in:inbox -in:sent -in:drafts"
+        },
+        "options": {
+          "downloadAttachments": false
+        }
+      },
+      "id": "aa1f2071-6f55-4ec4-9e98-522257740001",
+      "name": "Company Gmail inbox",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TORRANCE_APP_URL }}/api/integrations/gmail/n8n-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.EMAIL_INGESTION_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "aa1f2071-6f55-4ec4-9e98-522257740002",
+      "name": "Store through application boundary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [300, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "Company Gmail inbox": {
+      "main": [
+        [
+          {
+            "node": "Store through application boundary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/London"
+  },
+  "versionId": "aa1f2071-6f55-4ec4-9e98-522257740003",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

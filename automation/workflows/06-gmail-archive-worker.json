@@ -1,0 +1,106 @@
+{
+  "id": "TYGmailArchive01",
+  "name": "Torrance Yachts - Gmail archive worker",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "minutes", "minutesInterval": 1 }] } },
+      "id": "c93b1a2e-7a7a-4142-9b9e-100000000001",
+      "name": "Every minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TORRANCE_APP_URL }}/api/integrations/deliveries/claim",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Authorization", "value": "=Bearer {{ $env.AUTOMATION_SHARED_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"workerId\":\"n8n-gmail-archive\",\"limit\":20,\"operations\":[\"gmail_archive\"]}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "c93b1a2e-7a7a-4142-9b9e-100000000002",
+      "name": "Claim archive actions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": { "fieldToSplitOut": "deliveries", "options": {} },
+      "id": "c93b1a2e-7a7a-4142-9b9e-100000000003",
+      "name": "One archive action",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "removeLabels",
+        "messageId": "={{ $json.payload.provider_message_id }}",
+        "labelIds": ["INBOX"]
+      },
+      "id": "c93b1a2e-7a7a-4142-9b9e-100000000004",
+      "name": "Archive Gmail message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [720, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TORRANCE_APP_URL }}/api/integrations/deliveries/{{ $('One archive action').item.json.id }}/complete",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Authorization", "value": "=Bearer {{ $env.AUTOMATION_SHARED_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"workerId\":\"n8n-gmail-archive\",\"externalId\":\"{{ $('One archive action').item.json.payload.provider_message_id }}\",\"externalUrl\":\"\"}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "c93b1a2e-7a7a-4142-9b9e-100000000005",
+      "name": "Record archive success",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [980, -100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TORRANCE_APP_URL }}/api/integrations/deliveries/{{ $('One archive action').item.json.id }}/fail",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Authorization", "value": "=Bearer {{ $env.AUTOMATION_SHARED_SECRET }}" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { workerId: 'n8n-gmail-archive', errorCode: 'gmail_action_failed', errorMessage: String($json.error?.message ?? $json.error ?? 'Gmail archive failed').slice(0, 2000), retryable: true } }}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "c93b1a2e-7a7a-4142-9b9e-100000000006",
+      "name": "Record archive failure",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [980, 120]
+    }
+  ],
+  "connections": {
+    "Every minute": { "main": [[{ "node": "Claim archive actions", "type": "main", "index": 0 }]] },
+    "Claim archive actions": { "main": [[{ "node": "One archive action", "type": "main", "index": 0 }]] },
+    "One archive action": { "main": [[{ "node": "Archive Gmail message", "type": "main", "index": 0 }]] },
+    "Archive Gmail message": {
+      "main": [
+        [{ "node": "Record archive success", "type": "main", "index": 0 }],
+        [{ "node": "Record archive failure", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1", "timezone": "Europe/London" },
+  "versionId": "c93b1a2e-7a7a-4142-9b9e-100000000007",
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": []
+}

@@ -2,6 +2,20 @@
 
 All endpoints require `Authorization: Bearer <AUTOMATION_SHARED_SECRET>`.
 
+The Gmail intake endpoint instead uses the independent
+`EMAIL_INGESTION_TOKEN`, so compromise of one adapter secret does not grant the
+other adapter boundary.
+
+## Gmail intake
+
+`POST /api/integrations/gmail/n8n-message`
+
+Accepts one unsimplified item from n8n's pinned Gmail Trigger node. The
+application normalises address objects, header signals, full text, Gmail IDs,
+thread ID, labels, and received time into its bounded ingestion contract. The
+stable Gmail message ID becomes the replay key, and PostgreSQL remains the
+idempotency authority.
+
 ## Materialise
 
 `POST /api/integrations/automation/tick`

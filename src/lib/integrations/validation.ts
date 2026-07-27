@@ -11,6 +11,17 @@ export const integrationProviderSchema = z.enum([
   "google_sheets",
 ])
 
+export const integrationOperationSchema = z.enum([
+  "telegram_send",
+  "gmail_mark_read",
+  "gmail_archive",
+  "gmail_create_draft",
+  "gmail_send_internal",
+  "calendar_upsert",
+  "drive_upload",
+  "sheets_snapshot",
+])
+
 export const connectionSettingsSchema = z.object({
   configurationNotes: z.string().trim().max(2000),
   enabled: z.boolean(),
@@ -73,6 +84,7 @@ export const invoiceGenerationSchema = z.object({
 
 export const deliveryClaimSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
+  operations: z.array(integrationOperationSchema).min(1).max(20).optional(),
   workerId: z.string().trim().min(2).max(160),
 })
 

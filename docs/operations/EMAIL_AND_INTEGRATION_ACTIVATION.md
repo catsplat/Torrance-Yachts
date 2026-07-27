@@ -38,7 +38,10 @@ web interface. Test both a staff invitation and password recovery, then set
 
 1. Create the client-owned Google Cloud project and OAuth consent configuration.
 2. Grant only the scopes required by the reviewed n8n workflow.
-3. Store provider credentials in n8n credential storage.
+3. Store provider credentials in n8n credential storage. Assign the same
+   reviewed Gmail OAuth credential to **Company Gmail inbox** in
+   `Torrance Yachts - Gmail ingestion`, **Mark Gmail message read** in the
+   mark-read worker, and **Archive Gmail message** in the archive worker.
 4. Configure the same high-entropy `EMAIL_INGESTION_TOKEN` for n8n and the app.
 5. Enable the Gmail integration record in the application.
 6. Import workflows but leave them inactive.
@@ -46,7 +49,8 @@ web interface. Test both a staff invitation and password recovery, then set
    unrecognised message.
 8. Verify classification, human review, Telegram/in-app alert materialisation,
    draft behaviour, idempotency, and failure visibility.
-9. Activate the reviewed ingestion workflow explicitly.
+9. Activate the ingestion, mark-read and archive workflows explicitly. Keep all
+   unrelated or optional provider workflows inactive until separately accepted.
 
 The app cannot create a Google Cloud project or consent screen on the operator's
 behalf. That boundary is intentional.
