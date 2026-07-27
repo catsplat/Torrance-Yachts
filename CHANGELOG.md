@@ -6,6 +6,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- A production-environment guard at every automation delivery claim/result
+  boundary, so the explicitly named local n8n simulator cannot claim or mark
+  real provider work complete outside `APP_ENVIRONMENT=development`.
 - Secure one-click Telegram staff pairing through the company bot, with
   expiring deep links, token hashes, webhook-secret verification, one-time
   database completion, and replay protection.

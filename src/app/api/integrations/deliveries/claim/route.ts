@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { hasValidAutomationToken } from "@/lib/integrations/auth"
+import { isAllowedAutomationWorker } from "@/lib/integrations/automation-worker"
 import { deliveryClaimSchema } from "@/lib/integrations/validation"
 import { createAdminClient } from "@/lib/supabase/admin"
 
@@ -17,6 +18,9 @@ export async function POST(request: Request) {
   const parsed = deliveryClaimSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid claim request" }, { status: 422 })
+  }
+  if (!isAllowedAutomationWorker(parsed.data.workerId)) {
+    return NextResponse.json({ error: "The development delivery simulator is disabled outside local development." }, { status: 403 })
   }
   try {
     const supabase = createAdminClient()

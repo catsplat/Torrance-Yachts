@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { hasValidAutomationToken } from "@/lib/integrations/auth"
+import { isAllowedAutomationWorker } from "@/lib/integrations/automation-worker"
 import { deliveryCompletionSchema } from "@/lib/integrations/validation"
 import { createAdminClient } from "@/lib/supabase/admin"
 
@@ -21,6 +22,9 @@ export async function POST(
   const parsed = deliveryCompletionSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid completion result" }, { status: 422 })
+  }
+  if (!isAllowedAutomationWorker(parsed.data.workerId)) {
+    return NextResponse.json({ error: "The development delivery simulator is disabled outside local development." }, { status: 403 })
   }
   const supabase = createAdminClient()
   const { error } = await supabase.rpc("complete_integration_delivery", {

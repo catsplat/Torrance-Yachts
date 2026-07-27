@@ -30,7 +30,11 @@ development project only after confirming that it contains no required
 credentials or execution history.
 
 The imported workflows are inactive by design. The development simulator must
-never be enabled on real data.
+never be enabled on real data. It identifies itself as
+`n8n-development-simulator`; the application rejects that worker at its
+claim/result API boundary unless `APP_ENVIRONMENT=development`. This is a
+defence-in-depth safeguard, not permission to import the simulator outside the
+local rehearsal environment.
 
 The readiness workflow calls the authenticated readiness endpoint every five
 minutes. A non-ready application makes the workflow fail visibly; production must

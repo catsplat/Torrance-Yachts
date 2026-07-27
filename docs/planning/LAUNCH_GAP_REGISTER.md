@@ -1,7 +1,7 @@
 # Launch gap register and offline assurance plan
 
 **Status:** Local code-and-database assurance complete; external activation pending
-**Last reviewed:** 26 July 2026
+**Last reviewed:** 27 July 2026
 **Scope:** Finish and prove the product locally before any hosting, live client
 data, or external provider credential is introduced.
 
@@ -30,7 +30,7 @@ rehearsal, a staged external test, and recorded human acceptance.
 | Enquiries, offers, bookings, buffered availability, tasks, payments | Implemented and database-tested | Fictional M/Y Asteria rehearsal map and normal/conflict/cancelled/amended/dependency tests are available locally. | Import approved business data and complete staff UAT. |
 | Email intake | Gmail payload validation and durable ingestion exist. | Completed: five fictional routes use the same ingestion command; replay/idempotency is covered by app and database tests. | Connect client-owned Gmail/n8n credentials and run a scoped acceptance set. |
 | AI | Deterministic provider and OpenAI adapter existed; local Ollama adapter is added for offline assurance. | Completed locally: valid response, malformed response, unavailable provider, timeout, evidence, correction/rejection, and human approval boundaries are covered. | Approve provider, data policy, model, spend limits, and service account. |
-| Notifications and provider deliveries | Outbox, retry, failure visibility, and development delivery simulator exist. | Completed: loopback success contract plus database coverage for leases, transient/permanent failure, retry/backoff, and recovery. | Configure Telegram/Google/SMTP, verify recipient ownership and scopes. |
+| Notifications and provider deliveries | Outbox, retry, failure visibility, and development delivery simulator exist. | Completed: loopback success contract plus database coverage for leases, transient/permanent failure, retry/backoff, and recovery. The simulator worker is rejected at the app boundary outside `APP_ENVIRONMENT=development`. | Configure Telegram/Google/SMTP, verify recipient ownership and scopes. |
 | Documents and contract review | Private storage, document requirements, reviewed facts, payments, and invoice generation exist. | Use only fictional PDFs/text; exercise rejected type, verification, missing-document, and reviewed-contract cases. | Approve malware/quarantine treatment, retention policy, and production Storage access. |
 | Calendar, Drive, Sheets | Versioned adapters/outbox contracts exist. | Test snapshot/idempotency and simulated delivery completion locally. | Configure client-owned Calendar, protected Drive folder, Sheet and OAuth/service-account scopes. |
 | Yachtfolio | Audited manual boundary is implemented. | Confirm the task/evidence/reopen flow in the rehearsal. | Train the named user; do not claim an unsupported API integration. |
