@@ -1153,14 +1153,22 @@ export type Database = {
       documents: {
         Row: {
           booking_id: string
+          content_sha256: string | null
           created_at: string
           created_by: string
           document_type: Database["public"]["Enums"]["document_type"]
           id: string
           mime_type: string
           original_filename: string
+          released_at: string | null
           requirement_id: string | null
           retention_class: string
+          retention_review_due_at: string | null
+          scan_attempts: number
+          scan_completed_at: string | null
+          scan_started_at: string | null
+          scan_status: Database["public"]["Enums"]["document_scan_status"]
+          scanner_detail: string | null
           size_bytes: number
           storage_bucket: string
           storage_path: string
@@ -1173,14 +1181,22 @@ export type Database = {
         }
         Insert: {
           booking_id: string
+          content_sha256?: string | null
           created_at?: string
           created_by: string
           document_type: Database["public"]["Enums"]["document_type"]
           id?: string
           mime_type: string
           original_filename: string
+          released_at?: string | null
           requirement_id?: string | null
           retention_class?: string
+          retention_review_due_at?: string | null
+          scan_attempts?: number
+          scan_completed_at?: string | null
+          scan_started_at?: string | null
+          scan_status?: Database["public"]["Enums"]["document_scan_status"]
+          scanner_detail?: string | null
           size_bytes: number
           storage_bucket?: string
           storage_path: string
@@ -1193,14 +1209,22 @@ export type Database = {
         }
         Update: {
           booking_id?: string
+          content_sha256?: string | null
           created_at?: string
           created_by?: string
           document_type?: Database["public"]["Enums"]["document_type"]
           id?: string
           mime_type?: string
           original_filename?: string
+          released_at?: string | null
           requirement_id?: string | null
           retention_class?: string
+          retention_review_due_at?: string | null
+          scan_attempts?: number
+          scan_completed_at?: string | null
+          scan_started_at?: string | null
+          scan_status?: Database["public"]["Enums"]["document_scan_status"]
+          scanner_detail?: string | null
           size_bytes?: number
           storage_bucket?: string
           storage_path?: string
@@ -4910,6 +4934,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      record_document_scan_result: {
+        Args: {
+          p_document_id: string
+          p_reason: string
+          p_status: Database["public"]["Enums"]["document_scan_status"]
+        }
+        Returns: undefined
+      }
       record_tutorial_event: {
         Args: {
           p_details?: Json
@@ -4949,6 +4981,42 @@ export type Database = {
           p_service_description: string
         }
         Returns: string
+      }
+      register_quarantined_booking_document: {
+        Args: {
+          p_booking_id: string
+          p_content_sha256: string
+          p_document_type: Database["public"]["Enums"]["document_type"]
+          p_mime_type: string
+          p_original_filename: string
+          p_quarantine_path: string
+          p_retention_class: string
+          p_size_bytes: number
+          p_title: string
+        }
+        Returns: string
+      }
+      register_trusted_generated_document: {
+        Args: {
+          p_booking_id: string
+          p_content_sha256: string
+          p_document_type: Database["public"]["Enums"]["document_type"]
+          p_mime_type: string
+          p_original_filename: string
+          p_retention_class: string
+          p_size_bytes: number
+          p_storage_path: string
+          p_title: string
+        }
+        Returns: string
+      }
+      release_clean_booking_document: {
+        Args: {
+          p_document_id: string
+          p_private_path: string
+          p_reason: string
+        }
+        Returns: undefined
       }
       reopen_task: {
         Args: { p_reason: string; p_task_id: string }
@@ -5550,6 +5618,13 @@ export type Database = {
         | "uploaded"
         | "verified"
         | "waived"
+      document_scan_status:
+        | "pending"
+        | "scanning"
+        | "clean"
+        | "infected"
+        | "error"
+        | "released"
       document_type:
         | "charter_agreement"
         | "broker_kyc_statement"
@@ -5843,6 +5918,14 @@ export const Constants = {
         "uploaded",
         "verified",
         "waived",
+      ],
+      document_scan_status: [
+        "pending",
+        "scanning",
+        "clean",
+        "infected",
+        "error",
+        "released",
       ],
       document_type: [
         "charter_agreement",

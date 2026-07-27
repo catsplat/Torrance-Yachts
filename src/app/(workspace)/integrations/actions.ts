@@ -1,11 +1,12 @@
 "use server"
 
-import { randomUUID } from "node:crypto"
+import { createHash, randomUUID } from "node:crypto"
 
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { generateNextPendingEmailSuggestion } from "@/lib/ai/service"
 import { getInvoiceGenerationContext } from "@/lib/integrations/data"
 import { generateInvoicePdf } from "@/lib/integrations/invoice"
@@ -19,7 +20,6 @@ import {
   notificationReviewSchema,
   notificationDraftSchema,
 } from "@/lib/integrations/validation"
-import { createAdminClient } from "@/lib/supabase/admin"
 
 export type IntegrationActionState = {
   fieldErrors?: Record<string, string[] | undefined>
@@ -278,8 +278,8 @@ export async function generateInvoiceAction(
     })
   if (uploadError) return { message: "Invoice PDF generation succeeded but private upload failed." }
 
-  const { data: documentId, error: documentError } = await context.supabase.rpc(
-    "register_booking_document",
+  const { data: documentId, error: documentError } = await createAdminClient().rpc(
+    "register_trusted_generated_document",
     {
       p_booking_id: parsed.data.bookingId,
       p_document_type: "kylian_commission_invoice",
@@ -289,6 +289,7 @@ export async function generateInvoiceAction(
       p_mime_type: "application/pdf",
       p_size_bytes: bytes.byteLength,
       p_retention_class: "financial_record",
+      p_content_sha256: createHash("sha256").update(Buffer.from(bytes)).digest("hex"),
     },
   )
   if (documentError || !documentId) {

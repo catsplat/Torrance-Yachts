@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(52);
+select plan(58);
 
 select has_table('public', 'booking_document_requirements', 'document requirements table exists');
 select has_table('public', 'documents', 'documents table exists');
@@ -116,37 +116,37 @@ select throws_ok(
   'direct document metadata insertion is blocked'
 );
 select throws_ok(
-  $$ select public.register_booking_document(
+  $$ select public.register_quarantined_booking_document(
        (select id from public.bookings), 'charter_agreement', 'Signed agreement',
        'agreement.exe', (select id::text from public.bookings) || '/00000000-0000-4000-8000-000000000001/agreement.exe',
-       'application/octet-stream', 100, 'booking_record'
+       'application/octet-stream', 100, 'booking_record', repeat('a', 64)
      ) $$,
   '23514', null,
   'unsupported document types are rejected by database constraints'
 );
 select lives_ok(
-  $$ select public.register_booking_document(
+  $$ select public.register_quarantined_booking_document(
        (select id from public.bookings), 'charter_agreement', 'Signed charter agreement',
        'signed-charter.pdf', (select id::text from public.bookings) || '/00000000-0000-4000-8000-000000000001/signed-charter.pdf',
-       'application/pdf', 4096, 'booking_record'
+       'application/pdf', 4096, 'booking_record', repeat('b', 64)
      ) $$,
-  'private charter agreement metadata can be registered'
+  'private charter agreement metadata is quarantined before scanning'
 );
 select results_eq(
-  $$ select version_number::text || ':' || verification_status::text from public.documents $$,
-  array['1:pending_review'],
-  'new document starts at version one pending review'
+  $$ select version_number::text || ':' || verification_status::text || ':' || scan_status::text from public.documents $$,
+  array['1:pending_review:pending'],
+  'new document starts pending review and pending scan'
 );
 select results_eq(
   $$ select status::text from public.booking_document_requirements
      where document_type = 'charter_agreement' $$,
-  array['uploaded'],
-  'requirement records the pending upload'
+  array['missing'],
+  'quarantined upload does not satisfy a document requirement'
 );
 select results_eq(
   $$ select action from public.document_history $$,
-  array['uploaded'],
-  'upload has append-only history'
+  array['quarantined'],
+  'quarantine upload has append-only history'
 );
 select throws_ok(
   $$ select public.save_contract_review(
@@ -156,6 +156,43 @@ select throws_ok(
      ) $$,
   '23514', 'A verified charter agreement is required',
   'contract data cannot be approved from an unverified document'
+);
+select throws_ok(
+  $$ select public.review_booking_document(
+       (select id from public.documents), true, 'Attempted review before scan release'
+     ) $$,
+  '23514', 'Only a clean, released document can be reviewed',
+  'human review cannot bypass quarantine scanning'
+);
+select lives_ok(
+  $$ select public.record_document_scan_result(
+       (select id from public.documents), 'clean', 'Synthetic ClamAV clean result'
+     ) $$,
+  'administrator can record a clean scanner result'
+);
+select results_eq(
+  $$ select scan_status::text from public.documents $$,
+  array['clean'],
+  'clean document remains quarantined until release'
+);
+select lives_ok(
+  $$ select public.release_clean_booking_document(
+       (select id from public.documents),
+       (select id::text from public.bookings) || '/00000000-0000-4000-8000-000000000001/signed-charter.pdf',
+       'Synthetic protected storage copy completed'
+     ) $$,
+  'a clean document can be released to protected review storage'
+);
+select results_eq(
+  $$ select scan_status::text || ':' || storage_bucket from public.documents $$,
+  array['released:booking-private'],
+  'released document is no longer served from quarantine'
+);
+select results_eq(
+  $$ select status::text from public.booking_document_requirements
+     where document_type = 'charter_agreement' $$,
+  array['uploaded'],
+  'only a released document satisfies the uploaded requirement state'
 );
 select lives_ok(
   $$ select public.review_booking_document(

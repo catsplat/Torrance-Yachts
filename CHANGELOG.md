@@ -6,6 +6,12 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- A fail-closed private document quarantine pipeline: byte-signature validation,
+  SHA-256 evidence, ClamAV scanning, explicit scan/release states, blocked
+  signed URLs and Drive sync until clean release, and synthetic scanner tests.
+- A local loopback and production-internal ClamAV service definition plus
+  database-enforced scanner/release audit history.
+
 - A definitive project completion register separating locally complete hosted
   scope, optional mirrors, the future desktop edition, and eight client-owned
   activation gates.
@@ -44,6 +50,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
   test for safe unchanged retries.
 
 ### Changed
+
+- Protected booking documents now enter quarantine before human verification;
+  infected files are removed from Storage while safe audit metadata is retained.
 
 - Reorganised Settings around personal setup, workspace workflow, and company
   delivery/launch controls; removed OAuth secret entry from the staff interface.

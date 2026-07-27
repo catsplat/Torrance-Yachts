@@ -20,6 +20,8 @@ services:
       MONITORING_SHARED_SECRET: ${MONITORING_SHARED_SECRET:?Set MONITORING_SHARED_SECRET}
       N8N_HEALTH_URL: ${N8N_HEALTH_URL:-http://n8n:5678/healthz}
       AI_PROVIDER: ${AI_PROVIDER:-local}
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: "3310"
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
@@ -34,6 +36,20 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+    networks:
+      - internal
+
+  clamav:
+    image: clamav/clamav:1.5-debian13-slim
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "clamdscan --ping 1 >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
+    volumes:
+      - clamav_data:/var/lib/clamav
     networks:
       - internal
 
@@ -96,6 +112,7 @@ networks:
     driver: bridge
 
 volumes:
+  clamav_data:
   caddy_config:
   caddy_data:
   n8n_data:

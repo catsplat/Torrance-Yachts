@@ -29,7 +29,34 @@ export const documentMetadataSchema = z.object({
   title: requiredText(180),
 })
 
-export function validateDocumentFile(value: FormDataEntryValue | null) {
+const pdfSignature = Buffer.from("%PDF-")
+const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+
+function startsWith(buffer: Buffer, signature: Buffer) {
+  return buffer.subarray(0, signature.length).equals(signature)
+}
+
+function validateFileSignature(file: File, buffer: Buffer) {
+  if (file.type === "application/pdf") {
+    if (!startsWith(buffer, pdfSignature)) return "The file content is not a valid PDF."
+    const sample = buffer.subarray(0, Math.min(buffer.length, 2 * 1024 * 1024)).toString("latin1")
+    if (/\/Encrypt\b|\/JavaScript\b|\/JS\b|\/OpenAction\b|\/AA\b/i.test(sample)) {
+      return "Encrypted or active-content PDFs are not accepted for protected document upload."
+    }
+    return null
+  }
+  if (file.type === "image/png") {
+    return startsWith(buffer, pngSignature) ? null : "The file content is not a valid PNG image."
+  }
+  if (file.type === "image/jpeg") {
+    return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff
+      ? null
+      : "The file content is not a valid JPEG image."
+  }
+  return "The file type is not accepted."
+}
+
+export async function validateDocumentFile(value: FormDataEntryValue | null) {
   if (!(value instanceof File) || value.size === 0) {
     return { error: "Choose a PDF, JPEG, or PNG file." } as const
   }
@@ -43,7 +70,10 @@ export function validateDocumentFile(value: FormDataEntryValue | null) {
   ) {
     return { error: "Only PDF, JPEG, and PNG files are accepted." } as const
   }
-  return { file: value } as const
+  const buffer = Buffer.from(await value.arrayBuffer())
+  const signatureError = validateFileSignature(value, buffer)
+  if (signatureError) return { error: signatureError } as const
+  return { buffer, file: value } as const
 }
 
 export const documentReviewSchema = z.object({

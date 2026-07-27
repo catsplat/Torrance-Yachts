@@ -1,6 +1,20 @@
 name: torrance-yachts-automation
 
 services:
+  clamav:
+    image: clamav/clamav:1.5-debian13-slim
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3310:3310"
+    healthcheck:
+      test: ["CMD-SHELL", "clamdscan --ping 1 >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
+    volumes:
+      - clamav_data:/var/lib/clamav
+
   n8n:
     image: docker.n8n.io/n8nio/n8n:2.30.5
     restart: unless-stopped
@@ -38,4 +52,5 @@ services:
       - "host.docker.internal:host-gateway"
 
 volumes:
+  clamav_data:
   n8n_data:

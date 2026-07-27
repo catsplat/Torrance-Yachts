@@ -52,6 +52,11 @@ export default async function BookingDocumentsPage({ params }: Props) {
     : null
   const draftReview = workspace.reviews.find((review) => review.status === "draft")
   const approvedReview = workspace.reviews.find((review) => review.status === "approved")
+  const latestDocumentForRequirement = new Map(
+    workspace.documents
+      .filter((document) => document.requirement_id)
+      .map((document) => [document.requirement_id!, document]),
+  )
 
   return (
     <div className="mx-auto max-w-7xl space-y-5">
@@ -60,13 +65,16 @@ export default async function BookingDocumentsPage({ params }: Props) {
 
       <Card>
         <CardHeader className="border-b"><CardTitle>Document requirements</CardTitle><CardDescription>The checklist is generated automatically for every confirmed booking.</CardDescription></CardHeader>
-        <CardContent className="divide-y p-0">{workspace.requirements.map((requirement) => (
+        <CardContent className="divide-y p-0">{workspace.requirements.map((requirement) => {
+          const pendingDocument = latestDocumentForRequirement.get(requirement.id)
+          return (
           <div className="grid gap-3 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_9rem_minmax(18rem,.8fr)]" key={requirement.id}>
             <div><p className="font-medium">{documentTypeLabels[requirement.document_type]}</p><p className="mt-1 text-xs text-muted-foreground">{requirement.required ? "Required" : "Optional"}{requirement.waiver_reason ? ` · ${requirement.waiver_reason}` : ""}</p></div>
             <div><Badge variant={requirement.status === "verified" ? "default" : "outline"}>{requirement.status}</Badge></div>
-            <div className="space-y-3">{requirement.status === "missing" ? <><DocumentUploadForm bookingId={id} suggestedType={requirement.document_type} />{!requirement.required && user?.role === "administrator" ? <RequirementWaiverForm bookingId={id} requirementId={requirement.id} /> : null}</> : requirement.status === "uploaded" ? <p className="text-sm text-muted-foreground">Awaiting human verification below.</p> : null}</div>
+            <div className="space-y-3">{pendingDocument && pendingDocument.scan_status !== "released" ? <p className="text-sm text-muted-foreground">{pendingDocument.scan_status === "infected" ? "Blocked by malware scanning. Upload a clean replacement." : pendingDocument.scan_status === "error" ? "Scanner needs attention. The file remains quarantined and unavailable." : "File is quarantined while malware scanning completes."}</p> : requirement.status === "missing" ? <><DocumentUploadForm bookingId={id} suggestedType={requirement.document_type} />{!requirement.required && user?.role === "administrator" ? <RequirementWaiverForm bookingId={id} requirementId={requirement.id} /> : null}</> : requirement.status === "uploaded" ? <p className="text-sm text-muted-foreground">Clean file released; awaiting human verification below.</p> : null}</div>
           </div>
-        ))}</CardContent>
+          )
+        })}</CardContent>
       </Card>
 
       <Card>
@@ -141,12 +149,12 @@ export default async function BookingDocumentsPage({ params }: Props) {
       </Card>
 
       <Card>
-        <CardHeader className="border-b"><CardTitle>Uploaded private files</CardTitle><CardDescription>Links expire after five minutes. Review the actual file before verifying it.</CardDescription></CardHeader>
+        <CardHeader className="border-b"><CardTitle>Protected files</CardTitle><CardDescription>Every upload is quarantined and scanned before a five-minute private link can be issued for human review.</CardDescription></CardHeader>
         <CardContent className="divide-y p-0">{workspace.documents.length ? workspace.documents.map((document) => (
           <div className="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_10rem_minmax(18rem,.8fr)]" key={document.id}>
-            <div><p className="font-medium">{document.title} <span className="text-xs text-muted-foreground">v{document.version_number}</span></p><p className="mt-1 text-sm text-muted-foreground">{document.original_filename} · {document.retention_class.replace("_", " ")}</p>{document.signedUrl ? <a className="mt-2 inline-flex items-center gap-1 text-sm text-primary underline" href={document.signedUrl} rel="noreferrer" target="_blank">Open private file <ExternalLink className="size-3" /></a> : <p className="mt-2 text-xs text-destructive">Temporary link unavailable.</p>}</div>
-            <div><Badge variant={document.verification_status === "verified" ? "default" : "outline"}>{document.verification_status.replace("_", " ")}</Badge></div>
-            <div>{document.verification_status === "pending_review" ? <DocumentReviewForm bookingId={id} documentId={document.id} /> : <><p className="text-sm text-muted-foreground">{document.verification_notes}</p>{document.verification_status === "verified" ? <DriveSyncForm bookingId={id} documentId={document.id} /> : null}</>}</div>
+            <div><p className="font-medium">{document.title} <span className="text-xs text-muted-foreground">v{document.version_number}</span></p><p className="mt-1 text-sm text-muted-foreground">{document.original_filename} · {document.retention_class.replace("_", " ")}</p>{document.signedUrl ? <a className="mt-2 inline-flex items-center gap-1 text-sm text-primary underline" href={document.signedUrl} rel="noreferrer" target="_blank">Open protected file <ExternalLink className="size-3" /></a> : <p className="mt-2 text-xs text-destructive">File unavailable until it is scanned clean and released.</p>}</div>
+            <div className="space-y-2"><Badge variant={document.scan_status === "released" && document.verification_status === "verified" ? "default" : "outline"}>{document.scan_status === "released" ? document.verification_status.replace("_", " ") : `scan ${document.scan_status}`}</Badge>{document.scanner_detail ? <p className="text-xs text-muted-foreground">{document.scanner_detail}</p> : null}</div>
+            <div>{document.scan_status === "released" && document.verification_status === "pending_review" ? <DocumentReviewForm bookingId={id} documentId={document.id} /> : document.scan_status === "released" ? <><p className="text-sm text-muted-foreground">{document.verification_notes}</p>{document.verification_status === "verified" ? <DriveSyncForm bookingId={id} documentId={document.id} /> : null}</> : <p className="text-sm text-muted-foreground">Quarantine controls prevent review and external sync until scanning is complete.</p>}</div>
           </div>
         )) : <p className="p-5 text-sm text-muted-foreground">No files uploaded.</p>}</CardContent>
       </Card>

@@ -8,7 +8,7 @@ export const getDocumentRegister = cache(async () => {
   const supabase = await createClient()
   const { data, error } = await supabase.from("documents").select(`
     id, booking_id, document_type, title, original_filename, mime_type,
-    size_bytes, version_number, verification_status, retention_class, created_at,
+    size_bytes, version_number, verification_status, scan_status, retention_class, created_at,
     booking:bookings!documents_booking_id_fkey(
       reference,
       yacht:yachts!bookings_yacht_id_fkey(name)
@@ -39,7 +39,8 @@ export async function getBookingDocumentWorkspace(bookingId: string) {
     supabase.from("documents").select(`
       id, booking_id, requirement_id, document_type, title, original_filename,
       storage_bucket, storage_path, mime_type, size_bytes, version_number,
-      verification_status, verification_notes, retention_class, created_at,
+      verification_status, verification_notes, scan_status, scanner_detail,
+      scan_attempts, retention_class, created_at,
       uploader:profiles!documents_created_by_fkey(display_name)
     `).eq("booking_id", bookingId).order("created_at", { ascending: false }),
     supabase.from("contract_reviews").select("*").eq("booking_id", bookingId)
@@ -61,6 +62,9 @@ export async function getBookingDocumentWorkspace(bookingId: string) {
   }
 
   const documents = await Promise.all(documentsResult.data.map(async (document) => {
+    if (document.scan_status !== "released") {
+      return { ...document, signedUrl: null }
+    }
     const { data } = await supabase.storage
       .from(document.storage_bucket)
       .createSignedUrl(document.storage_path, 300)

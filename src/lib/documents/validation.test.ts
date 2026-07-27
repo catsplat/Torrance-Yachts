@@ -17,11 +17,27 @@ describe("Phase 8 document and payment validation", () => {
     }).success).toBe(true)
   })
 
-  it("rejects unsupported files", () => {
-    const result = validateDocumentFile(
+  it("rejects unsupported files", async () => {
+    const result = await validateDocumentFile(
       new File(["unsafe"], "unsafe.svg", { type: "image/svg+xml" }),
     )
     expect(result).toEqual({ error: "Only PDF, JPEG, and PNG files are accepted." })
+  })
+
+  it("rejects a MIME type that does not match file bytes", async () => {
+    const result = await validateDocumentFile(
+      new File(["not a PDF"], "misleading.pdf", { type: "application/pdf" }),
+    )
+    expect(result).toEqual({ error: "The file content is not a valid PDF." })
+  })
+
+  it("rejects active-content PDFs before quarantine", async () => {
+    const result = await validateDocumentFile(
+      new File(["%PDF-1.7\n/JavaScript (alert)"] , "active.pdf", { type: "application/pdf" }),
+    )
+    expect(result).toEqual({
+      error: "Encrypted or active-content PDFs are not accepted for protected document upload.",
+    })
   })
 
   it("requires valid charter dates", () => {
