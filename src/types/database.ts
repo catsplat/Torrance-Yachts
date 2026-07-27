@@ -4628,6 +4628,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      count_email_inbox: {
+        Args: {
+          p_classification?: Database["public"]["Enums"]["email_classification"]
+          p_query?: string
+        }
+        Returns: number
+      }
+      count_email_inbox_review_required: { Args: never; Returns: number }
       count_enquiry_register: {
         Args: {
           p_open_only?: boolean
@@ -4822,6 +4830,30 @@ export type Database = {
           target_status: Database["public"]["Enums"]["enquiry_status"]
         }
         Returns: boolean
+      }
+      list_email_inbox_page: {
+        Args: {
+          p_classification?: Database["public"]["Enums"]["email_classification"]
+          p_cursor_id?: string
+          p_cursor_received_at?: string
+          p_limit?: number
+          p_query?: string
+        }
+        Returns: {
+          classification: Database["public"]["Enums"]["email_classification"]
+          enquiry_id: string
+          enquiry_reference: string
+          enquiry_summary: string
+          has_attachments: boolean
+          id: string
+          processing_status: Database["public"]["Enums"]["email_processing_status"]
+          received_at: string
+          sender_email: string
+          sender_name: string
+          snippet: string
+          subject: string
+          thread_id: string
+        }[]
       }
       list_enquiry_register_page: {
         Args: {

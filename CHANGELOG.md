@@ -9,6 +9,8 @@ All notable project changes are recorded here. The format follows Keep a Changel
 - Server-side, cursor-paginated Enquiries register queries with PostgreSQL
   filtering/search/counts, URL-preserved filters, supporting indexes and
   database coverage for complete historical results.
+- Server-side, cursor-paginated Email inbox queries with PostgreSQL
+  classification/search/counts and a separately accurate review-required count.
 - A fail-closed private document quarantine pipeline: byte-signature validation,
   SHA-256 evidence, ClamAV scanning, explicit scan/release states, blocked
   signed URLs and Drive sync until clean release, and synthetic scanner tests.

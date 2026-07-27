@@ -1,23 +1,74 @@
 import "server-only"
 
 import { cache } from "react"
+import { z } from "zod"
 
 import { createClient } from "@/lib/supabase/server"
+import type { Enums } from "@/types/database"
 
-export const getEmailInbox = cache(async () => {
-  const supabase = await createClient()
-  const { data, error } = await supabase.from("email_messages").select(`
-    id, thread_id, provider_message_id, received_at, sender_name, sender_email,
-    subject, snippet, has_attachments, gmail_label_ids, classification, processing_status,
-    deterministic_rule,
-    thread:email_threads!email_messages_thread_id_fkey(
-      enquiry_id,
-      enquiry:enquiries!email_threads_enquiry_id_fkey(reference, summary)
-    )
-  `).order("received_at", { ascending: false }).limit(1000)
-  if (error) throw new Error("Unable to load the email inbox.")
-  return data
+export const emailInboxPageSize = 50
+
+const emailInboxCursorSchema = z.object({
+  id: z.uuid(),
+  receivedAt: z.iso.datetime(),
 })
+
+export type EmailInboxFilters = {
+  classification?: Enums<"email_classification">
+  cursor?: string
+  query?: string
+}
+
+function decodeEmailInboxCursor(value: string | undefined) {
+  if (!value || value.length > 256) return null
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8"))
+    return emailInboxCursorSchema.safeParse(parsed).data ?? null
+  } catch {
+    return null
+  }
+}
+
+function encodeEmailInboxCursor(cursor: z.infer<typeof emailInboxCursorSchema>) {
+  return Buffer.from(JSON.stringify(cursor)).toString("base64url")
+}
+
+export async function getEmailInboxPage(filters: EmailInboxFilters) {
+  const cursor = decodeEmailInboxCursor(filters.cursor)
+  const supabase = await createClient()
+  const [{ data: page, error: pageError }, { data: totalCount, error: countError }, {
+    data: reviewCount,
+    error: reviewError,
+  }] = await Promise.all([
+    supabase.rpc("list_email_inbox_page", {
+      p_classification: filters.classification,
+      p_cursor_id: cursor?.id,
+      p_cursor_received_at: cursor?.receivedAt,
+      p_limit: emailInboxPageSize + 1,
+      p_query: filters.query,
+    }),
+    supabase.rpc("count_email_inbox", {
+      p_classification: filters.classification,
+      p_query: filters.query,
+    }),
+    supabase.rpc("count_email_inbox_review_required"),
+  ])
+  if (pageError || countError || reviewError) {
+    throw new Error("Unable to load the complete email inbox.")
+  }
+
+  const hasNextPage = page.length > emailInboxPageSize
+  const messages = page.slice(0, emailInboxPageSize)
+  const last = messages.at(-1)
+  return {
+    messages,
+    nextCursor: hasNextPage && last
+      ? encodeEmailInboxCursor({ id: last.id, receivedAt: last.received_at })
+      : null,
+    reviewCount: reviewCount ?? 0,
+    totalCount: totalCount ?? 0,
+  }
+}
 
 export async function getEmailMessageDetail(id: string) {
   const supabase = await createClient()
