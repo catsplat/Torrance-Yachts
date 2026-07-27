@@ -1,6 +1,6 @@
 # Automation simulator hardening
 
-**Date:** 27 July 2026  
+**Date:** 27 July 2026
 **Milestone:** Pre-activation safety hardening
 
 ## Outcome

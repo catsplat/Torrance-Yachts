@@ -1,6 +1,6 @@
 # 0021: Reject the local n8n simulator outside development
 
-**Date:** 27 July 2026  
+**Date:** 27 July 2026
 **Status:** Accepted
 
 ## Context
