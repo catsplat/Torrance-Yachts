@@ -4,6 +4,8 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-07-27
+
 ### Added
 
 - Server-side, cursor-paginated Enquiries register queries with PostgreSQL
