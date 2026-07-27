@@ -4865,6 +4865,17 @@ export type Database = {
         }[]
       }
       get_initial_setup_profile_count: { Args: never; Returns: number }
+      get_integration_queue_health: {
+        Args: never
+        Returns: {
+          claimed_count: number
+          failed_count: number
+          oldest_pending_age_seconds: number
+          oldest_pending_at: string
+          pending_count: number
+          permanent_failure_count: number
+        }[]
+      }
       get_launch_readiness_summary: { Args: never; Returns: Json }
       get_my_oauth_connections: {
         Args: never

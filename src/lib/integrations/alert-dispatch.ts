@@ -25,7 +25,7 @@ function alertText(payload: Delivery["payload"]) {
   }
 }
 
-async function dispatchTelegram(delivery: Delivery) {
+async function dispatchTelegram(delivery: Delivery, signal?: AbortSignal) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN
   if (!botToken) throw new Error("Telegram bot delivery is not configured.")
   const payload = delivery.payload && typeof delivery.payload === "object" &&
@@ -47,7 +47,7 @@ async function dispatchTelegram(delivery: Delivery) {
       }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
-      signal: AbortSignal.timeout(15_000),
+      signal: signal ?? AbortSignal.timeout(8_000),
     },
   )
   const result = await response.json() as {
@@ -81,7 +81,7 @@ function encodeMimeMessage(values: {
   return Buffer.from(message, "utf8").toString("base64url")
 }
 
-async function dispatchGmail(admin: AdminClient, delivery: Delivery) {
+async function dispatchGmail(admin: AdminClient, delivery: Delivery, signal?: AbortSignal) {
   const { data, error } = await admin.rpc("get_delivery_oauth_credentials", {
     p_delivery_id: delivery.id,
   })
@@ -98,7 +98,7 @@ async function dispatchGmail(admin: AdminClient, delivery: Delivery) {
     }),
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     method: "POST",
-    signal: AbortSignal.timeout(15_000),
+    signal: signal ?? AbortSignal.timeout(8_000),
   })
   const token = await tokenResponse.json() as {
     access_token?: string
@@ -146,7 +146,7 @@ async function dispatchGmail(admin: AdminClient, delivery: Delivery) {
         "Content-Type": "application/json",
       },
       method: "POST",
-      signal: AbortSignal.timeout(20_000),
+      signal: signal ?? AbortSignal.timeout(10_000),
     },
   )
   const sent = await sendResponse.json() as {
@@ -166,10 +166,11 @@ async function dispatchGmail(admin: AdminClient, delivery: Delivery) {
 export async function dispatchInternalAlert(
   admin: AdminClient,
   delivery: Delivery,
+  signal?: AbortSignal,
 ) {
-  if (delivery.operation === "telegram_send") return dispatchTelegram(delivery)
+  if (delivery.operation === "telegram_send") return dispatchTelegram(delivery, signal)
   if (delivery.operation === "gmail_send_internal" || delivery.operation === "gmail_create_draft") {
-    return dispatchGmail(admin, delivery)
+    return dispatchGmail(admin, delivery, signal)
   }
   throw new Error("This delivery is not an internal staff alert.")
 }

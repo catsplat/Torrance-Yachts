@@ -19,6 +19,10 @@ All notable project changes are recorded here. The format follows Keep a Changel
   signed URLs and Drive sync until clean release, and synthetic scanner tests.
 - A local loopback and production-internal ClamAV service definition plus
   database-enforced scanner/release audit history.
+- Bounded, capability-scoped automation delivery dispatch with three concurrent
+  workers, a 25-second execution limit, short provider timeouts, jittered
+  exponential retries, retry caps, permanent-failure visibility, and queue
+  health metrics.
 
 - A definitive project completion register separating locally complete hosted
   scope, optional mirrors, the future desktop edition, and eight client-owned

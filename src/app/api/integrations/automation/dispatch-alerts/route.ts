@@ -8,6 +8,47 @@ import { hasValidAutomationToken } from "@/lib/integrations/auth"
 import { createAdminClient } from "@/lib/supabase/admin"
 
 const workerId = "application-internal-alert-dispatcher"
+const maximumBatchSize = 12
+const concurrency = 3
+const routeDeadlineMs = 25_000
+
+type DispatchResult = {
+  delivered: boolean
+  failureRecorded: boolean
+}
+
+async function processDelivery(
+  admin: ReturnType<typeof createAdminClient>,
+  delivery: Parameters<typeof dispatchInternalAlert>[1],
+  deadline: number,
+): Promise<DispatchResult> {
+  try {
+    const remainingMs = Math.max(1, deadline - Date.now())
+    const result = await dispatchInternalAlert(
+      admin,
+      delivery,
+      AbortSignal.timeout(Math.min(10_000, remainingMs)),
+    )
+    const { error: completionError } = await admin.rpc("complete_integration_delivery", {
+      p_delivery_id: delivery.id,
+      p_external_id: result.externalId,
+      p_external_url: result.externalUrl,
+      p_worker_id: workerId,
+    })
+    if (completionError) throw new Error("Delivery completion could not be recorded.")
+    return { delivered: true, failureRecorded: false }
+  } catch (deliveryError) {
+    const failure = safeDeliveryFailure(deliveryError)
+    const { error: failureError } = await admin.rpc("fail_integration_delivery", {
+      p_delivery_id: delivery.id,
+      p_error_code: failure.errorCode,
+      p_error_message: failure.errorMessage,
+      p_retryable: failure.retryable,
+      p_worker_id: workerId,
+    })
+    return { delivered: false, failureRecorded: !failureError }
+  }
+}
 
 export async function POST(request: Request) {
   if (!hasValidAutomationToken(request)) {
@@ -15,36 +56,35 @@ export async function POST(request: Request) {
   }
   const admin = createAdminClient()
   const { data, error } = await admin.rpc("claim_internal_alert_deliveries", {
-    p_limit: 10,
+    p_limit: maximumBatchSize,
     p_worker_id: workerId,
   })
   if (error) {
     return NextResponse.json({ error: "Internal alert claim failed" }, { status: 500 })
   }
-  let delivered = 0
-  let failed = 0
-  for (const delivery of data ?? []) {
-    try {
-      const result = await dispatchInternalAlert(admin, delivery)
-      const { error: completionError } = await admin.rpc("complete_integration_delivery", {
-        p_delivery_id: delivery.id,
-        p_external_id: result.externalId,
-        p_external_url: result.externalUrl,
-        p_worker_id: workerId,
-      })
-      if (completionError) throw new Error("Delivery completion could not be recorded.")
-      delivered += 1
-    } catch (deliveryError) {
-      const failure = safeDeliveryFailure(deliveryError)
-      await admin.rpc("fail_integration_delivery", {
-        p_delivery_id: delivery.id,
-        p_error_code: failure.errorCode,
-        p_error_message: failure.errorMessage,
-        p_retryable: failure.retryable,
-        p_worker_id: workerId,
-      })
-      failed += 1
-    }
+  const deliveries = data ?? []
+  const deadline = Date.now() + routeDeadlineMs
+  const results: DispatchResult[] = []
+  for (let offset = 0; offset < deliveries.length && Date.now() < deadline; offset += concurrency) {
+    const group = deliveries.slice(offset, offset + concurrency)
+    results.push(...await Promise.all(group.map((delivery) => processDelivery(admin, delivery, deadline))))
   }
-  return NextResponse.json({ claimed: data?.length ?? 0, delivered, failed })
+  const delivered = results.filter((result) => result.delivered).length
+  const failureRecordingErrors = results.filter((result) => !result.delivered && !result.failureRecorded).length
+  if (failureRecordingErrors) {
+    return NextResponse.json({
+      claimed: deliveries.length,
+      delivered,
+      error: "One or more provider failures could not be recorded; their leases will recover automatically.",
+      failed: results.length - delivered,
+      failure_recording_errors: failureRecordingErrors,
+      timed_out: results.length < deliveries.length,
+    }, { status: 503 })
+  }
+  return NextResponse.json({
+    claimed: deliveries.length,
+    delivered,
+    failed: results.length - delivered,
+    timed_out: results.length < deliveries.length,
+  })
 }
