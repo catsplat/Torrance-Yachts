@@ -2,17 +2,18 @@
 
 import { useActionState } from "react"
 
-import { loginAction, type LoginState } from "@/app/login/actions"
+import { googleLoginAction, loginAction, type LoginState } from "@/app/login/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 const initialState: LoginState = {}
 
-export function LoginForm() {
+export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
   const [state, action, pending] = useActionState(loginAction, initialState)
 
   return (
-    <form action={action} className="space-y-5">
+    <>
+      <form action={action} className="space-y-5">
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="email">
           Work email
@@ -56,6 +57,19 @@ export function LoginForm() {
       <Button className="h-10 w-full" disabled={pending} type="submit">
         {pending ? "Signing in…" : "Sign in"}
       </Button>
-    </form>
+      </form>
+      {googleEnabled ? (
+        <>
+          <div className="relative py-1 text-center text-xs text-muted-foreground before:absolute before:inset-x-0 before:top-1/2 before:border-t">
+            <span className="relative bg-card px-2">or</span>
+          </div>
+          <form action={googleLoginAction}>
+            <Button className="h-10 w-full" type="submit" variant="outline">
+              Continue with Google
+            </Button>
+          </form>
+        </>
+      ) : null}
+    </>
   )
 }

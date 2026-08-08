@@ -14,6 +14,18 @@ export type LoginState = {
   message?: string
 }
 
+export async function googleLoginAction() {
+  if (process.env.GOOGLE_SIGN_IN_ENABLED !== "true") redirect("/login?oauth=not-configured")
+  const supabase = await createClient()
+  const applicationBaseUrl = (process.env.APP_BASE_URL || "http://localhost:3000").replace(/\/+$/, "")
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    options: { redirectTo: `${applicationBaseUrl}/auth/callback?next=/` },
+    provider: "google",
+  })
+  if (error || !data.url) redirect("/login?oauth=failed")
+  redirect(data.url)
+}
+
 export async function loginAction(
   _previousState: LoginState,
   formData: FormData,

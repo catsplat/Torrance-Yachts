@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 type LoginPageProps = {
   searchParams: Promise<{
     recovery?: string | string[]
+    oauth?: string | string[]
     setup?: string | string[]
   }>
 }
@@ -25,6 +26,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         }
       : null
   const setupComplete = params.setup === "complete"
+  const oauthMessage = params.oauth === "inactive"
+    ? "This Google account is not approved for the private workspace. Ask an administrator for access."
+    : params.oauth === "not-configured"
+      ? "Google sign-in has not been enabled for this workspace yet."
+      : params.oauth === "failed"
+        ? "Google sign-in could not be started. Please try again or use your password."
+        : null
 
   return (
     <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-slate-950 px-4 py-10 text-slate-950">
@@ -81,7 +89,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 {recoveryMessage.text}
               </p>
             ) : null}
-            <LoginForm />
+            {oauthMessage ? <p aria-live="polite" className="mb-5 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm text-destructive" role="alert">{oauthMessage}</p> : null}
+            <LoginForm googleEnabled={process.env.GOOGLE_SIGN_IN_ENABLED === "true"} />
             <div className="mt-6 flex gap-2 border-t pt-5 text-xs leading-5 text-muted-foreground">
               <LockKeyhole aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
               <p>For access or password recovery, contact the internal administrator.</p>

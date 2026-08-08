@@ -27,6 +27,8 @@ describe("Google OAuth setup helpers", () => {
     expect(url.searchParams.get("code_challenge_method")).toBe("S256")
     expect(url.searchParams.get("scope")).toContain("gmail.readonly")
     expect(url.searchParams.get("scope")).toContain("gmail.compose")
+    expect(url.searchParams.get("scope")).toContain("spreadsheets")
+    expect(url.searchParams.get("scope")).toContain("drive.metadata.readonly")
   })
 
   it("round-trips only a well-formed pending connection", () => {

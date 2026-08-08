@@ -6,6 +6,10 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- Optional familiar **Continue with Google** login for approved staff accounts,
+  alongside a separate Google Workspace consent flow for the Gmail account and
+  controlled Google Sheets reporting scope. Staff never see OAuth secrets or
+  refresh tokens.
 - A complete administrator-only post-contract fictional charter rehearsal:
   local commission-invoice evidence, Yachtfolio/captain/broker hand-off
   evidence, fictional payment settlement, charter completion and broker
