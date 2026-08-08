@@ -4,6 +4,19 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Added
+
+- A complete administrator-only post-contract fictional charter rehearsal:
+  local commission-invoice evidence, Yachtfolio/captain/broker hand-off
+  evidence, fictional payment settlement, charter completion and broker
+  follow-up, all resettable with the existing run-scoped cleanup.
+
+### Changed
+
+- Fictional invoice generation now uses a run-owned draft profile and a
+  restricted rehearsal command; the operational invoice path still requires an
+  approved profile.
+
 ## [0.15.0] - 2026-07-27
 
 ### Added

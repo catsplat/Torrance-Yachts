@@ -290,6 +290,7 @@ export async function generateInvoiceAction(
       p_size_bytes: bytes.byteLength,
       p_retention_class: "financial_record",
       p_content_sha256: createHash("sha256").update(Buffer.from(bytes)).digest("hex"),
+      p_created_by: context.userId,
     },
   )
   if (documentError || !documentId) {

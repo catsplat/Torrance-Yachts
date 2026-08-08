@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(17);
 
 insert into auth.users (id, email, raw_user_meta_data)
 values ('25000000-0000-4000-8000-000000000001', 'full.rehearsal.admin@example.test', '{"display_name":"Full Rehearsal Admin"}'::jsonb);
@@ -100,6 +100,86 @@ select results_eq(
   'full rehearsal can own a verified fictional document before reset'
 );
 select lives_ok(
+  $$
+    select public.save_contract_review(
+      (select id from public.bookings where enquiry_id = '25000000-0000-4000-8000-000000000003'),
+      (select id from public.documents where title = 'Fictional reset agreement'),
+      '2027-08-14', '2027-08-21', 'Athens', 'Athens', 168000, 'EUR', 5, 2,
+      'Fictional reviewed contract facts for the post-contract rehearsal.'
+    )
+  $$,
+  'full rehearsal can save reviewed fictional contract facts'
+);
+select lives_ok(
+  $$
+    select public.approve_contract_review(
+      (select id from public.contract_reviews where booking_id = (select id from public.bookings where enquiry_id = '25000000-0000-4000-8000-000000000003')),
+      array['2027-07-15'::date, '2027-08-07'::date], array[84000::numeric, 84000::numeric]
+    )
+  $$,
+  'full rehearsal can approve fictional instalments and commission'
+);
+select public.configure_rehearsal_invoice_profile((select id from public.rehearsal_runs where label = 'Full charter database rehearsal'));
+select public.register_rehearsal_record(
+  (select id from public.rehearsal_runs where label = 'Full charter database rehearsal'),
+  'invoice_profile',
+  (select id from public.invoice_profiles where rehearsal_run_id = (select id from public.rehearsal_runs where label = 'Full charter database rehearsal'))
+);
+select results_eq(
+  $$ select status::text || ':' || (rehearsal_run_id is not null)::text from public.invoice_profiles where rehearsal_run_id = (select id from public.rehearsal_runs where label = 'Full charter database rehearsal') $$,
+  array['draft:true'],
+  'fictional invoice profile is run-owned and never becomes the operational default'
+);
+-- Generated documents are intentionally server-only. Capture the fictional
+-- booking ID as a transaction-local setting, then use the restricted service
+-- role only for the server-only document-generator command.
+select set_config(
+  'app.fixture_booking_id',
+  (select id::text from public.bookings where enquiry_id = '25000000-0000-4000-8000-000000000003'),
+  true
+);
+set local role service_role;
+set local "request.jwt.claim.role" = 'service_role';
+select public.register_trusted_generated_document(
+  current_setting('app.fixture_booking_id')::uuid,
+  'kylian_commission_invoice', 'Fictional generated commission invoice', 'fictional-rehearsal-invoice.pdf',
+  current_setting('app.fixture_booking_id') || '/25000000-0000-4000-8000-000000000005/fictional-rehearsal-invoice.pdf',
+  'application/pdf', 256, 'financial_record', repeat('b', 64),
+  '25000000-0000-4000-8000-000000000001'
+);
+set local role authenticated;
+set local "request.jwt.claim.role" = 'authenticated';
+set local "request.jwt.claim.sub" = '25000000-0000-4000-8000-000000000001';
+select public.review_booking_document(
+  (select id from public.documents where title = 'Fictional generated commission invoice'),
+  true, 'Fictional local invoice reviewed before rehearsal registration.'
+);
+select public.register_rehearsal_record(
+  (select id from public.rehearsal_runs where label = 'Full charter database rehearsal'),
+  'document', (select id from public.documents where title = 'Fictional generated commission invoice')
+);
+select lives_ok(
+  $$
+    select public.register_rehearsal_generated_invoice(
+      (select id from public.rehearsal_runs where label = 'Full charter database rehearsal'),
+      (select id from public.bookings where enquiry_id = '25000000-0000-4000-8000-000000000003'),
+      (select id from public.commission_calculations where booking_id = (select id from public.bookings where enquiry_id = '25000000-0000-4000-8000-000000000003')),
+      (select id from public.documents where title = 'Fictional generated commission invoice'),
+      'RHR-25000000-1', date '2027-06-15', 'Fictional 2% commission — local rehearsal only'
+    )
+  $$,
+  'run-owned fictional invoice is registered without an operational invoice profile'
+);
+select public.register_rehearsal_record(
+  (select id from public.rehearsal_runs where label = 'Full charter database rehearsal'),
+  'generated_invoice', (select id from public.generated_invoices where booking_id = (select id from public.bookings where enquiry_id = '25000000-0000-4000-8000-000000000003'))
+);
+select results_eq(
+  $$ select count(*) from public.generated_invoices where booking_id = (select id from public.bookings where enquiry_id = '25000000-0000-4000-8000-000000000003') $$,
+  array[1::bigint],
+  'fictional invoice has a durable generated-invoice audit record'
+);
+select lives_ok(
   $$ select public.reset_rehearsal_run((select id from public.rehearsal_runs where label = 'Full charter database rehearsal'), 'Full fictional charter rehearsal is complete.') $$,
   'full rehearsal reset removes its booking workflow atomically'
 );
@@ -112,6 +192,11 @@ select results_eq(
   $$ select count(*) from public.documents where title = 'Fictional reset agreement' $$,
   array[0::bigint],
   'reset removes a verified fictional document after detaching its requirement reference'
+);
+select results_eq(
+  $$ select count(*) from public.invoice_profiles where rehearsal_run_id = (select id from public.rehearsal_runs where label = 'Full charter database rehearsal') $$,
+  array[0::bigint],
+  'reset removes the run-owned fictional invoice profile after derived invoices'
 );
 select results_eq(
   $$ select status from public.rehearsal_runs where label = 'Full charter database rehearsal' $$,

@@ -11,6 +11,7 @@ import {
   type OfflineEmailKind,
   offlineRehearsalEnabled,
 } from "@/lib/rehearsal/offline-email"
+import { generateInvoicePdf } from "@/lib/integrations/invoice"
 import { createAdminClient } from "@/lib/supabase/admin"
 
 export type OfflineRehearsalActionState = {
@@ -107,7 +108,7 @@ function refreshRehearsalPaths() {
 async function registerRehearsalRecord(
   context: NonNullable<Awaited<ReturnType<typeof getAuthenticatedRequestContext>>>,
   runId: string,
-  entityType: "booking" | "commission_calculation" | "contact" | "contract_review" | "document" | "email_message" | "email_thread" | "enquiry" | "generated_invoice" | "notification" | "offer" | "payment" | "task" | "yacht" | "yachtfolio_action",
+  entityType: "booking" | "commission_calculation" | "contact" | "contract_review" | "document" | "email_message" | "email_thread" | "enquiry" | "generated_invoice" | "invoice_profile" | "notification" | "offer" | "payment" | "task" | "yacht" | "yachtfolio_action",
   entityId: string,
 ) {
   const { error } = await context.supabase.rpc("register_rehearsal_record", {
@@ -418,9 +419,9 @@ async function createSyntheticVerifiedDocument(
   context: NonNullable<Awaited<ReturnType<typeof getAuthenticatedRequestContext>>>,
   runId: string,
   bookingId: string,
-  documentType: "broker_kyc_statement" | "cdd_check" | "charter_agreement" | "client_passport",
+  documentType: "broker_commission_invoice" | "broker_kyc_statement" | "cdd_check" | "charter_agreement" | "client_passport" | "kylian_commission_invoice",
   title: string,
-  retentionClass: "booking_record" | "identity_sensitive",
+  retentionClass: "booking_record" | "financial_record" | "identity_sensitive",
 ) {
   const { data: existing } = await context.supabase
     .from("documents")
@@ -429,7 +430,10 @@ async function createSyntheticVerifiedDocument(
     .eq("document_type", documentType)
     .eq("verification_status", "verified")
     .maybeSingle()
-  if (existing) return existing.id
+  if (existing) {
+    await registerRehearsalRecord(context, runId, "document", existing.id)
+    return existing.id
+  }
 
   const fileId = randomUUID()
   const filename = `${documentType}-fictional-rehearsal.pdf`
@@ -489,6 +493,93 @@ async function createSyntheticVerifiedDocument(
     p_reason: "Reviewed and accepted as a fictional local rehearsal document.",
   })
   if (reviewed.error) throw new Error(`The fictional ${documentType} could not be verified.`)
+  return documentId
+}
+
+async function createFictionalGeneratedCommissionInvoice(
+  context: NonNullable<Awaited<ReturnType<typeof getAuthenticatedRequestContext>>>,
+  runId: string,
+  bookingId: string,
+) {
+  const { data: existingInvoice, error: existingInvoiceError } = await context.supabase
+    .from("generated_invoices")
+    .select("id,document_id,invoice_profile_id")
+    .eq("booking_id", bookingId)
+    .maybeSingle()
+  if (existingInvoiceError) throw new Error("Fictional invoice history is unavailable.")
+  if (existingInvoice) {
+    await Promise.all([
+      registerRehearsalRecord(context, runId, "document", existingInvoice.document_id),
+      registerRehearsalRecord(context, runId, "generated_invoice", existingInvoice.id),
+      registerRehearsalRecord(context, runId, "invoice_profile", existingInvoice.invoice_profile_id),
+    ])
+    return existingInvoice.document_id
+  }
+
+  const { data: profile, error: profileError } = await context.supabase.rpc("configure_rehearsal_invoice_profile", {
+    p_rehearsal_run_id: runId,
+  })
+  if (profileError || !profile) throw new Error("Fictional invoice profile is unavailable.")
+  await registerRehearsalRecord(context, runId, "invoice_profile", profile.id)
+
+  const { data: commission, error: commissionError } = await context.supabase
+    .from("commission_calculations")
+    .select("id,amount,currency")
+    .eq("booking_id", bookingId)
+    .maybeSingle()
+  if (commissionError || !commission) throw new Error("Fictional commission calculation is unavailable.")
+  await registerRehearsalRecord(context, runId, "commission_calculation", commission.id)
+
+  const invoiceNumber = `RHR-${bookingId.slice(0, 8).toUpperCase()}-1`
+  const bytes = await generateInvoicePdf({
+    amount: Number(commission.amount),
+    currency: commission.currency,
+    invoiceNumber,
+    issueDate: "2027-06-15",
+    issuerAddress: profile.issuer_address,
+    issuerName: profile.issuer_name,
+    paymentInstructions: profile.payment_instructions,
+    recipientAddress: profile.recipient_address,
+    recipientName: profile.recipient_name,
+    serviceDescription: "Fictional 2% charter commission — local rehearsal only",
+  })
+  const fileId = randomUUID()
+  const storagePath = `${bookingId}/${fileId}/fictional-local-commission-invoice.pdf`
+  const { error: uploadError } = await context.supabase.storage.from("booking-private").upload(
+    storagePath,
+    new Blob([Uint8Array.from(bytes)], { type: "application/pdf" }),
+    { cacheControl: "private, max-age=0", contentType: "application/pdf", upsert: false },
+  )
+  if (uploadError) throw new Error("Fictional invoice PDF upload failed.")
+
+  const { data: documentId, error: documentError } = await createAdminClient().rpc("register_trusted_generated_document", {
+    p_booking_id: bookingId,
+    p_content_sha256: createHash("sha256").update(bytes).digest("hex"),
+    p_document_type: "kylian_commission_invoice",
+    p_mime_type: "application/pdf",
+    p_original_filename: `${invoiceNumber}.pdf`,
+    p_retention_class: "financial_record",
+    p_size_bytes: bytes.byteLength,
+    p_storage_path: storagePath,
+    p_title: `Fictional commission invoice ${invoiceNumber}`,
+    p_created_by: context.userId,
+  })
+  if (documentError || !documentId) {
+    await context.supabase.storage.from("booking-private").remove([storagePath])
+    throw new Error("Fictional invoice document registration failed.")
+  }
+  await registerRehearsalRecord(context, runId, "document", documentId)
+  const { data: invoiceId, error: invoiceError } = await context.supabase.rpc("register_rehearsal_generated_invoice", {
+    p_booking_id: bookingId,
+    p_commission_calculation_id: commission.id,
+    p_document_id: documentId,
+    p_invoice_number: invoiceNumber,
+    p_issue_date: "2027-06-15",
+    p_rehearsal_run_id: runId,
+    p_service_description: "Fictional 2% charter commission — local rehearsal only",
+  })
+  if (invoiceError || !invoiceId) throw new Error("Fictional invoice audit record failed.")
+  await registerRehearsalRecord(context, runId, "generated_invoice", invoiceId)
   return documentId
 }
 
@@ -569,6 +660,128 @@ export async function advanceFullCharterRehearsalAction(
     }
   } catch {
     return { bookingId, message: "The fictional compliance and contract rehearsal could not be advanced safely. No provider or real recipient was contacted.", runId }
+  }
+}
+
+export async function completeFullCharterRehearsalAction(
+  _state: OfflineRehearsalActionState,
+  formData: FormData,
+): Promise<OfflineRehearsalActionState> {
+  void _state
+  const context = await getAuthenticatedRequestContext()
+  if (!context || context.role !== "administrator") return { message: "Administrator access is required." }
+  if (!offlineRehearsalEnabled()) return { message: "Offline rehearsal is available only in local development." }
+  const runId = formData.get("runId")
+  if (typeof runId !== "string" || !runId) return { message: "Create a full fictional charter rehearsal first." }
+
+  const { data: bookingRecord, error: bookingRecordError } = await context.supabase
+    .from("rehearsal_run_records")
+    .select("entity_id")
+    .eq("rehearsal_run_id", runId)
+    .eq("entity_type", "booking")
+    .maybeSingle()
+  if (bookingRecordError || !bookingRecord) return { message: "This rehearsal does not contain a fictional booking." }
+  const bookingId = bookingRecord.entity_id
+
+  try {
+    const { data: reviewedContract, error: contractError } = await context.supabase
+      .from("contract_reviews")
+      .select("id")
+      .eq("booking_id", bookingId)
+      .eq("status", "approved")
+      .maybeSingle()
+    if (contractError || !reviewedContract) {
+      return { bookingId, message: "Complete the fictional compliance and contract review before rehearsing the remaining lifecycle.", runId }
+    }
+
+    await createFictionalGeneratedCommissionInvoice(context, runId, bookingId)
+    await completeFictionalTask(context, bookingId, "1.C", "Fictional commission-invoice draft reviewed locally. No Telegram message or recipient was contacted.")
+    await completeFictionalTask(context, bookingId, "1.D", "Fictional Kylian commission invoice recorded in private local storage.")
+
+    const { data: yachtfolioAction, error: yachtfolioError } = await context.supabase
+      .from("yachtfolio_booking_actions")
+      .select("id,status")
+      .eq("booking_id", bookingId)
+      .maybeSingle()
+    if (yachtfolioError || !yachtfolioAction) throw new Error("Fictional Yachtfolio action is unavailable.")
+    await registerRehearsalRecord(context, runId, "yachtfolio_action", yachtfolioAction.id)
+    if (yachtfolioAction.status !== "completed") {
+      const { error } = await context.supabase.rpc("set_yachtfolio_action_status", {
+        p_action_id: yachtfolioAction.id,
+        p_new_status: "completed",
+        p_reason: "Fictional local evidence: booked dates and status were reviewed in the Yachtfolio rehearsal boundary.",
+      })
+      if (error) throw new Error("Fictional Yachtfolio evidence could not be recorded.")
+    }
+    await completeFictionalTask(context, bookingId, "1.E", "Fictional Yachtfolio completion evidence was recorded locally.")
+    await completeFictionalTask(context, bookingId, "2.A", "Fictional captain contact draft reviewed locally. No broker was contacted.")
+    await completeFictionalTask(context, bookingId, "2.B", "Fictional captain booking notice reviewed locally. No captain was contacted.")
+
+    const { data: payments, error: paymentError } = await context.supabase
+      .from("payment_schedules")
+      .select("id,instalment_number,status")
+      .eq("booking_id", bookingId)
+      .order("instalment_number")
+    if (paymentError || !payments?.length) throw new Error("Fictional payment schedule is unavailable.")
+    for (const payment of payments) {
+      await registerRehearsalRecord(context, runId, "payment", payment.id)
+      if (payment.status === "scheduled") {
+        const { error } = await context.supabase.rpc("mark_payment_paid", {
+          p_payment_id: payment.id,
+          p_reason: `Fictional local rehearsal: instalment ${payment.instalment_number} payment evidence reviewed by an administrator.`,
+        })
+        if (error) throw new Error("Fictional payment evidence could not be recorded.")
+      }
+    }
+    await completeFictionalTask(context, bookingId, "3", "Fictional first instalment was recorded paid after local evidence review.")
+    await completeFictionalTask(context, bookingId, "4.A", "Fictional second instalment was recorded paid after local evidence review.")
+
+    const { data: booking, error: bookingError } = await context.supabase
+      .from("bookings")
+      .select("status")
+      .eq("id", bookingId)
+      .single()
+    if (bookingError || !booking) throw new Error("Fictional booking is unavailable.")
+    if (booking.status === "confirmed") {
+      const { error } = await context.supabase.rpc("transition_booking_status", {
+        p_booking_id: bookingId,
+        p_new_status: "charter_active",
+        p_reason: "Fictional local rehearsal advanced the charter-start checkpoint after human review.",
+      })
+      if (error) throw new Error("Fictional charter start could not be recorded.")
+    }
+    await completeFictionalTask(context, bookingId, "5", "Fictional charter-start notification reviewed locally. No recipient was contacted.")
+
+    const { data: currentBooking, error: currentBookingError } = await context.supabase
+      .from("bookings")
+      .select("status")
+      .eq("id", bookingId)
+      .single()
+    if (currentBookingError || !currentBooking) throw new Error("Fictional booking lifecycle is unavailable.")
+    if (currentBooking.status === "charter_active") {
+      const { error } = await context.supabase.rpc("transition_booking_status", {
+        p_booking_id: bookingId,
+        p_new_status: "completed",
+        p_reason: "Fictional local rehearsal advanced the charter-end checkpoint after human review.",
+      })
+      if (error) throw new Error("Fictional charter completion could not be recorded.")
+    }
+    await completeFictionalTask(context, bookingId, "6", "Fictional charter-end notification reviewed locally. No recipient was contacted.")
+    await createSyntheticVerifiedDocument(context, runId, bookingId, "broker_commission_invoice", "Fictional broker commission invoice evidence", "financial_record")
+    await completeFictionalTask(context, bookingId, "7", "Fictional broker follow-up and commission-document evidence recorded locally. No broker was contacted.")
+
+    refreshRehearsalPaths()
+    revalidatePath(`/bookings/${bookingId}`)
+    revalidatePath(`/bookings/${bookingId}/documents`)
+    revalidatePath(`/bookings/${bookingId}/tasks`)
+    return {
+      bookingId,
+      message: "Fictional invoice evidence, Yachtfolio confirmation, captain/broker hand-offs, payment settlement, charter start/end, and broker follow-up were recorded through the normal local controls. No provider or recipient was contacted.",
+      runId,
+      success: true,
+    }
+  } catch {
+    return { bookingId, message: "The fictional post-contract rehearsal could not be completed safely. No provider or real recipient was contacted.", runId }
   }
 }
 

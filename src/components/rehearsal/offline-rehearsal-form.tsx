@@ -8,6 +8,7 @@ import {
   createOfflineRehearsalSuiteAction,
   createFullCharterRehearsalAction,
   advanceFullCharterRehearsalAction,
+  completeFullCharterRehearsalAction,
   resetOfflineRehearsalAction,
   type OfflineRehearsalActionState,
 } from "@/app/(workspace)/settings/rehearsal/actions"
@@ -31,6 +32,7 @@ export function OfflineRehearsalForm({ activeRuns, enabled }: { activeRuns: Acti
   const [suiteState, suiteAction, suitePending] = useActionState(createOfflineRehearsalSuiteAction, initialState)
   const [fullState, fullAction, fullPending] = useActionState(createFullCharterRehearsalAction, initialState)
   const [advanceState, advanceAction, advancePending] = useActionState(advanceFullCharterRehearsalAction, initialState)
+  const [completeState, completeAction, completePending] = useActionState(completeFullCharterRehearsalAction, initialState)
   const [resetState, resetAction, resetPending] = useActionState(resetOfflineRehearsalAction, initialState)
   const transientRunIds = [fullState.runId, suiteState.runId, state.runId].filter((runId): runId is string => Boolean(runId))
   const resetRuns = [...activeRuns]
@@ -120,6 +122,13 @@ export function OfflineRehearsalForm({ activeRuns, enabled }: { activeRuns: Acti
             <Button disabled={advancePending} type="submit" variant="outline">{advancePending ? "Advancing fictional contract rehearsal…" : "Rehearse compliance and contract review"}</Button>
             <ActionFeedback state={advanceState} />
             {advanceState.bookingId ? <Link className="mt-3 inline-flex text-sm font-medium text-primary underline" href={`/bookings/${advanceState.bookingId}/documents`}>Open fictional document workspace</Link> : null}
+        </form> : null}
+        {fullRunId ? <form action={completeAction} className="mt-4 border-t pt-4">
+            <input name="runId" type="hidden" value={fullRunId} />
+            <p className="mb-3 text-xs leading-5 text-muted-foreground">Finally, rehearse fictional invoice evidence, Yachtfolio confirmation, captain and broker hand-offs, payment settlement, charter start/end, and post-charter follow-up. The action is blocked until contract review is approved and never contacts a provider or recipient.</p>
+            <Button disabled={completePending} type="submit" variant="outline">{completePending ? "Completing fictional charter lifecycleâ€¦" : "Rehearse post-contract charter lifecycle"}</Button>
+            <ActionFeedback state={completeState} />
+            {completeState.bookingId ? <Link className="mt-3 inline-flex text-sm font-medium text-primary underline" href={`/bookings/${completeState.bookingId}`}>Open completed fictional booking</Link> : null}
         </form> : null}
       </div>
 

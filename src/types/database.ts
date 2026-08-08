@@ -2074,6 +2074,7 @@ export type Database = {
           recipient_address: string
           recipient_email: string | null
           recipient_name: string
+          rehearsal_run_id: string | null
           service_description_template: string
           source_profile_id: string | null
           status: Database["public"]["Enums"]["invoice_profile_status"]
@@ -2093,6 +2094,7 @@ export type Database = {
           recipient_address: string
           recipient_email?: string | null
           recipient_name: string
+          rehearsal_run_id?: string | null
           service_description_template: string
           source_profile_id?: string | null
           status?: Database["public"]["Enums"]["invoice_profile_status"]
@@ -2112,6 +2114,7 @@ export type Database = {
           recipient_address?: string
           recipient_email?: string | null
           recipient_name?: string
+          rehearsal_run_id?: string | null
           service_description_template?: string
           source_profile_id?: string | null
           status?: Database["public"]["Enums"]["invoice_profile_status"]
@@ -2131,6 +2134,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_profiles_rehearsal_run_id_fkey"
+            columns: ["rehearsal_run_id"]
+            isOneToOne: false
+            referencedRelation: "rehearsal_runs"
             referencedColumns: ["id"]
           },
           {
@@ -4663,6 +4673,35 @@ export type Database = {
         Args: { p_rehearsal_run_id: string }
         Returns: Json
       }
+      configure_rehearsal_invoice_profile: {
+        Args: { p_rehearsal_run_id: string }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          issuer_address: string
+          issuer_name: string
+          payment_instructions: string
+          profile_name: string
+          recipient_address: string
+          recipient_email: string | null
+          recipient_name: string
+          rehearsal_run_id: string | null
+          service_description_template: string
+          source_profile_id: string | null
+          status: Database["public"]["Enums"]["invoice_profile_status"]
+          updated_at: string
+          version_number: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invoice_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       confirm_booking: {
         Args: {
           p_charter_end_date: string
@@ -5166,6 +5205,18 @@ export type Database = {
         }
         Returns: string
       }
+      register_rehearsal_generated_invoice: {
+        Args: {
+          p_booking_id: string
+          p_commission_calculation_id: string
+          p_document_id: string
+          p_invoice_number: string
+          p_issue_date: string
+          p_rehearsal_run_id: string
+          p_service_description: string
+        }
+        Returns: string
+      }
       register_rehearsal_record: {
         Args: {
           p_entity_id: string
@@ -5174,20 +5225,36 @@ export type Database = {
         }
         Returns: undefined
       }
-      register_trusted_generated_document: {
-        Args: {
-          p_booking_id: string
-          p_content_sha256: string
-          p_document_type: Database["public"]["Enums"]["document_type"]
-          p_mime_type: string
-          p_original_filename: string
-          p_retention_class: string
-          p_size_bytes: number
-          p_storage_path: string
-          p_title: string
-        }
-        Returns: string
-      }
+      register_trusted_generated_document:
+        | {
+            Args: {
+              p_booking_id: string
+              p_content_sha256: string
+              p_document_type: Database["public"]["Enums"]["document_type"]
+              p_mime_type: string
+              p_original_filename: string
+              p_retention_class: string
+              p_size_bytes: number
+              p_storage_path: string
+              p_title: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_booking_id: string
+              p_content_sha256: string
+              p_created_by: string
+              p_document_type: Database["public"]["Enums"]["document_type"]
+              p_mime_type: string
+              p_original_filename: string
+              p_retention_class: string
+              p_size_bytes: number
+              p_storage_path: string
+              p_title: string
+            }
+            Returns: string
+          }
       release_clean_booking_document: {
         Args: {
           p_document_id: string

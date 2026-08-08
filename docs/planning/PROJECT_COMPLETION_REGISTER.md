@@ -1,6 +1,6 @@
 # Project completion register
 
-**Reviewed:** 27 July 2026
+**Reviewed:** 8 August 2026
 
 **Definition of done:** the hosted internal release is code-complete locally when
 all rows in the first table pass. It is live-complete only after the client-owned
@@ -28,7 +28,7 @@ evidence that a provider was connected or that a person accepted the workflow.
 | Notifications | Per-user email/phone/Telegram preferences, AI-summary preference, central notification/outbox state, approval queue, retries, permanent failure and recovery visibility |
 | Automation | Self-hosted n8n package, scheduler, development simulator guard, readiness monitor, Gmail intake, mark-read and archive workers; workflows import inactive and contain no credentials |
 | Security and operations | Security headers, server-only secrets, private documents, database lint/tests, dependency audit, health endpoints, backup/export/restore tooling, incident and maintenance runbooks |
-| Training and demonstration | Guided tutorial, five-route email rehearsal, and resettable fictional enquiry-to-booking rehearsal including compliance-document quarantine/verification, contract review, instalments and commission; later messages and post-charter actions remain explicit human rehearsal steps |
+| Training and demonstration | Guided tutorial, five-route email rehearsal, and resettable fictional enquiry-to-post-charter rehearsal covering compliance-document quarantine/verification, contract review, instalments, local invoice evidence, Yachtfolio evidence, charter completion and broker follow-up; every external delivery remains simulated and visibly fictional |
 | Portfolio and audit | Architecture, decisions, schema notes, phase diaries, changelog, sanitised case studies and acceptance evidence structure |
 
 ## Deliberately optional or separate scope
