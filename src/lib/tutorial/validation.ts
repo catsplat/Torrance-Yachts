@@ -20,10 +20,6 @@ export const tutorialAdvanceSchema = z.object({
   step: z.coerce.number().int().min(0).max(11),
 })
 
-export const tutorialResetSchema = z.object({
-  reason: z.string().trim().min(2).max(1000),
-})
-
 export const launchCheckReviewSchema = z.object({
   checkKey: z.string().trim().regex(/^[a-z][a-z0-9_]{2,79}$/),
   evidence: z.string().trim().max(4000),

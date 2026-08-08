@@ -22,7 +22,7 @@ export default async function CalendarPage() {
   )
   return (
     <div className="mx-auto max-w-6xl space-y-5" data-tutorial-anchor="calendar-register">
-      <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Authoritative dates</p><h1 className="mt-1 text-3xl font-semibold">Operational calendar</h1><p className="mt-2 text-sm text-muted-foreground">Charters, instalments, and due tasks are generated from PostgreSQL. Google Calendar is an optional duplicate-protected view.</p></div>
+      <div><h1 className="text-3xl font-semibold">Calendar</h1><p className="mt-2 text-sm text-muted-foreground">Charters, payments and task deadlines.</p></div>
       {[...months.entries()].map(([month, monthEvents]) => (
         <Card key={month}>
           <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><CalendarDays className="size-5 text-primary" />{month}</CardTitle><CardDescription>{monthEvents.length} operational dates</CardDescription></CardHeader>
@@ -35,7 +35,7 @@ export default async function CalendarPage() {
           </CardContent>
         </Card>
       ))}
-      {!events.length ? <Card><CardContent className="py-14 text-center text-sm text-muted-foreground">Run an automation tick to materialise the current operational calendar.</CardContent></Card> : null}
+      {!events.length ? <Card><CardContent className="py-14 text-center text-sm text-muted-foreground">No calendar entries.</CardContent></Card> : null}
     </div>
   )
 }

@@ -91,11 +91,9 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
     <div className="space-y-7">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-medium text-primary">Manual operations pipeline</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">Enquiries</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Enquiries</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Search the complete authorised pipeline. Filters run in PostgreSQL so older requests
-            remain available for review.
+            Track requests from first contact through to booking.
           </p>
         </div>
         <Link
@@ -221,9 +219,7 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
             <div className="px-6 py-14 text-center">
               <Inbox aria-hidden="true" className="mx-auto size-8 text-muted-foreground" />
               <p className="mt-3 font-medium">No enquiries match these filters</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Change the filters or create a new synthetic enquiry.
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground">Change the filters or create an enquiry.</p>
             </div>
           ) : (
             <div className="divide-y">

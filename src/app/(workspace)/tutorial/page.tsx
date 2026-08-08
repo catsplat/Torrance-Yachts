@@ -1,4 +1,4 @@
-import { ArrowRight, Bot, CheckCircle2, Mail, Pause, Play, RotateCcw, ShieldCheck } from "lucide-react"
+import { ArrowRight, Bot, CheckCircle2, Mail, Pause, Play, RotateCcw, UserCheck } from "lucide-react"
 import Link from "next/link"
 
 import { pauseTutorialAction, startTutorialAction } from "@/app/(workspace)/tutorial/actions"
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 const syntheticEmail = {
   body: "We are enquiring for a seven-night family charter in Greece for 10 guests. Preferred dates are 14–21 August. Please advise availability, rate, and whether Athens embarkation is possible.",
   from: "Alex Morgan, Example Charter Partners",
-  subject: "Synthetic August family charter enquiry",
+  subject: "Example August family charter enquiry",
 }
 
 export default async function TutorialPage() {
@@ -28,10 +28,9 @@ export default async function TutorialPage() {
     <div className="mx-auto max-w-7xl space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Guided client training</p>
-          <h1 className="mt-1 text-3xl font-semibold">Enquiry-to-charter tutorial</h1>
+          <h1 className="text-3xl font-semibold">Tutorial</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-            Practise the complete Torrance Yachts workflow using an isolated synthetic scenario. Nothing here creates an operational enquiry, document, notification, provider action, or booking.
+            Practice the full workflow with a sample charter.
           </p>
         </div>
         <Badge variant={completed ? "default" : "outline"}>{session?.status?.replace("_", " ") ?? "not started"}</Badge>
@@ -39,8 +38,7 @@ export default async function TutorialPage() {
 
       <Card className="border-primary/20">
         <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2"><Mail className="size-5 text-primary" />Synthetic practice email</CardTitle>
-          <CardDescription>This email is deliberately fictional and remains inside tutorial state.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Mail className="size-5 text-primary" />Practice email</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 pt-5">
           <p className="text-sm"><strong>From:</strong> {syntheticEmail.from}</p>
@@ -50,7 +48,7 @@ export default async function TutorialPage() {
       </Card>
 
       {!active && !completed ? (
-        <Card><CardContent className="flex flex-wrap items-center justify-between gap-4 pt-5"><div><p className="font-medium">{session?.status === "paused" ? "Tutorial paused" : "Ready to begin"}</p><p className="mt-1 text-sm text-muted-foreground">Start or resume without touching operational records.</p></div><form action={startTutorialAction}><button className={cn(buttonVariants(), "inline-flex items-center gap-2")} type="submit"><Play className="size-4" />{session?.status === "paused" ? "Resume tutorial" : "Start tutorial"}</button></form></CardContent></Card>
+        <Card><CardContent className="flex flex-wrap items-center justify-between gap-4 pt-5"><div><p className="font-medium">{session?.status === "paused" ? "Tutorial paused" : "Ready to begin"}</p><p className="mt-1 text-sm text-muted-foreground">Begin with the sample enquiry above.</p></div><form action={startTutorialAction}><button className={cn(buttonVariants(), "inline-flex items-center gap-2")} type="submit"><Play className="size-4" />{session?.status === "paused" ? "Resume tutorial" : "Start tutorial"}</button></form></CardContent></Card>
       ) : null}
 
       {active ? (
@@ -64,7 +62,7 @@ export default async function TutorialPage() {
             </CardHeader>
             <CardContent className="space-y-5 pt-5">
               <p className="leading-7">{currentStep.explanation}</p>
-              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>Human decision:</strong> {currentStep.humanControl}</div>
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>Your action:</strong> {currentStep.humanControl}</div>
               <div className="flex flex-wrap gap-3">
                 <Link className={cn(buttonVariants({ variant: "outline" }), "inline-flex items-center gap-2")} href={`${currentStep.route}?tutorial=${currentStep.id}`}>Open highlighted interface<ArrowRight className="size-4" /></Link>
                 <form action={pauseTutorialAction}><button className={cn(buttonVariants({ variant: "ghost" }), "inline-flex items-center gap-2")} type="submit"><Pause className="size-4" />Pause</button></form>
@@ -81,21 +79,21 @@ export default async function TutorialPage() {
           </Card>
 
           <Card>
-            <CardHeader className="border-b"><CardTitle>Practice state</CardTitle><CardDescription>Simulation only; external integrations are disabled by design.</CardDescription></CardHeader>
+            <CardHeader className="border-b"><CardTitle>Who does what</CardTitle></CardHeader>
             <CardContent className="space-y-4 pt-5">
-              <div className="flex gap-3"><Bot className="mt-0.5 size-4 text-primary" /><p className="text-sm"><strong>AI:</strong> suggestions, extraction, confidence, and evidence only.</p></div>
-              <div className="flex gap-3"><ShieldCheck className="mt-0.5 size-4 text-primary" /><p className="text-sm"><strong>Staff:</strong> approve material data, messages, bookings, documents, and completion.</p></div>
-              <div className="flex gap-3"><RotateCcw className="mt-0.5 size-4 text-primary" /><p className="text-sm"><strong>Reset:</strong> clears only your tutorial state and retains reset history.</p></div>
+              <div className="flex gap-3"><Bot className="mt-0.5 size-4 text-primary" /><p className="text-sm"><strong>Assistant:</strong> extracts details and prepares drafts.</p></div>
+              <div className="flex gap-3"><UserCheck className="mt-0.5 size-4 text-primary" /><p className="text-sm"><strong>Staff:</strong> checks, approves and sends.</p></div>
+              <div className="flex gap-3"><RotateCcw className="mt-0.5 size-4 text-primary" /><p className="text-sm"><strong>Reset:</strong> starts the tutorial again.</p></div>
             </CardContent>
           </Card>
         </div>
       ) : null}
 
       {completed ? (
-        <Card className="border-emerald-200 bg-emerald-50/50"><CardContent className="flex gap-4 pt-5"><CheckCircle2 className="size-6 text-emerald-700" /><div><p className="font-semibold text-emerald-950">Synthetic workflow completed</p><p className="mt-1 text-sm text-emerald-900">You have followed the enquiry from email through broker follow-up without creating live operational data.</p></div></CardContent></Card>
+        <Card className="border-emerald-200 bg-emerald-50/50"><CardContent className="flex gap-4 pt-5"><CheckCircle2 className="size-6 text-emerald-700" /><div><p className="font-semibold text-emerald-950">Tutorial complete</p><p className="mt-1 text-sm text-emerald-900">You followed the enquiry from email to broker follow-up.</p></div></CardContent></Card>
       ) : null}
 
-      {session ? <Card><CardHeader className="border-b"><CardTitle>Restart the practice scenario</CardTitle><CardDescription>Resetting never deletes audit history and never touches real records.</CardDescription></CardHeader><CardContent className="pt-5"><TutorialResetForm /></CardContent></Card> : null}
+      {session ? <Card><CardHeader className="border-b"><CardTitle>Restart tutorial</CardTitle><CardDescription>Start again from step 1.</CardDescription></CardHeader><CardContent className="pt-5"><TutorialResetForm /></CardContent></Card> : null}
 
       <Card>
         <CardHeader className="border-b"><CardTitle>Complete workflow map</CardTitle></CardHeader>

@@ -4938,6 +4938,16 @@ export type Database = {
         Args: { p_environment: string }
         Returns: Json
       }
+      get_user_google_workspace_credentials: {
+        Args: { p_user_id: string }
+        Returns: {
+          account_email: string
+          client_id: string
+          client_secret: string
+          refresh_token: string
+          scopes: string[]
+        }[]
+      }
       ingest_gmail_message: {
         Args: {
           p_attachments?: Json
@@ -6011,7 +6021,6 @@ export type Database = {
     }
   }
 }
-
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]

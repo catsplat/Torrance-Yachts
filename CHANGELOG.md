@@ -10,6 +10,8 @@ All notable project changes are recorded here. The format follows Keep a Changel
   alongside a separate Google Workspace consent flow for the Gmail account and
   controlled Google Sheets reporting scope. Staff never see OAuth secrets or
   refresh tokens.
+- A name-based Google spreadsheet chooser after Workspace consent, backed by a
+  service-only Vault credential boundary and resource-access verification.
 - A complete administrator-only post-contract fictional charter rehearsal:
   local commission-invoice evidence, Yachtfolio/captain/broker hand-off
   evidence, fictional payment settlement, charter completion and broker
@@ -20,6 +22,20 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Changed
 
+- Reworked the application around the daily Inbox → Enquiries → Offers →
+  Bookings → Tasks sequence. The dashboard now has one attention queue, primary
+  navigation excludes technical sub-tools, Settings separates routine and
+  development controls, and user-facing copy is shorter and task-oriented.
+- Simplified personal connection settings by removing the manual Telegram chat
+  ID and routine change-reason fields from the normal interface while retaining
+  server-generated audit evidence.
+- Removed compulsory explanation fields from routine, reversible workflow
+  actions. Material booking, document, payment and external-system decisions
+  still collect the evidence they need.
+- Rebuilt booking details and task actions around concise operational controls,
+  clearer status progression and a substantially less cluttered layout.
+- Refreshed the dependency lockfile so the production dependency audit reports
+  no known vulnerabilities, including the patched transitive `nanoid` release.
 - Fictional invoice generation now uses a run-owned draft profile and a
   restricted rehearsal command; the operational invoice path still requires an
   approved profile.

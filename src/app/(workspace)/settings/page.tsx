@@ -48,46 +48,52 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Workspace settings</p>
-        <h1 className="mt-1 text-3xl font-semibold">Settings</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Start with your own alert delivery. Company workflow and provider controls are grouped below for administrators, not mixed into daily settings.</p>
+        <h1 className="text-3xl font-semibold">Settings</h1>
       </div>
 
       <Card className="border-primary/20 bg-primary/[0.025]">
         <CardContent className="flex flex-col gap-4 pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><BellRing className="size-5" /></div><div><p className="font-medium">Your alerts and connections</p><p className="mt-1 text-sm text-muted-foreground">Choose your phone, Telegram delivery, Google inbox, and the events that need your attention.</p></div></div>
-          <Link className="text-sm font-medium text-primary hover:underline" href="/settings/alerts">Open personal setup</Link>
+          <div className="flex gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><BellRing className="size-5" /></div><div><p className="font-medium">My account and alerts</p><p className="mt-1 text-sm text-muted-foreground">Contact details, Telegram and Google Workspace.</p></div></div>
+          <Link className="text-sm font-medium text-primary hover:underline" href="/settings/alerts">Open</Link>
         </CardContent>
       </Card>
 
       {user?.role === "administrator" ? <>
         <section className="space-y-3">
-          <div><h2 className="text-lg font-semibold">Workspace workflow</h2><p className="mt-1 text-sm text-muted-foreground">The operational content and people that make the charter workflow work.</p></div>
+          <h2 className="text-lg font-semibold">Workspace</h2>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            <SettingsLink description="Invite staff, manage roles, and maintain their operational contact routes." href="/settings/users" icon={UsersRound} title="Internal users" />
-            <SettingsLink description="Maintain versioned KYC, captain-contact, and broker follow-up wording." href="/settings/communications" icon={FilePenLine} title="Communication templates" />
-            <SettingsLink description="Review and approve the dependency-aware booking workflow used for new confirmed charters." href="/tasks/templates" icon={Clock3} title="Task templates" />
-            <SettingsLink description="Manage protected, versioned issuer and payment instructions." href="/settings/invoices" icon={FileText} title="Invoice profiles" />
+            <SettingsLink description="Staff access and roles." href="/settings/users" icon={UsersRound} title="Users" />
+            <SettingsLink description="KYC, captain and follow-up wording." href="/settings/communications" icon={FilePenLine} title="Message templates" />
+            <SettingsLink description="Booking workflow and dependencies." href="/tasks/templates" icon={Clock3} title="Task templates" />
+            <SettingsLink description="Issuer and payment details." href="/settings/invoices" icon={FileText} title="Invoice profiles" />
           </div>
         </section>
 
         <section className="space-y-3">
-          <div><h2 className="text-lg font-semibold">System delivery and launch</h2><p className="mt-1 text-sm text-muted-foreground">Technical controls are deliberately separated from the day-to-day delivery centre.</p></div>
+          <h2 className="text-lg font-semibold">System</h2>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            <SettingsLink description="Configure company provider adapters and the local automation worker." href="/settings/integrations" icon={PlugZap} title="Company connections" />
-            <SettingsLink description="Verify Gmail, Telegram, n8n, AI, and the manual Yachtfolio boundary." href="/settings/activation" icon={CircleGauge} title="Integration readiness" />
-            <SettingsLink description="Run fictional workflow data through the local review boundary without contacting providers." href="/settings/rehearsal" icon={Beaker} title="Offline rehearsal" />
-            <SettingsLink description="Review access, recovery, privacy, training, and the client sign-off gate." href="/settings/launch" icon={Rocket} title="Launch readiness" />
-            <SettingsLink description="Practice the enquiry-to-follow-up workflow using only isolated sample records." href="/tutorial" icon={GraduationCap} title="Guided tutorial" />
+            <SettingsLink description="Gmail, Telegram and automation." href="/settings/integrations" icon={PlugZap} title="Connections" />
+            <SettingsLink description="Provider connection status." href="/settings/activation" icon={CircleGauge} title="Connection status" />
+            <SettingsLink description="Practice the full workflow." href="/tutorial" icon={GraduationCap} title="Tutorial" />
           </div>
         </section>
 
+        {process.env.APP_ENVIRONMENT !== "production" ? (
+          <details className="rounded-xl border bg-card">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-medium">Development and launch tools</summary>
+            <div className="grid gap-3 border-t p-4 md:grid-cols-2">
+              <SettingsLink description="Local workflow testing." href="/settings/rehearsal" icon={Beaker} title="Test workflow" />
+              <SettingsLink description="Checks required before launch." href="/settings/launch" icon={Rocket} title="Launch checklist" />
+            </div>
+          </details>
+        ) : null}
+
         {settings ? <Card>
-          <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><Clock3 className="size-5 text-primary" />Enquiry housekeeping</CardTitle><CardDescription>Archive inactive pre-contract requests without deleting their history. Any new email, note, or lifecycle change resets the inactivity clock.</CardDescription></CardHeader>
+          <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><Clock3 className="size-5 text-primary" />Inactive enquiries</CardTitle><CardDescription>Set when dormant enquiries leave the active list.</CardDescription></CardHeader>
           <CardContent className="space-y-5 pt-5"><OperationalSettingsForm settings={settings} /><div className="border-t pt-5"><TimeoutSweepForm /></div></CardContent>
         </Card> : null}
       </> : <Card>
-        <CardHeader><CardTitle>Company settings</CardTitle><CardDescription>Workflow templates, staff access, integration activation, and release controls are managed by an administrator.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Company settings</CardTitle><CardDescription>Managed by an administrator.</CardDescription></CardHeader>
       </Card>}
     </div>
   )

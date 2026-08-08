@@ -19,7 +19,6 @@ export const taskScheduleSchema = z.object({
   due_date: optionalDate,
   assigned_user_id: optionalUuid,
   priority: z.enum(taskPriorityValues),
-  reason: z.string().trim().min(2).max(2000),
 })
 
 export const adHocTaskSchema = z.object({

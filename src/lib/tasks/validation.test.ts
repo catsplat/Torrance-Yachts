@@ -13,7 +13,6 @@ describe("task validation", () => {
       due_date: "",
       assigned_user_id: "",
       priority: "high",
-      reason: "Reviewed operational schedule",
     })).toMatchObject({
       due_date: null,
       assigned_user_id: null,

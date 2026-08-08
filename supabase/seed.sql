@@ -421,3 +421,14 @@ insert into public.communication_templates (
   )
 on conflict do nothing;
 select set_config('app.phase10_command', '', false);
+
+-- If the ignored local Auth volume already contains the agreed development
+-- account, keep its synthetic profile usable after a database reset. The
+-- password remains outside source control in the local Auth service.
+update public.profiles profile
+set display_name = 'Local Administrator',
+    role = 'administrator',
+    active = true
+from auth.users auth_user
+where profile.id = auth_user.id
+  and auth_user.email = 'local.admin@example.test';

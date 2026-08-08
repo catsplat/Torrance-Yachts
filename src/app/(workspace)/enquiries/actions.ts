@@ -132,7 +132,7 @@ export async function transitionEnquiryAction(
   const { error } = await context.supabase.rpc("transition_enquiry_status", {
     p_enquiry_id: validId.data,
     p_new_status: parsed.data.new_status,
-    p_reason: parsed.data.reason,
+    p_reason: `Status changed from ${currentStatus.replaceAll("_", " ")} to ${parsed.data.new_status.replaceAll("_", " ")}`,
   })
 
   if (error) {

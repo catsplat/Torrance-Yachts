@@ -37,47 +37,40 @@ export function TelegramPairingForm({
   const [state, action, pending] = useActionState(createMyTelegramPairingAction, initialState)
 
   if (connected) {
-    return <p className="text-sm leading-6 text-muted-foreground">Telegram is connected to your private chat. You can change delivery topics above or disconnect it by clearing the chat ID and saving your preferences.</p>
+    return <p className="text-sm leading-6 text-muted-foreground">Telegram is connected.</p>
   }
   if (!configured) {
-    return <p className="rounded-lg border bg-muted/30 p-4 text-sm leading-6 text-muted-foreground">Telegram pairing will appear here once an administrator has connected the company bot. You can still enter a chat ID manually if an administrator provides one.</p>
+    return <p className="text-sm text-muted-foreground">Telegram is not available yet.</p>
   }
   return <form action={action} className="space-y-3">
-    <p className="text-sm leading-6 text-muted-foreground">Open the company bot from this private link, then press <strong>Start</strong>. The platform will attach that chat to your staff account automatically.</p>
-    {state.pairingUrl ? <a className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50" href={state.pairingUrl} rel="noreferrer" target="_blank">Open company bot</a> : <Button disabled={pending} type="submit">{pending ? "Creating private link…" : "Connect Telegram"}</Button>}
-    {state.pairingUrl ? <Button onClick={() => router.refresh()} type="button" variant="outline">I&apos;ve pressed Start — check connection</Button> : null}
+    <p className="text-sm leading-6 text-muted-foreground">Open the company bot and press <strong>Start</strong>.</p>
+    {state.pairingUrl ? <a className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50" href={state.pairingUrl} rel="noreferrer" target="_blank">Open Telegram</a> : <Button disabled={pending} type="submit">{pending ? "Creating link…" : "Connect Telegram"}</Button>}
+    {state.pairingUrl ? <Button onClick={() => router.refresh()} type="button" variant="outline">Check connection</Button> : null}
     <Feedback state={state} />
   </form>
 }
 
 function Toggle({
   defaultChecked,
-  description,
   disabled = false,
   label,
   name,
 }: {
   defaultChecked: boolean
-  description: string
   disabled?: boolean
   label: string
   name: string
 }) {
   return (
-    <label className="flex items-start gap-3 rounded-lg border bg-card p-4">
+    <label className="flex min-h-11 items-center gap-3 rounded-lg border bg-card px-3 py-2.5">
       <input
-        className="mt-1 size-4 accent-primary disabled:cursor-not-allowed disabled:opacity-50"
+        className="size-4 accent-primary disabled:cursor-not-allowed disabled:opacity-50"
         defaultChecked={defaultChecked}
         disabled={disabled}
         name={name}
         type="checkbox"
       />
-      <span>
-        <span className="block text-sm font-medium">{label}</span>
-        <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
-          {description}
-        </span>
-      </span>
+      <span className="text-sm font-medium">{label}</span>
     </label>
   )
 }
@@ -114,83 +107,61 @@ export function AlertPreferencesForm({
     initialState,
   )
   return (
-    <form action={action} className="space-y-8">
+    <form action={action} className="space-y-6">
       <section className="space-y-4">
-        <div>
-          <h2 className="text-base font-semibold">Where should we reach you?</h2>
-          <p className="mt-1 text-sm text-muted-foreground">These details belong to your staff account. They are never shown to brokers or clients.</p>
-        </div>
+        <h2 className="text-base font-semibold">Contact</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <label className="grid gap-2 text-sm font-medium">
             Alert email
             <Input defaultValue={preferences.notification_email ?? ""} name="notificationEmail" placeholder="you@company.com" type="email" />
-            <span className="text-xs font-normal leading-5 text-muted-foreground">Used only for internal operational alerts when email delivery is enabled.</span>
           </label>
           <label className="grid gap-2 text-sm font-medium">
             Phone number
             <Input defaultValue={phone ?? ""} name="phone" placeholder="+44 7700 900 000" type="tel" />
-            <span className="text-xs font-normal leading-5 text-muted-foreground">Kept for operational contact and future SMS support. It does not enable SMS today.</span>
           </label>
         </div>
       </section>
 
       <section className="space-y-4 border-t pt-6">
-        <div>
-          <h2 className="text-base font-semibold">How should alerts arrive?</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Keep in-app notifications on so important work remains visible in the private workspace.</p>
-        </div>
+        <h2 className="text-base font-semibold">Channels</h2>
         <div className="grid gap-3 md:grid-cols-3">
         <Toggle
           defaultChecked={preferences.in_app_enabled}
-          description="Always available in the private notification centre."
           label="In-app"
           name="inAppEnabled"
         />
         <Toggle
           defaultChecked={preferences.telegram_enabled}
-          description="Uses the shared company bot. Pair it below; the manual chat-ID field is only a fallback."
           label="Telegram"
           name="telegramEnabled"
         />
         <Toggle
           defaultChecked={preferences.email_enabled}
-          description={gmailConnected ? "Sends internal alerts through your connected Google inbox." : "Connect a Google inbox below before this delivery route can be enabled."}
           disabled={!gmailConnected}
           label="Email"
           name="emailEnabled"
         />
         </div>
-        <label className="grid max-w-md gap-2 text-sm font-medium">
-          Telegram chat ID (manual fallback)
-          <Input defaultValue={telegramChatId ?? ""} name="telegramChatId" placeholder="Only enter this if an administrator provides it" />
-          <span className="text-xs font-normal leading-5 text-muted-foreground">Normally, use the secure pairing step below. This field remains available for a supported manual recovery path.</span>
-        </label>
+        <input name="telegramChatId" type="hidden" value={telegramChatId ?? ""} />
       </section>
 
       <section className="space-y-4 border-t pt-6">
-        <div>
-          <h2 className="text-base font-semibold">What needs your attention?</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Choose the operational events you want to receive. AI summaries are always labelled as suggestions.</p>
-        </div>
+        <h2 className="text-base font-semibold">Topics</h2>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          <Toggle defaultChecked={preferences.new_enquiry_enabled} description="New incoming charter requests." label="New enquiries" name="newEnquiryEnabled" />
-          <Toggle defaultChecked={preferences.follow_up_enabled} description="Replies linked to active enquiry threads." label="Follow-ups" name="followUpEnabled" />
-          <Toggle defaultChecked={preferences.internal_email_enabled} description="Relevant company correspondence." label="Internal emails" name="internalEmailEnabled" />
-          <Toggle defaultChecked={preferences.unknown_email_enabled} description="Low-confidence messages requiring review." label="Unknown emails" name="unknownEmailEnabled" />
-          <Toggle defaultChecked={preferences.task_enabled} description="Due and overdue operational tasks." label="Tasks" name="taskEnabled" />
-          <Toggle defaultChecked={preferences.payment_enabled} description="Contract instalment due dates." label="Payments" name="paymentEnabled" />
-          <Toggle defaultChecked={preferences.charter_enabled} description="Charter start and end actions." label="Charter milestones" name="charterEnabled" />
-          <Toggle defaultChecked={preferences.integration_failure_enabled} description="Administrator-only provider failures." label="Integration failures" name="integrationFailureEnabled" />
-          <Toggle defaultChecked={preferences.ai_summary_enabled} description="Include clearly labelled AI summaries and suggested replies." label="AI summaries" name="aiSummaryEnabled" />
+          <Toggle defaultChecked={preferences.new_enquiry_enabled} label="New enquiries" name="newEnquiryEnabled" />
+          <Toggle defaultChecked={preferences.follow_up_enabled} label="Follow-ups" name="followUpEnabled" />
+          <Toggle defaultChecked={preferences.internal_email_enabled} label="Internal emails" name="internalEmailEnabled" />
+          <Toggle defaultChecked={preferences.unknown_email_enabled} label="Unclassified emails" name="unknownEmailEnabled" />
+          <Toggle defaultChecked={preferences.task_enabled} label="Tasks" name="taskEnabled" />
+          <Toggle defaultChecked={preferences.payment_enabled} label="Payments" name="paymentEnabled" />
+          <Toggle defaultChecked={preferences.charter_enabled} label="Charter dates" name="charterEnabled" />
+          <Toggle defaultChecked={preferences.integration_failure_enabled} label="Connection problems" name="integrationFailureEnabled" />
+          <Toggle defaultChecked={preferences.ai_summary_enabled} label="Email summaries" name="aiSummaryEnabled" />
         </div>
       </section>
       <section className="space-y-3 border-t pt-6">
-        <label className="grid max-w-xl gap-2 text-sm font-medium">
-          Brief note for the change log
-          <Input name="reason" placeholder="For example: setting up my work alerts" required />
-        </label>
         <div className="flex flex-wrap items-center gap-3">
-          <Button disabled={pending} type="submit">{pending ? "Saving preferences…" : "Save my preferences"}</Button>
+          <Button disabled={pending} type="submit">{pending ? "Saving…" : "Save changes"}</Button>
           <Feedback state={state} />
         </div>
       </section>
@@ -205,9 +176,8 @@ export function GmailOauthDisconnectForm() {
   )
   return (
     <form action={action} className="grid gap-3">
-      <Input name="reason" placeholder="Reason for disconnecting Gmail" required />
       <Button disabled={pending} type="submit" variant="destructive">
-        Disconnect and delete credentials
+        Disconnect Google Workspace
       </Button>
       <Feedback state={state} />
     </form>

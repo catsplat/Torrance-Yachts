@@ -78,7 +78,6 @@ describe("Phase 10 AI schemas", () => {
       charterStartDate: "",
       chartererName: "",
       commissionRate: "",
-      correctionReason: "Checked contract",
       currency: "",
       disembarkationPort: "",
       embarkationPort: "",

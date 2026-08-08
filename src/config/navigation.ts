@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  BrainCircuit,
   CalendarDays,
   ClipboardCheck,
   ContactRound,
@@ -9,7 +8,6 @@ import {
   Mail,
   Inbox,
   LayoutDashboard,
-  PlugZap,
   Settings,
   Ship,
   TicketsPlane,
@@ -53,89 +51,76 @@ export const navigationGroups: NavigationGroup[] = [
     items: [dashboardNavigation],
   },
   {
-    label: "Daily workflow",
+    label: "Work",
     items: [
       {
         label: "Inbox",
         href: "/emails",
         icon: Mail,
-        description: "Imported messages, deterministic routing, and human review.",
+        description: "Incoming email and follow-ups.",
       },
       {
         label: "Enquiries",
         href: "/enquiries",
         icon: Inbox,
-        description: "New enquiries, follow-ups, and linked email history.",
+        description: "Requests from first contact to offer.",
       },
       {
         label: "Offers",
         href: "/offers",
         icon: FileText,
-        description: "Reviewable yacht proposals, approvals, and sent history.",
+        description: "Draft, approved, and sent offers.",
       },
       {
         label: "Bookings",
         href: "/bookings",
         icon: TicketsPlane,
-        description: "Confirmed charters, availability, and booking progress.",
+        description: "Confirmed charters and booking progress.",
       },
       {
-        label: "Operations",
+        label: "Tasks",
         href: "/tasks",
         icon: ClipboardCheck,
-        description: "Operational checklists, dependencies, and reminders.",
-      },
-      {
-        label: "Calendar",
-        href: "/calendar",
-        icon: CalendarDays,
-        description: "Charter dates, deadlines, and yacht availability.",
+        description: "Checklists, due dates, and reminders.",
       },
     ],
   },
   {
-    label: "Registers",
+    label: "Reference",
     items: [
+      {
+        label: "Calendar",
+        href: "/calendar",
+        icon: CalendarDays,
+        description: "Charter dates and deadlines.",
+      },
       {
         label: "Yachts",
         href: "/yachts",
         icon: Ship,
-        description: "Yacht profiles, contacts, documents, and commercial data.",
+        description: "Profiles, availability, and commercial data.",
       },
       {
         label: "Contacts",
         href: "/contacts",
         icon: ContactRound,
-        description: "Clients, brokers, captains, and company records.",
+        description: "Clients, brokers, captains, and companies.",
       },
       {
         label: "Documents",
         href: "/documents",
         icon: FolderLock,
-        description: "Private booking documents and approved sales material.",
+        description: "Booking files and sales material.",
       },
     ],
   },
   {
-    label: "Tools",
     items: [
-      {
-        label: "AI Review",
-        href: "/ai/review",
-        icon: BrainCircuit,
-        description: "Evidence-backed suggestions awaiting human approval.",
-      },
-      {
-        label: "Integrations",
-        href: "/integrations",
-        icon: PlugZap,
-        description: "Notification approvals, provider delivery, and automation health.",
-      },
       {
         label: "Settings",
         href: "/settings",
         icon: Settings,
-        description: "Users, alerts, templates, lifecycle rules, and launch controls.",
+        description: "Account, workflow, and connections.",
       },
     ],
   },

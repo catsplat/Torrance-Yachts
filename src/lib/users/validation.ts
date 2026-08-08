@@ -7,7 +7,6 @@ export const internalUserUpdateSchema = z.object({
   active: z.enum(["true", "false"]).transform((value) => value === "true"),
   displayName: z.string().trim().min(2).max(100),
   phone: optionalPhone,
-  reason: z.string().trim().min(2).max(2000),
   role: z.enum(["administrator", "staff"]),
   telegramChatId: optionalTelegramChatId,
   userId: z.uuid(),
@@ -20,7 +19,6 @@ export const internalUserInviteSchema = z.object({
 
 export const recoveryEmailSchema = z.object({
   email: z.email().trim().toLowerCase(),
-  reason: z.string().trim().min(2).max(1000),
 })
 
 export const passwordUpdateSchema = z.object({

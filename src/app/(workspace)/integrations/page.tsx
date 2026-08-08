@@ -7,7 +7,7 @@ import {
   NotificationReviewForm,
 } from "@/components/integrations/integration-forms"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getCurrentUser } from "@/lib/auth/current-user"
 import { getIntegrationWorkspace } from "@/lib/integrations/data"
 
@@ -27,10 +27,9 @@ export default async function IntegrationsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Delivery centre</p>
-        <h1 className="mt-1 text-3xl font-semibold">Notification delivery</h1>
+        <h1 className="text-3xl font-semibold">Communications</h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-          Review communication awaiting approval, create internal alerts, and resolve delivery problems. Company provider settings are kept separate from this daily workspace.
+          Review outgoing messages and delivery problems.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
@@ -40,19 +39,19 @@ export default async function IntegrationsPage() {
       </div>
 
       <Card data-tutorial-anchor="integration-approvals">
-        <CardHeader className="border-b"><CardTitle>Create controlled notification</CardTitle><CardDescription>Telegram and Gmail drafts are held for a separate approval. Gmail creates a draft only and never sends automatically.</CardDescription></CardHeader>
+        <CardHeader className="border-b"><CardTitle>New notification</CardTitle></CardHeader>
         <CardContent className="pt-5"><NotificationDraftForm contacts={workspace.contacts} users={workspace.users} /></CardContent>
       </Card>
 
       <Card>
         <CardContent className="flex flex-col gap-4 pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex gap-3"><div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Settings2 className="size-4" /></div><div><p className="font-medium">Company connections</p><p className="mt-1 text-sm text-muted-foreground">Provider activation, n8n controls, and technical errors are administrator-only settings.</p></div></div>
-          {user?.role === "administrator" ? <Link className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline" href="/settings/integrations">Manage connections <ExternalLink className="size-3.5" /></Link> : null}
+          <div className="flex gap-3"><div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Settings2 className="size-4" /></div><div><p className="font-medium">Connections</p><p className="mt-1 text-sm text-muted-foreground">Gmail, Telegram and automation settings.</p></div></div>
+          {user?.role === "administrator" ? <Link className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline" href="/settings/integrations">Open settings <ExternalLink className="size-3.5" /></Link> : null}
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="border-b"><CardTitle>Human notification approvals</CardTitle><CardDescription>External drafts and consequential notifications remain held until reviewed.</CardDescription></CardHeader>
+        <CardHeader className="border-b"><CardTitle>Waiting for approval</CardTitle></CardHeader>
         <CardContent className="divide-y p-0">
           {pendingReviews.length ? pendingReviews.map((notification) => (
             <div className="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,.7fr)]" key={notification.id}>
@@ -68,7 +67,7 @@ export default async function IntegrationsPage() {
       </Card>
 
       <Card>
-        <CardHeader className="border-b"><CardTitle>Delivery history</CardTitle><CardDescription>Provider IDs, attempts, failures, leases, and retries remain visible here.</CardDescription></CardHeader>
+        <CardHeader className="border-b"><CardTitle>Delivery history</CardTitle></CardHeader>
         <CardContent className="divide-y p-0">
           {workspace.deliveries.length ? workspace.deliveries.map((delivery) => (
             <div className="grid gap-3 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_10rem_minmax(18rem,.7fr)]" key={delivery.id}>

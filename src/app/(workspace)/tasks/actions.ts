@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { z } from "zod"
 
-import { taskCommunicationSchema } from "@/lib/alerts/validation"
 import { renderCommunicationTemplate } from "@/lib/ai/template"
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 import {
@@ -57,14 +56,16 @@ async function runTaskReasonCommand(
   command: "complete_task" | "reopen_task" | "cancel_ad_hoc_task",
 ): Promise<TaskActionState> {
   const validId = idSchema.safeParse(taskId)
-  const parsed = parseForm(taskReasonSchema, formData)
   if (!validId.success) return { message: "The task reference is invalid." }
-  if (!parsed.success) return validationState(parsed.error)
+  const parsed = command === "cancel_ad_hoc_task" ? parseForm(taskReasonSchema, formData) : null
+  if (parsed && !parsed.success) return validationState(parsed.error)
   const context = await contextOrMessage()
   if ("message" in context) return context
   const { data, error } = await context.supabase.rpc(command, {
     p_task_id: validId.data,
-    p_reason: parsed.data.reason,
+    p_reason: parsed?.success
+      ? parsed.data.reason
+      : command === "complete_task" ? "Task completed" : "Task reopened",
   })
   if (error || !data) {
     return {
@@ -124,7 +125,7 @@ export async function updateTaskScheduleAction(
     p_due_date: parsed.data.due_date as unknown as string,
     p_assigned_user_id: parsed.data.assigned_user_id as unknown as string,
     p_priority: parsed.data.priority,
-    p_reason: parsed.data.reason,
+    p_reason: "Task schedule updated",
   })
   if (error || !data) return { message: "The task schedule could not be updated." }
   revalidateTask(validId.data, data.booking_id)
@@ -157,10 +158,8 @@ export async function prepareTaskCommunicationAction(
   formData: FormData,
 ): Promise<TaskActionState> {
   const validId = idSchema.safeParse(taskId)
-  const parsed = taskCommunicationSchema.safeParse(Object.fromEntries(formData))
-  if (!validId.success || !parsed.success) {
-    return { message: "Enter a reason for preparing this communication." }
-  }
+  void formData
+  if (!validId.success) return { message: "The task reference is invalid." }
   const context = await contextOrMessage()
   if ("message" in context) return context
   const { data: task, error: taskError } = await context.supabase

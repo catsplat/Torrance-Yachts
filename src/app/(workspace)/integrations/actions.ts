@@ -77,7 +77,7 @@ export async function reviewNotificationAction(
   const { error } = await context.supabase.rpc("review_notification", {
     p_approved: parsed.data.approved,
     p_notification_id: parsed.data.notificationId,
-    p_reason: parsed.data.reason,
+    p_reason: parsed.data.approved ? "Notification approved" : "Notification cancelled",
   })
   if (error) {
     return { message: "The notification could not be reviewed. Check recipient and integration configuration." }
@@ -130,7 +130,7 @@ export async function retryDeliveryAction(
   if ("message" in context) return context
   const { error } = await context.supabase.rpc("retry_integration_delivery", {
     p_delivery_id: parsed.data.deliveryId,
-    p_reason: parsed.data.reason,
+    p_reason: "Delivery retry requested",
   })
   if (error) return { message: "Only an administrator can retry a failed delivery." }
   refreshIntegrations()
@@ -188,7 +188,7 @@ export async function queueDriveSyncAction(
   if ("message" in context) return context
   const { error } = await context.supabase.rpc("queue_document_drive_sync", {
     p_document_id: parsed.data.documentId,
-    p_reason: parsed.data.reason,
+    p_reason: "Verified document queued for Drive copy",
   })
   if (error) return { message: "Only verified documents can be queued after Drive is enabled." }
   revalidatePath(`/bookings/${parsed.data.bookingId}/documents`)
@@ -229,7 +229,7 @@ export async function approveInvoiceProfileAction(
   if ("message" in context) return context
   const { error } = await context.supabase.rpc("approve_invoice_profile", {
     p_profile_id: parsed.data.profileId,
-    p_reason: parsed.data.reason,
+    p_reason: "Invoice profile reviewed and approved",
   })
   if (error) return { message: "Only a draft invoice profile can be approved by an administrator." }
   revalidatePath("/settings/invoices")

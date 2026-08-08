@@ -1,4 +1,4 @@
-import { Bell, LockKeyhole, LogOut, ShieldCheck, ShipWheel } from "lucide-react";
+import { Bell, LogOut, ShipWheel } from "lucide-react";
 import Link from "next/link";
 
 import { signOutAction } from "@/app/actions/auth";
@@ -58,15 +58,6 @@ export function AppShell({
           <PrimaryNavigation />
         </div>
 
-        <div className="mt-4 rounded-xl border border-sidebar-border bg-sidebar-accent/45 p-4">
-          <div className="flex items-center gap-2 text-xs font-medium">
-            <ShieldCheck aria-hidden="true" className="size-4 text-sidebar-primary" />
-            Private workspace
-          </div>
-          <p className="mt-1.5 text-xs leading-5 text-sidebar-foreground/55">
-            Authenticated {environmentLabel.toLowerCase()} workspace.
-          </p>
-        </div>
       </aside>
 
       <div className="min-w-0">
@@ -76,12 +67,14 @@ export function AppShell({
           <WorkspaceSearch />
 
           <div className="ml-auto flex items-center gap-2.5">
-            <Badge
-              variant="outline"
-              className="hidden border-teal-700/20 bg-teal-50 text-teal-800 sm:inline-flex dark:border-teal-300/20 dark:bg-teal-950/45 dark:text-teal-200"
-            >
-              {environmentLabel}
-            </Badge>
+            {environmentLabel !== "Production" ? (
+              <Badge
+                variant="outline"
+                className="hidden border-teal-700/20 bg-teal-50 text-teal-800 sm:inline-flex dark:border-teal-300/20 dark:bg-teal-950/45 dark:text-teal-200"
+              >
+                {environmentLabel}
+              </Badge>
+            ) : null}
             <ThemeToggle initialTheme={initialTheme} />
             <Link
               aria-label={`${unreadNotificationCount} unread notifications`}
@@ -105,8 +98,7 @@ export function AppShell({
                 <p className="max-w-28 truncate text-sm font-medium">
                   {currentUser.displayName}
                 </p>
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <LockKeyhole aria-hidden="true" className="size-3" />
+                <p className="text-xs text-muted-foreground">
                   {currentUser.role === "administrator" ? "Administrator" : "Staff"}
                 </p>
               </div>

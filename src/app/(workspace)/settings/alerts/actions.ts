@@ -6,8 +6,13 @@ import {
   alertPreferencesSchema,
   gmailOauthCredentialsSchema,
   gmailOauthDisconnectSchema,
+  googleSpreadsheetSelectionSchema,
 } from "@/lib/alerts/validation"
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
+import {
+  listGoogleSpreadsheets,
+} from "@/lib/integrations/google-workspace"
+import { getGoogleWorkspaceCredentials } from "@/lib/integrations/google-workspace-server"
 import {
   createTelegramPairingToken,
   createTelegramPairingUrl,
@@ -51,7 +56,10 @@ export async function updateMyAlertPreferencesAction(
   _state: AlertSettingsActionState,
   formData: FormData,
 ): Promise<AlertSettingsActionState> {
-  const parsed = alertPreferencesSchema.safeParse(Object.fromEntries(formData))
+  const parsed = alertPreferencesSchema.safeParse({
+    ...Object.fromEntries(formData),
+    reason: "Updated personal alert preferences",
+  })
   if (!parsed.success) {
     return { message: parsed.error.issues[0]?.message ?? "Review your alert settings." }
   }
@@ -126,7 +134,10 @@ export async function disconnectMyGmailOauthAction(
   _state: AlertSettingsActionState,
   formData: FormData,
 ): Promise<AlertSettingsActionState> {
-  const parsed = gmailOauthDisconnectSchema.safeParse(Object.fromEntries(formData))
+  const parsed = gmailOauthDisconnectSchema.safeParse({
+    ...Object.fromEntries(formData),
+    reason: "Disconnected Google Workspace from personal settings",
+  })
   if (!parsed.success) return { message: "Enter a disconnect reason." }
   const context = await getAuthenticatedRequestContext()
   if (!context) return expired
@@ -136,4 +147,38 @@ export async function disconnectMyGmailOauthAction(
   if (error) return { message: "The Gmail connection could not be disconnected." }
   revalidatePath("/settings/alerts")
   return { message: "Gmail OAuth credentials were removed from Vault.", success: true }
+}
+
+export async function selectGoogleSpreadsheetAction(
+  _state: AlertSettingsActionState,
+  formData: FormData,
+): Promise<AlertSettingsActionState> {
+  const parsed = googleSpreadsheetSelectionSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { message: "Choose a spreadsheet." }
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return expired
+  if (context.role !== "administrator") return { message: "Administrator access is required." }
+
+  try {
+    const credentials = await getGoogleWorkspaceCredentials(context.userId)
+    const spreadsheets = await listGoogleSpreadsheets(credentials)
+    const selected = spreadsheets.find((sheet) => sheet.id === parsed.data.spreadsheetId)
+    if (!selected || selected.name !== parsed.data.spreadsheetName) {
+      return { message: "That spreadsheet is no longer available. Refresh the list." }
+    }
+    const { error } = await context.supabase.rpc("update_integration_connection", {
+      p_configuration_notes: `Selected spreadsheet: ${selected.name}`,
+      p_enabled: true,
+      p_provider: "google_sheets",
+      p_target_reference: selected.id,
+    })
+    if (error) return { message: "The reporting spreadsheet could not be saved." }
+  } catch (error) {
+    return { message: error instanceof Error ? error.message : "Google Sheets could not be loaded." }
+  }
+
+  revalidatePath("/settings/alerts")
+  revalidatePath("/settings/integrations")
+  revalidatePath("/settings/activation")
+  return { message: "Reporting spreadsheet selected.", success: true }
 }

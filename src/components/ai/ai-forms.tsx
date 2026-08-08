@@ -45,11 +45,8 @@ export function GenerateEmailAiSuggestionForm({
       <input name="messageId" type="hidden" value={messageId} />
       <input name="requestToken" type="hidden" value={requestToken} />
       <Button disabled={pending} type="submit">
-        {pending ? "Analysing safely…" : "Generate AI-assisted review"}
+        {pending ? "Analysing…" : "Analyse email"}
       </Button>
-      <p className="text-xs text-muted-foreground">
-        Creates a proposal only. It cannot classify the message, create an enquiry, or send a reply.
-      </p>
       <Feedback state={state} />
     </form>
   )
@@ -83,7 +80,7 @@ export function GenerateContractAiSuggestionForm({
       </label>
       <div>
         <Button disabled={pending} type="submit">
-          {pending ? "Extracting safely…" : "Generate contract-field suggestion"}
+          {pending ? "Extracting…" : "Extract contract details"}
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
@@ -106,17 +103,9 @@ function AiReviewDecisionForm({
   return (
     <form action={formAction} className="grid gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
       <input name="suggestionId" type="hidden" value={suggestionId} />
-      <label className="grid gap-1 text-sm">
-        Review reason
-        <Input
-          name="reason"
-          placeholder="What source and evidence you checked"
-          required
-        />
-      </label>
       <div className="flex flex-wrap gap-2">
         <Button disabled={pending} name="approved" type="submit" value="true">
-          Approve as reviewed proposal
+          Approve
         </Button>
         <Button
           disabled={pending}
@@ -125,7 +114,7 @@ function AiReviewDecisionForm({
           value="false"
           variant="outline"
         >
-          Reject suggestion
+          Reject
         </Button>
       </div>
       <Feedback state={state} />
@@ -222,13 +211,9 @@ export function EmailAiSuggestionReview({
           Draft body
           <textarea className="min-h-56 rounded-md border bg-background p-3 text-sm" defaultValue={output.draft.body} name="draftBody" />
         </label>
-        <label className="grid gap-1 text-sm md:col-span-2">
-          Correction reason
-          <Input name="correctionReason" placeholder="What you corrected after checking the source" required />
-        </label>
         <div className="md:col-span-2">
           <Button disabled={pending} type="submit">
-            {pending ? "Saving corrections…" : "Save human corrections"}
+            {pending ? "Saving…" : "Save corrections"}
           </Button>
         </div>
         <Feedback state={state} />
@@ -279,13 +264,9 @@ export function ContractAiSuggestionReview({
             Summary
             <textarea className="min-h-20 rounded-md border bg-background p-3 text-sm" defaultValue={output.summary} name="summary" required />
           </label>
-          <label className="grid gap-1 text-sm md:col-span-2">
-            Correction reason
-            <Input name="correctionReason" placeholder="What you corrected after checking the signed agreement" required />
-          </label>
           <div className="md:col-span-2">
             <Button disabled={pending} type="submit">
-              {pending ? "Saving corrections…" : "Save human corrections"}
+              {pending ? "Saving…" : "Save corrections"}
             </Button>
           </div>
           <Feedback state={state} />

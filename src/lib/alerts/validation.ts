@@ -55,10 +55,11 @@ export const gmailOauthDisconnectSchema = z.object({
   reason: z.string().trim().min(2).max(2000),
 })
 
-export const notificationReadSchema = z.object({
-  notificationId: z.uuid(),
+export const googleSpreadsheetSelectionSchema = z.object({
+  spreadsheetId: z.string().trim().min(1).max(500),
+  spreadsheetName: z.string().trim().min(1).max(500),
 })
 
-export const taskCommunicationSchema = z.object({
-  reason: z.string().trim().min(2).max(2000),
+export const notificationReadSchema = z.object({
+  notificationId: z.uuid(),
 })

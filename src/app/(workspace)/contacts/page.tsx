@@ -151,7 +151,7 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
               <UsersRound aria-hidden="true" className="mx-auto size-8 text-muted-foreground" />
               <p className="mt-3 font-medium">No contacts match these filters</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Change the filters or add a new synthetic contact.
+                Change the filters or add a contact.
               </p>
             </div>
           ) : (

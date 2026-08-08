@@ -7,12 +7,11 @@ import {
 } from "./validation"
 
 describe("internal user validation", () => {
-  it("accepts a reviewed staff update", () => {
+  it("accepts a staff update", () => {
     expect(internalUserUpdateSchema.safeParse({
       active: "true",
       displayName: "Synthetic Staff",
       phone: "+44000000001",
-      reason: "Contact route reviewed",
       role: "staff",
       telegramChatId: "200000001",
       userId: "20000000-0000-4000-8000-000000000001",

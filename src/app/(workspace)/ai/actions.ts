@@ -59,11 +59,11 @@ export async function generateEmailAiSuggestionAction(
     return {
       message: result.existing
         ? "The existing validated suggestion was loaded."
-        : "AI suggestion created for human review. No email or status was changed.",
+        : "Email analysis is ready for review.",
       success: true,
     }
   } catch {
-    return { message: "The AI suggestion could not be created. The email remains in human review." }
+    return { message: "The email could not be analysed. Review it manually or try again." }
   }
 }
 
@@ -135,13 +135,13 @@ export async function reviseEmailAiSuggestionAction(
     summary: parsed.data.summary,
   }
   const { error } = await context.supabase.rpc("revise_ai_suggestion", {
-    p_reason: parsed.data.correctionReason,
+    p_reason: "Suggestion details corrected by staff",
     p_revised_payload: revised,
     p_suggestion_id: parsed.data.suggestionId,
   })
   if (error) return { message: "The pending suggestion could not be corrected." }
   revalidatePath(`/emails/${current.source_id}`)
-  return { message: "Human corrections recorded with the original AI output preserved.", success: true }
+  return { message: "Corrections saved.", success: true }
 }
 
 export async function reviseContractAiSuggestionAction(
@@ -190,13 +190,13 @@ export async function reviseContractAiSuggestionAction(
     summary: parsed.data.summary,
   }
   const { error } = await context.supabase.rpc("revise_ai_suggestion", {
-    p_reason: parsed.data.correctionReason,
+    p_reason: "Contract details corrected by staff",
     p_revised_payload: revised,
     p_suggestion_id: parsed.data.suggestionId,
   })
   if (error) return { message: "The pending contract suggestion could not be corrected." }
   revalidatePath(`/bookings/${bookingId}/documents`)
-  return { message: "Human corrections recorded. The signed agreement remains authoritative.", success: true }
+  return { message: "Corrections saved.", success: true }
 }
 
 export async function reviewAiSuggestionAction(
@@ -210,7 +210,7 @@ export async function reviewAiSuggestionAction(
   if ("message" in context) return context
   const { error } = await context.supabase.rpc("review_ai_suggestion", {
     p_approved: parsed.data.approved,
-    p_reason: parsed.data.reason,
+    p_reason: parsed.data.approved ? "Suggestion approved" : "Suggestion rejected",
     p_suggestion_id: parsed.data.suggestionId,
   })
   if (error) return { message: "Only a pending suggestion can be reviewed." }
@@ -218,8 +218,8 @@ export async function reviewAiSuggestionAction(
   revalidatePath(returnPath)
   return {
     message: parsed.data.approved
-      ? "Suggestion approved as a reviewed proposal. No operational action was executed."
-      : "Suggestion rejected and retained for audit.",
+      ? "Suggestion approved."
+      : "Suggestion rejected.",
     success: true,
   }
 }

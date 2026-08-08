@@ -32,7 +32,6 @@ export const connectionSettingsSchema = z.object({
 export const notificationReviewSchema = z.object({
   approved: z.enum(["true", "false"]).transform((value) => value === "true"),
   notificationId: uuid,
-  reason: boundedText(2000),
 })
 
 export const notificationDraftSchema = z.object({
@@ -49,13 +48,11 @@ export const notificationDraftSchema = z.object({
 
 export const deliveryRetrySchema = z.object({
   deliveryId: uuid,
-  reason: boundedText(2000),
 })
 
 export const driveSyncSchema = z.object({
   bookingId: uuid,
   documentId: uuid,
-  reason: boundedText(2000),
 })
 
 export const invoiceProfileSchema = z.object({
@@ -71,7 +68,6 @@ export const invoiceProfileSchema = z.object({
 
 export const invoiceProfileApprovalSchema = z.object({
   profileId: uuid,
-  reason: boundedText(2000),
 })
 
 export const invoiceGenerationSchema = z.object({

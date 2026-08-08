@@ -1,4 +1,4 @@
-import { Anchor, LockKeyhole, ShieldCheck, ShipWheel } from "lucide-react"
+import { LockKeyhole, ShipWheel } from "lucide-react"
 
 import { LoginForm } from "@/components/auth/login-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -46,24 +46,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Torrance Yachts
           </p>
           <h1 className="max-w-xl text-4xl leading-tight font-semibold tracking-tight">
-            Charter operations, kept private and under human control.
+            Charter operations
           </h1>
-          <div className="mt-8 grid max-w-xl gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-              <ShieldCheck className="mb-3 size-5 text-teal-300" aria-hidden="true" />
-              <p className="text-sm font-medium">Internal access only</p>
-              <p className="mt-1 text-sm leading-6 text-slate-300">
-                Individual accounts preserve permissions and audit history.
-              </p>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-              <Anchor className="mb-3 size-5 text-teal-300" aria-hidden="true" />
-              <p className="text-sm font-medium">One operational record</p>
-              <p className="mt-1 text-sm leading-6 text-slate-300">
-                Yachts and future booking workflows share one source of truth.
-              </p>
-            </div>
-          </div>
+          <p className="mt-4 max-w-lg text-base leading-7 text-slate-300">
+            Enquiries, offers, bookings and charter tasks in one place.
+          </p>
         </section>
 
         <Card className="border-white/10 shadow-2xl">
@@ -74,7 +61,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <div>
               <CardTitle className="text-2xl">Sign in</CardTitle>
               <CardDescription className="mt-1.5 leading-6">
-                Use your approved Torrance Yachts account. Public registration is disabled.
+                Use your work account.
               </CardDescription>
             </div>
           </CardHeader>
@@ -93,7 +80,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <LoginForm googleEnabled={process.env.GOOGLE_SIGN_IN_ENABLED === "true"} />
             <div className="mt-6 flex gap-2 border-t pt-5 text-xs leading-5 text-muted-foreground">
               <LockKeyhole aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
-              <p>For access or password recovery, contact the internal administrator.</p>
+              <p>Need access or a password reset? Contact your administrator.</p>
             </div>
           </CardContent>
         </Card>

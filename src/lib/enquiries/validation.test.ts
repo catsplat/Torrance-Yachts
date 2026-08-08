@@ -91,11 +91,9 @@ describe("enquiry validation", () => {
     expect(parsed.success && parsed.data.body).toBe("Needs child-friendly water toys.")
   })
 
-  it("requires a reason for state transitions", () => {
-    expect(
-      enquiryTransitionSchema.safeParse({ new_status: "offer_sent", reason: "" })
-        .success,
-    ).toBe(false)
+  it("accepts a normal state transition without extra audit prose", () => {
+    expect(enquiryTransitionSchema.safeParse({ new_status: "offer_sent" }).success)
+      .toBe(true)
   })
 
   it("does not permit Phase 4 to move awaiting signatures directly to booked", () => {

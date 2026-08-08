@@ -112,7 +112,7 @@ export function ContractReviewForm({
       <label className="grid gap-1 text-sm">Currency<Input defaultValue={extracted?.currency ?? booking.currency} maxLength={3} name="currency" required /></label>
       <label className="grid gap-1 text-sm">Tax rate %<Input defaultValue={extracted?.tax_rate ?? booking.tax_rate} min="0" name="taxRate" required step="0.01" type="number" /></label>
       <label className="grid gap-1 text-sm">Commission rate %<Input defaultValue={extracted?.commission_rate ?? 2} min="0" name="commissionRate" required step="0.01" type="number" /></label>
-      <label className="grid gap-1 text-sm md:col-span-2">Human review notes<textarea className="min-h-24 rounded-md border bg-background p-3 text-sm" name="reviewNotes" required /></label>
+      <label className="grid gap-1 text-sm md:col-span-2">Review notes<textarea className="min-h-24 rounded-md border bg-background p-3 text-sm" name="reviewNotes" required /></label>
       <div><Button disabled={pending} type="submit">Save reviewed fields</Button></div>
       <Feedback state={state} />
     </form>

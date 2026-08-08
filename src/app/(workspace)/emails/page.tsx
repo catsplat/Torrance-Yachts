@@ -43,13 +43,9 @@ export default async function EmailInboxPage({ searchParams }: Props) {
     <div className="mx-auto max-w-7xl space-y-5" data-tutorial-anchor="email-inbox">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Operational mailbox
-          </p>
-          <h1 className="mt-1 text-3xl font-semibold">Email inbox</h1>
+          <h1 className="text-3xl font-semibold">Inbox</h1>
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Gmail messages are imported once, routed by safe deterministic evidence, and held for
-            human review when uncertain.
+            Review new enquiries, follow-ups and internal email.
           </p>
         </div>
         <Badge
@@ -93,7 +89,7 @@ export default async function EmailInboxPage({ searchParams }: Props) {
 
       <Card>
         <CardHeader className="border-b">
-          <CardTitle>Message register</CardTitle>
+          <CardTitle>Messages</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {inbox.messages.length ? (

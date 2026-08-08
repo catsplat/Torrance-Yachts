@@ -85,10 +85,7 @@ export function EmailClassificationForm({
           {enquiries.map((enquiry) => <option key={enquiry.id} value={enquiry.id}>{enquiry.reference} · {enquiry.summary}</option>)}
         </select>
       </label>
-      <label className="grid gap-1 text-sm">Review reason
-        <Input name="reason" placeholder="What you checked and why this category is correct" required />
-      </label>
-      <Button disabled={pending} type="submit">{pending ? "Saving…" : "Apply reviewed classification"}</Button>
+      <Button disabled={pending} type="submit">{pending ? "Saving…" : "Save classification"}</Button>
       <Feedback state={state} />
     </form>
   )

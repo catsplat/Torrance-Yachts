@@ -50,10 +50,9 @@ export function TutorialAdvanceForm({
 export function TutorialResetForm() {
   const [state, action, pending] = useActionState(resetTutorialAction, initialState)
   return (
-    <form action={action} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-      <Input name="reason" placeholder="Reason for restarting the synthetic scenario" required />
-      <Button disabled={pending} type="submit" variant="outline">Reset practice</Button>
-      <div className="sm:col-span-2"><Feedback state={state} /></div>
+    <form action={action} className="flex flex-wrap items-center gap-3">
+      <Button disabled={pending} type="submit" variant="outline">Restart tutorial</Button>
+      <Feedback state={state} />
     </form>
   )
 }

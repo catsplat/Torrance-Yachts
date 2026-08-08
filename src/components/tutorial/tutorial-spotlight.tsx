@@ -40,7 +40,7 @@ export function TutorialSpotlight() {
         <Link aria-label="Exit tutorial spotlight" className={cn(buttonVariants({ size: "icon", variant: "ghost" }), "size-8")} href={pathname}><X /></Link>
       </div>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{step.explanation}</p>
-      <p className="mt-3 rounded-lg bg-muted p-3 text-xs leading-5"><strong>Human control:</strong> {step.humanControl}</p>
+      <p className="mt-3 rounded-lg bg-muted p-3 text-xs leading-5"><strong>Your action:</strong> {step.humanControl}</p>
       <div className="mt-4 flex flex-wrap gap-2">
         <Link className={buttonVariants()} href="/tutorial">Return to practice</Link>
         <Button onClick={() => document.querySelector<HTMLElement>(`[data-tutorial-anchor="${step.anchor}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" })} type="button" variant="outline">Show control</Button>

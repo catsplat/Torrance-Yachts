@@ -40,7 +40,9 @@ No value from this setup is shown to staff or committed to the repository.
    Workspace**, choose the desired Google account, and approve the clearly
    displayed Gmail / Sheets permissions on Google's page.
 4. The platform stores the ongoing connection encrypted in Vault. The employee
-   can disconnect it at any time with an audited reason.
+   can disconnect it at any time.
+5. An administrator selects the reporting spreadsheet from a name-based list
+   loaded from Google; no OAuth secret, API key or file ID is copied manually.
 
 The granted Sheets scope prepares the controlled reporting mirror. PostgreSQL
 continues to be the operational source of truth; a connected Sheet is never
@@ -52,3 +54,8 @@ Google sign-in is not public registration. `enable_signup=false`, the inactive
 profile check, and the callback sign-out rule ensure that an unapproved Google
 account cannot enter the private workspace. An administrator must activate the
 matching staff profile before that person can proceed.
+
+Only the trusted server credential boundary can decrypt the refresh token used
+to list spreadsheet metadata. The browser receives file names, IDs and links,
+never credential material. Database tests prove authenticated browser sessions
+cannot call the decryption function.

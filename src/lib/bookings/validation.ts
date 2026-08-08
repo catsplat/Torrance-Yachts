@@ -33,7 +33,10 @@ export const bookingAmendmentSchema = bookingDetailsSchema.extend({
 
 export const bookingTransitionSchema = z.object({
   new_status: z.enum(["charter_active", "completed", "cancelled"]),
-  reason: z.string().trim().min(2).max(1000),
+  reason: z.string().trim().max(1000).default(""),
+}).refine((value) => value.new_status !== "cancelled" || value.reason.length >= 2, {
+  message: "Add a cancellation reason.",
+  path: ["reason"],
 })
 
 export const yachtfolioTransitionSchema = z.object({

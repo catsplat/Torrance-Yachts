@@ -1,4 +1,4 @@
-import { BellRing, CheckCircle2, CircleDotDashed, LockKeyhole, Mail, Send } from "lucide-react"
+import { BellRing, CheckCircle2, CircleDotDashed, Mail, Send } from "lucide-react"
 import Link from "next/link"
 
 import {
@@ -6,11 +6,11 @@ import {
   GmailOauthDisconnectForm,
   TelegramPairingForm,
 } from "@/components/alerts/alert-settings-forms"
+import { GoogleSpreadsheetPicker } from "@/components/alerts/google-spreadsheet-picker"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -43,12 +43,16 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
   if (!user) return null
   const notices = await searchParams
   const supabase = await createClient()
-  const [profileResult, preferenceResult, oauthResult] = await Promise.all([
+  const [profileResult, preferenceResult, oauthResult, sheetResult] = await Promise.all([
     supabase.from("profiles").select("phone, telegram_chat_id").eq("id", user.id).single(),
     supabase.from("user_notification_preferences").select("*").eq("user_id", user.id).single(),
     supabase.rpc("get_my_oauth_connections"),
+    supabase.from("integration_connections")
+      .select("target_reference, configuration_notes")
+      .eq("provider", "google_sheets")
+      .maybeSingle(),
   ])
-  if (profileResult.error || preferenceResult.error || oauthResult.error) {
+  if (profileResult.error || preferenceResult.error || oauthResult.error || sheetResult.error) {
     throw new Error("Unable to load your personal alert settings.")
   }
   const gmail = oauthResult.data?.find((connection) => connection.provider === "gmail")
@@ -60,11 +64,7 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Personal setup</p>
-        <h1 className="mt-1 text-3xl font-semibold">Your alerts and connections</h1>
-        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-          Set up how the private workspace reaches you. Company-wide systems are configured separately by an administrator.
-        </p>
+        <h1 className="text-3xl font-semibold">Account and alerts</h1>
       </div>
 
       {notices.google ? <p aria-live="polite" className={notices.google === "connected" ? "rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200" : "rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"}>{googleMessages[notices.google] ?? "Google connection status updated."}</p> : null}
@@ -73,12 +73,12 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
         <CardContent className="grid gap-4 pt-5 sm:grid-cols-3">
           <SetupState complete={contactReady} label="Contact details" />
           <SetupState complete={telegramReady} label="Telegram delivery" />
-          <SetupState complete={gmailConnected} label="Google inbox" />
+          <SetupState complete={gmailConnected} label="Google Workspace" />
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><BellRing className="size-5 text-primary" />Your alert preferences</CardTitle><CardDescription>AI content is labelled as a suggestion. External actions still require your approval.</CardDescription></CardHeader>
+        <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><BellRing className="size-5 text-primary" />Alerts</CardTitle></CardHeader>
         <CardContent className="pt-6">
           <AlertPreferencesForm
             gmailConnected={gmailConnected}
@@ -91,18 +91,15 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,.85fr)]">
         <Card>
-          <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><Send className="size-5 text-primary" />Telegram delivery</CardTitle><CardDescription>Pair your private Telegram chat with the company bot in one short, secure step.</CardDescription></CardHeader>
+          <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><Send className="size-5 text-primary" />Telegram</CardTitle></CardHeader>
           <CardContent className="pt-5"><TelegramPairingForm configured={telegramPairingConfigured} connected={telegramReady} /></CardContent>
         </Card>
         <Card>
           <CardHeader className="border-b">
             <CardTitle className="flex items-center gap-2">
               <Mail className="size-5 text-primary" />
-              Google inbox
+              Google Workspace
             </CardTitle>
-            <CardDescription>
-              Connect the inbox you use for internal alerts and controlled email drafts. You approve access directly with Google.
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5 pt-5">
             {gmailConnected ? (
@@ -110,36 +107,18 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
                 <Badge>Connected</Badge><span>{gmail.account_email}</span>
               </div>
             ) : null}
-            {gmailConnected ? <p className="text-sm leading-6 text-muted-foreground">This connection is used only by approved internal delivery work. It cannot confirm bookings, send broker correspondence automatically, or change operational data.</p> : googleConfigured ? <Link className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50" href="/api/integrations/google/connect">Connect Google inbox</Link> : <p className="rounded-lg border bg-muted/30 p-4 text-sm leading-6 text-muted-foreground">Google connection will appear here once an administrator has added the company Google OAuth application. You will never be asked for a client secret or refresh token.</p>}
+            {gmailConnected ? null : googleConfigured ? <Link className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50" href="/api/integrations/google/connect">Connect Google Workspace</Link> : <p className="text-sm text-muted-foreground">Google Workspace is not available yet.</p>}
+            {gmailConnected && user.role === "administrator" ? (
+              <GoogleSpreadsheetPicker
+                selectedId={sheetResult.data?.target_reference ?? null}
+                selectedName={sheetResult.data?.configuration_notes?.replace(/^Selected spreadsheet:\s*/, "") ?? null}
+              />
+            ) : null}
             {gmailConnected ? (
               <div className="border-t pt-5">
                 <GmailOauthDisconnectForm />
               </div>
             ) : null}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle className="flex items-center gap-2">
-              <LockKeyhole className="size-5 text-primary" />
-              Security boundary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-5 text-sm text-muted-foreground">
-            <p>
-              Telegram pairing happens through one company-controlled bot. Its
-              token and webhook secret stay on the server; the normal setup path
-              does not expose a chat ID.
-            </p>
-            <p>
-              Google approval is completed on Google&apos;s own page. Ongoing access is encrypted in Supabase Vault; it is never shown back in Settings.
-            </p>
-            <p className="flex items-start gap-2 text-foreground">
-              <Send className="mt-0.5 size-4 shrink-0 text-primary" />
-              Automatic delivery is restricted to internal staff alerts. Broker,
-              captain, invoice, booking, and status actions remain reviewable.
-            </p>
           </CardContent>
         </Card>
       </div>

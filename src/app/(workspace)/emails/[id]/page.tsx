@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -106,12 +105,8 @@ export default async function EmailDetailPage({ params }: Props) {
         <CardHeader className="border-b">
           <CardTitle className="flex items-center gap-2">
             <BrainCircuit className="size-5 text-primary" />
-            AI-assisted review
+            Email analysis
           </CardTitle>
-          <CardDescription>
-            The model can extract, summarise, and draft. Its output remains separate
-            from the authoritative classification and enquiry commands below.
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 pt-5">
           {!aiRecord || aiRecord.suggestion.status !== "pending_review" ? (
@@ -169,12 +164,7 @@ export default async function EmailDetailPage({ params }: Props) {
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(22rem,.8fr)]">
         <div className="space-y-5">
           <Card>
-            <CardHeader className="border-b">
-              <CardTitle>Review and route</CardTitle>
-              <CardDescription>
-                This human-controlled form remains the authority even after an AI proposal is approved.
-              </CardDescription>
-            </CardHeader>
+            <CardHeader className="border-b"><CardTitle>Review and route</CardTitle></CardHeader>
             <CardContent className="pt-5">
               <EmailClassificationForm
                 contacts={record.contacts}

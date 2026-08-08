@@ -10,7 +10,7 @@ const initialState: BookingActionState = {}
 
 export function BookingTransitionForm({ bookingId, target, label }: { bookingId: string; target: "charter_active" | "completed" | "cancelled"; label: string }) {
   const [state, action, pending] = useActionState(transitionBookingAction.bind(null, bookingId), initialState)
-  return <form action={action} className="space-y-3 rounded-xl border p-4"><input name="new_status" type="hidden" value={target} /><label className="space-y-1.5 text-xs font-medium">Reason<textarea className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={1000} name="reason" required /></label><p className={state.success ? "text-xs text-emerald-700" : "text-xs text-destructive"}>{state.message}</p><Button className="w-full" disabled={pending} type="submit" variant={target === "cancelled" ? "destructive" : "default"}>{pending ? "Recording…" : label}</Button></form>
+  return <form action={action} className="space-y-3 rounded-xl border p-4"><input name="new_status" type="hidden" value={target} />{target === "cancelled" ? <label className="space-y-1.5 text-xs font-medium">Reason<textarea className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={1000} name="reason" required /></label> : null}<p className={state.success ? "text-xs text-emerald-700" : "text-xs text-destructive"}>{state.message}</p><Button className="w-full" disabled={pending} type="submit" variant={target === "cancelled" ? "destructive" : "default"}>{pending ? "Saving…" : label}</Button></form>
 }
 
 export function YachtfolioActionForm({ actionId, bookingId, status }: { actionId: string; bookingId: string; status: "pending" | "completed" }) {

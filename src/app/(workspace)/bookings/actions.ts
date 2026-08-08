@@ -110,7 +110,9 @@ export async function transitionBookingAction(
   const { error } = await context.supabase.rpc("transition_booking_status", {
     p_booking_id: validId.data,
     p_new_status: parsed.data.new_status,
-    p_reason: parsed.data.reason,
+    p_reason: parsed.data.new_status === "cancelled"
+      ? parsed.data.reason
+      : parsed.data.new_status === "charter_active" ? "Charter started" : "Charter completed",
   })
   if (error) return { message: "The booking changed elsewhere or this lifecycle move is not allowed." }
   revalidatePath("/")

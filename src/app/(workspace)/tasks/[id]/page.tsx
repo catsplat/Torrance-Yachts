@@ -61,7 +61,7 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
     <div className="mx-auto max-w-7xl space-y-5">
       <Link className="inline-flex items-center gap-2 text-sm text-muted-foreground" href="/tasks">
         <ArrowLeft className="size-4" />
-        Back to operations
+        Back to tasks
       </Link>
       {notice.created ? (
         <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100">
@@ -134,10 +134,7 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
           <Card>
             <CardHeader className="border-b">
               <CardTitle>Dependencies</CardTitle>
-              <CardDescription>
-                Prerequisites and downstream work are calculated from the generated
-                dependency graph.
-              </CardDescription>
+              <CardDescription>Tasks unlock when their prerequisites are complete.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 pt-5 sm:grid-cols-2">
               <TaskLinks title="Requires" tasks={dependencies} />
@@ -149,7 +146,7 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
               <CardHeader className="border-b">
                 <CardTitle>Schedule and assignment</CardTitle>
                 <CardDescription>
-                  Every date, assignee, or priority change requires a permanent reason.
+                  Changes appear in the task history.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-5">
@@ -169,7 +166,6 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
                 <MessageSquareText className="size-4 text-primary" />
                 Notes
               </CardTitle>
-              <CardDescription>Notes are append-only and attributed to an internal user.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
               <TaskNoteForm taskId={task.id} />
@@ -221,10 +217,7 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
           {communicationStep ? (
             <Card>
               <CardHeader className="border-b">
-                <CardTitle>Workflow communication</CardTitle>
-                <CardDescription>
-                  Prepare task-specific wording while preserving human approval.
-                </CardDescription>
+                <CardTitle>Prepare message</CardTitle>
               </CardHeader>
               <CardContent className="pt-5">
                 <TaskCommunicationForm stepCode={task.step_code!} taskId={task.id} />
@@ -243,7 +236,6 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
           <Card>
             <CardHeader className="border-b">
               <CardTitle>Task action</CardTitle>
-              <CardDescription>Consequential changes require human evidence.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 pt-5">
               {task.status === "ready" ? <TaskStateForm mode="complete" taskId={task.id} /> : null}

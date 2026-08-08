@@ -17,12 +17,11 @@ export default async function DocumentsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-5" data-tutorial-anchor="document-register">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Protected records</p>
-        <h1 className="mt-1 text-3xl font-semibold">Documents</h1>
-        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Private booking files use short-lived signed links. Identity, compliance, contract, and financial records are never public.</p>
+        <h1 className="text-3xl font-semibold">Documents</h1>
+        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">Booking and sales documents.</p>
       </div>
       <Card>
-        <CardHeader className="border-b"><CardTitle>Private document register</CardTitle></CardHeader>
+        <CardHeader className="border-b"><CardTitle>All documents</CardTitle></CardHeader>
         <CardContent className="p-0">
           {documents.length ? <div className="divide-y">{documents.map((document) => (
             <Link className="grid gap-3 px-5 py-4 hover:bg-muted/40 md:grid-cols-[minmax(0,1fr)_12rem_10rem]" href={`/bookings/${document.booking_id}/documents`} key={document.id}>

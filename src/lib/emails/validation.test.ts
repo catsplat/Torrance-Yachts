@@ -26,7 +26,6 @@ describe("Phase 9 email validation", () => {
       enquiryId: "",
       enquirySummary: "",
       messageId: "00000000-0000-4000-8000-000000000001",
-      reason: "Reviewed",
     }).success).toBe(false)
   })
 

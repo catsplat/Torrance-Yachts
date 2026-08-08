@@ -240,7 +240,7 @@ export default async function EnquiryDetailPage({
               Change operational state
             </CardTitle>
             <CardDescription>
-              Every change requires a reason and creates history plus a durable event.
+              Status changes appear in the enquiry history.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-5">
@@ -251,8 +251,7 @@ export default async function EnquiryDetailPage({
             />
             {enquiry.status === "awaiting_signatures" ? (
               <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">
-                Booked is available only through “Confirm signed booking”. That command
-                verifies a sent offer, records human attestation, and reserves buffered dates atomically.
+                Use “Confirm signed booking” to reserve the yacht dates.
               </p>
             ) : null}
           </CardContent>
@@ -262,7 +261,7 @@ export default async function EnquiryDetailPage({
       <Card>
         <CardHeader className="border-b">
           <CardTitle className="flex items-center gap-2"><FileText aria-hidden="true" className="size-4 text-primary" />Offer versions</CardTitle>
-          <CardDescription>Every proposal is a separate historical snapshot. Approval and sent recording happen in the offer workspace.</CardDescription>
+          <CardDescription>Drafts and sent versions for this enquiry.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {offersResult.data.length ? <div className="divide-y">{offersResult.data.map((offer) => <Link className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 hover:bg-muted/40" href={`/offers/${offer.id}`} key={offer.id}><div><p className="font-medium">{offer.reference} · version {offer.version_number}</p><p className="mt-1 text-xs text-muted-foreground">Updated {formatDateTime(offer.updated_at)}</p></div><div className="flex items-center gap-3"><p className="text-sm font-medium">{new Intl.NumberFormat("en-GB", { minimumFractionDigits: 2 }).format(offer.proposed_charter_fee)} {offer.currency}</p><Badge variant="outline">{offer.status}</Badge></div></Link>)}</div> : <div className="px-5 py-9 text-center text-sm text-muted-foreground">No offer snapshots prepared yet.</div>}
@@ -276,9 +275,6 @@ export default async function EnquiryDetailPage({
               <MessageSquareText aria-hidden="true" className="size-4 text-primary" />
               Notes and requirements
             </CardTitle>
-            <CardDescription>
-              Notes are append-only so the operational record cannot be silently rewritten.
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5 pt-5">
             <EnquiryNoteForm enquiryId={enquiry.id} />

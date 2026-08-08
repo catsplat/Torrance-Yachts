@@ -48,10 +48,7 @@ export function TaskStateForm({
   const [state, action, pending] = useActionState(handler.bind(null, taskId), initialState)
   const label = mode === "complete" ? "Complete task" : mode === "reopen" ? "Reopen task" : "Cancel ad-hoc task"
   return <form action={action} className="space-y-3 rounded-xl border p-4">
-    <label className="space-y-1.5 text-xs font-medium">
-      {mode === "complete" ? "Completion evidence" : "Reason"}
-      <textarea className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={2000} name="reason" required />
-    </label>
+    {mode === "cancel" ? <label className="space-y-1.5 text-xs font-medium">Reason<textarea className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={2000} name="reason" required /></label> : null}
     <Feedback state={state} />
     <Button className="w-full" disabled={pending} type="submit" variant={mode === "cancel" ? "destructive" : mode === "reopen" ? "outline" : "default"}>
       {pending ? "Recording…" : label}
@@ -77,7 +74,6 @@ export function TaskScheduleForm({
     <Field label="Due date"><Input defaultValue={dueDate ?? ""} name="due_date" type="date" /></Field>
     <Field label="Priority"><select className="h-9 w-full rounded-lg border border-input bg-background px-2 text-sm" defaultValue={priority} name="priority">{taskPriorityValues.map((value) => <option key={value} value={value}>{taskPriorityLabels[value]}</option>)}</select></Field>
     <Field label="Assignee"><select className="h-9 w-full rounded-lg border border-input bg-background px-2 text-sm" defaultValue={assignedUserId ?? ""} name="assigned_user_id"><option value="">Unassigned</option>{assignees.map((person) => <option key={person.id} value={person.id}>{person.display_name}</option>)}</select></Field>
-    <Field label="Recorded reason"><Input maxLength={2000} name="reason" required /></Field>
     <div className="flex items-center justify-between gap-3 sm:col-span-2"><Feedback state={state} /><Button disabled={pending} type="submit">{pending ? "Saving…" : "Save schedule"}</Button></div>
   </form>
 }
@@ -103,18 +99,10 @@ export function TaskCommunicationForm({
     : "a reviewable Telegram draft for you"
   return (
     <form action={action} className="space-y-3">
-      <p className="text-sm text-muted-foreground">
-        Prepare {destination} from approved templates and authoritative booking
-        contacts. Nothing is sent by this action.
-      </p>
-      <Input
-        name="reason"
-        placeholder="Why this communication is being prepared"
-        required
-      />
+      <p className="text-sm text-muted-foreground">Prepare {destination} from the booking details.</p>
       <Feedback state={state} />
       <Button disabled={pending} type="submit" variant="outline">
-        {pending ? "Preparing…" : "Prepare reviewable communication"}
+        {pending ? "Preparing…" : "Prepare draft"}
       </Button>
     </form>
   )

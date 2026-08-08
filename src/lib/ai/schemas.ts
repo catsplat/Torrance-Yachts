@@ -75,7 +75,6 @@ export const contractAiSuggestionSchema = z.object({
 
 export const aiReviewSchema = z.object({
   approved: z.enum(["true", "false"]).transform((value) => value === "true"),
-  reason: z.string().trim().min(2).max(2000),
   suggestionId: z.uuid(),
 })
 
@@ -85,7 +84,6 @@ export const emailSuggestionRevisionSchema = z.object({
   charterStartDate: z.union([z.literal(""), z.iso.date()]),
   classification: z.enum(aiClassificationValues),
   companyName: z.string().trim().max(2000),
-  correctionReason: z.string().trim().min(2).max(2000),
   currency: z.union([z.literal(""), z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/)]),
   customerEmail: z.union([z.literal(""), z.email()]),
   customerName: z.string().trim().max(2000),
@@ -109,7 +107,6 @@ export const contractSuggestionRevisionSchema = z.object({
   charterStartDate: z.union([z.literal(""), z.iso.date()]),
   chartererName: z.string().trim().max(2000),
   commissionRate: z.union([z.literal(""), z.coerce.number().min(0).max(100)]),
-  correctionReason: z.string().trim().min(2).max(2000),
   currency: z.union([z.literal(""), z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/)]),
   disembarkationPort: z.string().trim().max(2000),
   embarkationPort: z.string().trim().max(2000),

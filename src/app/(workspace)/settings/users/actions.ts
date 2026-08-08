@@ -40,7 +40,7 @@ export async function updateInternalUserAction(
     p_active: parsed.data.active,
     p_display_name: parsed.data.displayName,
     p_phone: parsed.data.phone,
-    p_reason: parsed.data.reason,
+    p_reason: "Account details updated by an administrator",
     p_role: parsed.data.role,
     p_telegram_chat_id: parsed.data.telegramChatId,
     p_user_id: parsed.data.userId,
@@ -76,7 +76,7 @@ export async function sendRecoveryEmailAction(
   formData: FormData,
 ): Promise<UserAdminActionState> {
   const parsed = recoveryEmailSchema.safeParse(Object.fromEntries(formData))
-  if (!parsed.success) return { message: "Enter a valid email and recovery reason." }
+  if (!parsed.success) return { message: "Enter a valid email address." }
   const context = await administratorContext()
   if ("message" in context) return context
   try {

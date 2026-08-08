@@ -8,7 +8,6 @@ import {
   backupVerificationSchema,
   launchCheckReviewSchema,
   tutorialAdvanceSchema,
-  tutorialResetSchema,
 } from "@/lib/tutorial/validation"
 
 export type PhaseTwelveActionState = {
@@ -64,18 +63,17 @@ export async function advanceTutorialAction(
 
 export async function resetTutorialAction(
   _state: PhaseTwelveActionState,
-  formData: FormData,
+  _formData: FormData,
 ): Promise<PhaseTwelveActionState> {
-  const parsed = tutorialResetSchema.safeParse(Object.fromEntries(formData))
-  if (!parsed.success) return { message: "Enter a short reset reason." }
+  void _formData
   const context = await contextOrMessage()
   if ("message" in context) return context
   const { error } = await context.supabase.rpc("reset_tutorial", {
-    p_reason: parsed.data.reason,
+    p_reason: "Tutorial restarted",
   })
   if (error) return { message: "The tutorial could not be reset." }
   refreshTutorial()
-  return { message: "Synthetic practice state reset safely.", success: true }
+  return { message: "Tutorial restarted.", success: true }
 }
 
 export async function reviewLaunchCheckAction(

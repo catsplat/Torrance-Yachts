@@ -18,13 +18,9 @@ export default async function AiReviewQueuePage() {
   return (
     <div className="mx-auto max-w-6xl space-y-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-          Human approval queue
-        </p>
-        <h1 className="mt-1 text-3xl font-semibold">AI review</h1>
+        <h1 className="text-3xl font-semibold">Review suggestions</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Model output is advisory. Open the authoritative email or contract workspace
-          to compare evidence, correct fields, and approve or reject the proposal.
+          Check extracted email and contract details before they are used.
         </p>
       </div>
       <Card>
@@ -33,7 +29,7 @@ export default async function AiReviewQueuePage() {
             <BrainCircuit className="size-5" />
             Pending review
           </CardTitle>
-          <CardDescription>{pending.length} proposal(s) require a person.</CardDescription>
+          <CardDescription>{pending.length} waiting.</CardDescription>
         </CardHeader>
         <CardContent className="divide-y p-0">
           {pending.length ? pending.map((item) => (
@@ -56,13 +52,13 @@ export default async function AiReviewQueuePage() {
               <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
             </Link>
           )) : (
-            <p className="p-5 text-sm text-muted-foreground">No AI proposals await review.</p>
+            <p className="p-5 text-sm text-muted-foreground">Nothing waiting for review.</p>
           )}
         </CardContent>
       </Card>
       {reviewed.length ? (
         <Card>
-          <CardHeader className="border-b"><CardTitle>Recent reviewed proposals</CardTitle></CardHeader>
+          <CardHeader className="border-b"><CardTitle>Recently reviewed</CardTitle></CardHeader>
           <CardContent className="divide-y p-0">
             {reviewed.slice(0, 20).map((item) => (
               <Link className="flex items-center justify-between gap-3 px-5 py-3 text-sm" href={item.href} key={item.id}>

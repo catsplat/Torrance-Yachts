@@ -1,11 +1,9 @@
 import {
   ArrowRight,
-  BrainCircuit,
   CalendarCheck2,
   CheckCircle2,
   Clock3,
-  FileCheck2,
-  FileWarning,
+  FileText,
   Inbox,
   ListChecks,
   Plus,
@@ -19,7 +17,6 @@ import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -86,150 +83,109 @@ type Props = {
 }
 
 export function DashboardOverview(props: Props) {
-  const largestPipelineStage = Math.max(
-    1,
-    ...props.enquirySummary.pipeline.map((stage) => stage.value),
-  )
-  const attention = [
+  const firstName = props.displayName.split(/\s+/)[0] || props.displayName
+  const workQueue = [
     {
-      detail: `${props.emailSummary.relevantReceived} relevant messages`,
+      detail: `${props.emailSummary.relevantReceived} received · ${props.aiSummary.pendingReview} extracted`,
       href: "/emails",
       icon: Inbox,
-      label: "Inbox review",
-      value: props.emailSummary.reviewRequired,
+      label: "Inbox",
+      value: props.emailSummary.reviewRequired + props.aiSummary.pendingReview,
     },
     {
-      detail: "Suggestions awaiting a person",
-      href: "/ai/review",
-      icon: BrainCircuit,
-      label: "AI review",
-      value: props.aiSummary.pendingReview,
-    },
-    {
-      detail: `${props.enquirySummary.openCount} open enquiries`,
+      detail: `${props.enquirySummary.openCount} open`,
       href: "/enquiries",
       icon: ArrowRight,
-      label: "Enquiry replies",
+      label: "Enquiries",
       value: props.enquirySummary.needsResponse,
     },
     {
-      detail: `${props.offerSummary.approvedNotSent} approved, not sent`,
+      detail: `${props.offerSummary.approvedNotSent} ready to send`,
       href: "/offers",
-      icon: FileCheck2,
-      label: "Offer approvals",
+      icon: FileText,
+      label: "Offers",
       value: props.offerSummary.awaitingApproval,
     },
     {
-      detail: `${props.taskSummary.openCount} open tasks`,
+      detail: `${props.taskSummary.openCount} open`,
       href: "/tasks",
       icon: ListChecks,
-      label: "Overdue operations",
+      label: "Tasks",
       value: props.taskSummary.overdueCount,
     },
-    {
-      detail: `${props.integrationSummary.pendingApproval} external alerts await approval`,
-      href: "/integrations",
-      icon: FileWarning,
-      label: "Delivery failures",
-      value: props.integrationSummary.failedDeliveries,
-    },
   ]
+  const systemAttention = props.integrationSummary.failedDeliveries
+    + props.integrationSummary.pendingApproval
+
   return (
-    <div className="mx-auto max-w-[88rem] space-y-8" data-tutorial-anchor="dashboard-overview">
+    <div className="mx-auto max-w-[88rem] space-y-6" data-tutorial-anchor="dashboard-overview">
       <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <div className="mb-2 flex items-center gap-2">
-            <Badge variant="secondary">Daily operations</Badge>
-            <span className="text-xs text-muted-foreground">{formatToday()}</span>
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
-            Good morning, {props.displayName}
+          <p className="text-sm text-muted-foreground">{formatToday()}</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">
+            Good morning, {firstName}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground md:text-base">
-            Work from left to right: review new mail, progress enquiries and offers,
-            then run booked-charter operations.
-          </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/emails" className={buttonVariants({ size: "lg", variant: "outline" })}>
+          <Link href="/emails" className={buttonVariants({ variant: "outline" })}>
             <Inbox aria-hidden="true" />
-            Review inbox
+            Inbox
           </Link>
-          <Link href="/enquiries/new" className={buttonVariants({ size: "lg" })}>
+          <Link href="/enquiries/new" className={buttonVariants()}>
             <Plus aria-hidden="true" />
             New enquiry
           </Link>
         </div>
       </section>
 
-      <section aria-labelledby="attention-heading" className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 id="attention-heading" className="text-base font-semibold">Action queue</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">The next human decisions across the charter workflow.</p>
-          </div>
-          <span className="hidden text-xs text-muted-foreground sm:block">Live operational data</span>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {attention.map((item) => {
+      {systemAttention ? (
+        <Link
+          className="flex items-center justify-between gap-4 rounded-lg border border-amber-300/60 bg-amber-50 px-4 py-3 text-sm text-amber-950 hover:bg-amber-100 dark:border-amber-700/60 dark:bg-amber-950/35 dark:text-amber-100"
+          href="/integrations"
+        >
+          <span>{systemAttention} communication item{systemAttention === 1 ? "" : "s"} need attention</span>
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </Link>
+      ) : null}
+
+      <section aria-labelledby="queue-heading" className="space-y-3">
+        <h2 id="queue-heading" className="text-base font-semibold">Needs attention</h2>
+        <div className="grid overflow-hidden rounded-xl border bg-card sm:grid-cols-2 xl:grid-cols-4">
+          {workQueue.map((item, index) => {
             const Icon = item.icon
             return (
               <Link
-                className="group flex items-center gap-3 rounded-xl border border-border/90 bg-card p-3.5 shadow-[0_1px_2px_oklch(0.2_0.03_235_/_0.035)] transition-[background-color,border-color,box-shadow] duration-150 hover:border-primary/35 hover:bg-accent/35 hover:shadow-sm dark:shadow-none"
+                className={cn(
+                  "group flex items-center gap-3 p-4 transition-colors hover:bg-muted/45",
+                  index > 0 && "border-t sm:border-l sm:border-t-0",
+                  index === 2 && "sm:border-l-0 sm:border-t xl:border-l xl:border-t-0",
+                )}
                 href={item.href}
                 key={item.label}
               >
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                   <Icon aria-hidden="true" className="size-4" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium">{item.label}</span>
                   <span className="mt-0.5 block truncate text-xs text-muted-foreground">{item.detail}</span>
                 </span>
-                <span className="flex shrink-0 flex-col items-end gap-0.5">
-                  <strong className={cn("text-xl leading-none", item.value ? "text-foreground" : "text-muted-foreground")}>
+                <strong className={cn("text-2xl tabular-nums", item.value ? "text-foreground" : "text-muted-foreground/55")}>
                   {item.value}
-                  </strong>
-                  <span className="text-[0.6875rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                    {item.value === 1 ? "action" : "actions"}
-                  </span>
-                </span>
+                </strong>
               </Link>
             )
           })}
         </div>
       </section>
 
-      <section className="overflow-x-auto rounded-xl border border-border/90 bg-card px-3 py-2.5 shadow-[0_1px_2px_oklch(0.2_0.03_235_/_0.035)] dark:shadow-none" aria-label="Daily workflow">
-        <div className="flex min-w-[45rem] items-center">
-          {[
-            ["Inbox", "/emails"],
-            ["Enquiry", "/enquiries"],
-            ["Offer", "/offers"],
-            ["Booking", "/bookings"],
-            ["Operations", "/tasks"],
-            ["Follow-up", "/tasks"],
-          ].map(([label, href], index, values) => (
-            <div className="contents" key={label}>
-              <Link className="flex-1 rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors hover:bg-accent" href={href}>
-                <span className="mr-2 text-xs text-muted-foreground">{index + 1}</span>
-                {label}
-              </Link>
-              {index < values.length - 1 ? <ArrowRight aria-hidden="true" className="size-4 text-muted-foreground" /> : null}
-            </div>
-          ))}
-        </div>
-      </section>
-
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(22rem,0.65fr)]">
         <Card>
           <CardHeader className="border-b">
-            <CardTitle>Today&apos;s operational priorities</CardTitle>
-            <CardDescription>Due tasks ordered by urgency, dependency, and date.</CardDescription>
+            <CardTitle>Today&apos;s tasks</CardTitle>
             <CardAction>
               <Link href="/tasks" className={buttonVariants({ size: "sm", variant: "ghost" })}>
-                All operations
-                <ArrowRight aria-hidden="true" />
+                View all <ArrowRight aria-hidden="true" />
               </Link>
             </CardAction>
           </CardHeader>
@@ -258,7 +214,7 @@ export function DashboardOverview(props: Props) {
                 </span>
               </Link>
             )) : (
-              <p className="px-4 py-8 text-center text-sm text-muted-foreground">No active task priorities.</p>
+              <p className="px-4 py-8 text-center text-sm text-muted-foreground">Nothing due.</p>
             )}
           </CardContent>
         </Card>
@@ -266,9 +222,6 @@ export function DashboardOverview(props: Props) {
         <Card>
           <CardHeader className="border-b">
             <CardTitle>Upcoming charters</CardTitle>
-            <CardDescription>
-              {props.bookingSummary.activeCount} active · {props.bookingSummary.yachtfolioPending} Yachtfolio actions pending
-            </CardDescription>
             <CardAction>
               <Link aria-label="Open calendar" className={buttonVariants({ size: "icon-sm", variant: "ghost" })} href="/calendar">
                 <CalendarCheck2 aria-hidden="true" />
@@ -289,14 +242,14 @@ export function DashboardOverview(props: Props) {
                     </span>
                     <span className="mt-1 block text-sm">{item.reference}</span>
                     <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                      {item.startDate} to {item.endDate} · {item.status}
+                      {item.startDate} to {item.endDate}
                     </span>
                   </span>
                 </Link>
                 {index < props.bookingSummary.upcoming.length - 1 ? <Separator /> : null}
               </div>
             )) : (
-              <p className="px-4 py-8 text-center text-sm text-muted-foreground">No upcoming confirmed charters.</p>
+              <p className="px-4 py-8 text-center text-sm text-muted-foreground">No upcoming charters.</p>
             )}
           </CardContent>
         </Card>
@@ -304,41 +257,28 @@ export function DashboardOverview(props: Props) {
 
       <section className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,.8fr)]">
         <Card>
-          <CardHeader className="border-b">
-            <CardTitle>Enquiry pipeline</CardTitle>
-            <CardDescription>Open requests from first contact to signed-contract review.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          <CardHeader className="border-b"><CardTitle>Enquiry pipeline</CardTitle></CardHeader>
+          <CardContent className="grid gap-2 sm:grid-cols-3">
             {props.enquirySummary.pipeline.map((stage) => (
-              <div key={stage.label}>
-                <div className="mb-1.5 flex items-center justify-between text-sm">
-                  <span className="font-medium">{stage.label}</span>
-                  <span className="text-muted-foreground">{stage.value}</span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className={cn("h-full rounded-full", stage.tone)}
-                    style={{ width: `${Math.round((stage.value / largestPipelineStage) * 100)}%` }}
-                  />
-                </div>
-              </div>
+              <Link className="flex items-center justify-between rounded-lg border px-3 py-2.5 hover:bg-muted/40" href="/enquiries" key={stage.label}>
+                <span className="text-sm text-muted-foreground">{stage.label}</span>
+                <strong className="tabular-nums">{stage.value}</strong>
+              </Link>
             ))}
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="border-b">
-            <CardTitle>Booking readiness</CardTitle>
-            <CardDescription>Compliance, payments, and document gates.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <CardHeader className="border-b"><CardTitle>Booking checks</CardTitle></CardHeader>
+          <CardContent className="grid gap-2">
             {[
-              ["Missing required documents", props.documentSummary.missingRequired],
-              ["Documents awaiting review", props.documentSummary.awaitingReview],
-              ["Scheduled payments", props.documentSummary.paymentsDue],
+              ["Missing documents", props.documentSummary.missingRequired],
+              ["Documents to review", props.documentSummary.awaitingReview],
+              ["Payments scheduled", props.documentSummary.paymentsDue],
+              ["Yachtfolio updates", props.bookingSummary.yachtfolioPending],
             ].map(([label, value]) => (
-              <Link className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent" href="/documents" key={label}>
+              <Link className="flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-muted/40" href={label === "Yachtfolio updates" ? "/tasks" : "/documents"} key={label}>
                 <span className="text-sm text-muted-foreground">{label}</span>
-                <strong className="text-xl">{value}</strong>
+                <strong className="tabular-nums">{value}</strong>
               </Link>
             ))}
           </CardContent>

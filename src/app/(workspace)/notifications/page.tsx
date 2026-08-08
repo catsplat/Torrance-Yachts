@@ -7,13 +7,7 @@ import {
 } from "@/app/(workspace)/notifications/actions"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getCurrentUser } from "@/lib/auth/current-user"
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
@@ -34,13 +28,9 @@ export default async function NotificationsPage() {
     <div className="mx-auto max-w-5xl space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Personal operations feed
-          </p>
-          <h1 className="mt-1 text-3xl font-semibold">Notifications</h1>
+          <h1 className="text-3xl font-semibold">Notifications</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Internal alerts generated from email, tasks, payments, charters, and
-            integration health.
+            Email, task, payment and charter alerts.
           </p>
         </div>
         {unreadCount ? (
@@ -58,9 +48,6 @@ export default async function NotificationsPage() {
             <BellRing className="size-5 text-primary" />
             {unreadCount} unread
           </CardTitle>
-          <CardDescription>
-            AI summaries are suggestions and never replace source-email review.
-          </CardDescription>
         </CardHeader>
         <CardContent className="divide-y p-0">
           {data.length ? data.map((notification) => (

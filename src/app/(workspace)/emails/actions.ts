@@ -37,7 +37,7 @@ export async function classifyEmailAction(
     p_charter_start_date: parsed.data.charterStartDate || undefined,
     p_message_id: parsed.data.messageId,
     p_classification: parsed.data.classification,
-    p_reason: parsed.data.reason,
+    p_reason: `Classified as ${parsed.data.classification.replaceAll("_", " ")}`,
     p_enquiry_id: parsed.data.enquiryId || undefined,
     p_contact_id: parsed.data.contactId || undefined,
     p_enquiry_summary: parsed.data.enquirySummary || undefined,

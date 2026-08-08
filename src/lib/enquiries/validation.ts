@@ -109,7 +109,6 @@ export const enquiryNoteSchema = z.object({
 
 export const enquiryTransitionSchema = z.object({
   new_status: z.enum(enquiryStatusValues),
-  reason: z.string().trim().min(2).max(1000),
 })
 
 export function parseEnquiryFormData(formData: FormData) {
@@ -141,7 +140,6 @@ export function parseEnquiryNoteFormData(formData: FormData) {
 export function parseEnquiryTransitionFormData(formData: FormData) {
   return enquiryTransitionSchema.safeParse({
     new_status: formData.get("new_status"),
-    reason: formData.get("reason"),
   })
 }
 

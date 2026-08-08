@@ -31,7 +31,6 @@ describe("Phase 11 integration validation", () => {
     expect(notificationReviewSchema.safeParse({
       approved: "true",
       notificationId: "00000000-0000-4000-8000-000000000001",
-      reason: "Source and recipient checked",
     }).success).toBe(true)
   })
 

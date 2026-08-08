@@ -242,7 +242,7 @@ async function transitionOffer(
 
   const { data, error } = await context.supabase.rpc(command, {
     p_offer_id: validId.data,
-    p_reason: parsed.data.reason,
+    p_reason: command === "approve_offer" ? "Offer reviewed and approved" : "Offer marked as sent",
   })
   if (error || !data) return { message: "The offer changed elsewhere. Refresh and review it." }
   revalidatePath("/offers")
@@ -253,7 +253,7 @@ async function transitionOffer(
   return {
     message: command === "approve_offer"
       ? "Offer approved and locked."
-      : "Offer recorded as sent; no email was sent by the application.",
+      : "Offer marked as sent.",
     success: true,
   }
 }

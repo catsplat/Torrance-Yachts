@@ -95,9 +95,7 @@ export const offerDraftSchema = z.object({
   proposed_charter_fee: money,
 })
 
-export const offerTransitionSchema = z.object({
-  reason: z.string().trim().min(2).max(1000),
-})
+export const offerTransitionSchema = z.object({})
 
 export function checkboxValue(value: FormDataEntryValue | null) {
   return value === "on" || value === "true"

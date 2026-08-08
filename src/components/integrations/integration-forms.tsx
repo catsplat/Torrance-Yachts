@@ -37,21 +37,26 @@ export function ConnectionForm({
 }) {
   const [state, action, pending] = useActionState(updateConnectionAction, initialState)
   return (
-    <form action={action} className="grid gap-3">
+    <form action={action} className="space-y-4">
       <input name="provider" type="hidden" value={connection.provider} />
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex min-h-11 items-center gap-3 rounded-lg border px-3 py-2.5 text-sm font-medium">
         <input defaultChecked={connection.enabled} name="enabled" type="checkbox" />
-        Enable delivery queue
+        Use this connection
       </label>
-      <label className="grid gap-1 text-sm">
-        Target reference
-        <Input defaultValue={connection.target_reference ?? ""} name="targetReference" placeholder="Calendar ID, Sheet ID, Drive folder ID, or internal label" />
-      </label>
-      <label className="grid gap-1 text-sm">
-        Configuration notes
-        <textarea className="min-h-20 rounded-md border bg-background p-3 text-sm" defaultValue={connection.configuration_notes ?? ""} name="configurationNotes" />
-      </label>
-      <Button disabled={pending} type="submit" variant="outline">Save metadata</Button>
+      <details className="rounded-lg border bg-muted/20">
+        <summary className="cursor-pointer px-3 py-2.5 text-sm font-medium">Advanced</summary>
+        <div className="grid gap-3 border-t p-3">
+          <label className="grid gap-1.5 text-sm">
+            Resource ID
+            <Input defaultValue={connection.target_reference ?? ""} name="targetReference" />
+          </label>
+          <label className="grid gap-1.5 text-sm">
+            Notes
+            <textarea className="min-h-20 rounded-md border bg-background p-3 text-sm" defaultValue={connection.configuration_notes ?? ""} name="configurationNotes" />
+          </label>
+        </div>
+      </details>
+      <Button disabled={pending} type="submit" variant="outline">{pending ? "Saving…" : "Save"}</Button>
       <Feedback state={state} />
     </form>
   )
@@ -62,7 +67,6 @@ export function NotificationReviewForm({ notificationId }: { notificationId: str
   return (
     <form action={action} className="grid gap-2">
       <input name="notificationId" type="hidden" value={notificationId} />
-      <Input name="reason" placeholder="Recipient and wording checked" required />
       <div className="flex gap-2">
         <Button disabled={pending} name="approved" type="submit" value="true">Approve and queue</Button>
         <Button disabled={pending} name="approved" type="submit" value="false" variant="outline">Cancel</Button>
@@ -115,9 +119,8 @@ export function NotificationDraftForm({
 export function DeliveryRetryForm({ deliveryId }: { deliveryId: string }) {
   const [state, action, pending] = useActionState(retryDeliveryAction, initialState)
   return (
-    <form action={action} className="grid gap-2">
+    <form action={action} className="flex flex-wrap items-center gap-3">
       <input name="deliveryId" type="hidden" value={deliveryId} />
-      <Input name="reason" placeholder="Reason for operator retry" required />
       <Button disabled={pending} type="submit" variant="outline">Retry delivery</Button>
       <Feedback state={state} />
     </form>
@@ -130,15 +133,15 @@ export function AutomationControls() {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <form action={tickAction} className="space-y-2 rounded-lg border p-4">
-        <p className="font-medium">Automation tick</p>
-        <p className="text-sm text-muted-foreground">Materialise reminders, Gmail actions, and internal calendar records now.</p>
-        <Button disabled={tickPending} type="submit">Run now</Button>
+        <p className="font-medium">Update reminders</p>
+        <p className="text-sm text-muted-foreground">Check tasks, payments and Gmail actions.</p>
+        <Button disabled={tickPending} type="submit">Update now</Button>
         <Feedback state={tickState} />
       </form>
       <form action={sheetAction} className="space-y-2 rounded-lg border p-4">
-        <p className="font-medium">Google Sheets snapshot</p>
-        <p className="text-sm text-muted-foreground">Queue a one-way workbook snapshot from PostgreSQL.</p>
-        <Button disabled={sheetPending} type="submit" variant="outline">Queue snapshot</Button>
+        <p className="font-medium">Reporting spreadsheet</p>
+        <p className="text-sm text-muted-foreground">Refresh the connected Google Sheet.</p>
+        <Button disabled={sheetPending} type="submit" variant="outline">Refresh sheet</Button>
         <Feedback state={sheetState} />
       </form>
     </div>
@@ -148,10 +151,9 @@ export function AutomationControls() {
 export function DriveSyncForm({ bookingId, documentId }: { bookingId: string; documentId: string }) {
   const [state, action, pending] = useActionState(queueDriveSyncAction, initialState)
   return (
-    <form action={action} className="mt-3 grid gap-2">
+    <form action={action} className="mt-3 flex flex-wrap items-center gap-3">
       <input name="bookingId" type="hidden" value={bookingId} />
       <input name="documentId" type="hidden" value={documentId} />
-      <Input name="reason" placeholder="Why this verified copy should be placed in Drive" required />
       <Button disabled={pending} type="submit" variant="outline">Queue Drive copy</Button>
       <Feedback state={state} />
     </form>
@@ -179,9 +181,8 @@ export function InvoiceProfileForm() {
 export function InvoiceProfileApprovalForm({ profileId }: { profileId: string }) {
   const [state, action, pending] = useActionState(approveInvoiceProfileAction, initialState)
   return (
-    <form action={action} className="grid gap-2">
+    <form action={action} className="flex flex-wrap items-center gap-3">
       <input name="profileId" type="hidden" value={profileId} />
-      <Input name="reason" placeholder="Private details checked" required />
       <Button disabled={pending} type="submit" variant="outline">Approve this version</Button>
       <Feedback state={state} />
     </form>

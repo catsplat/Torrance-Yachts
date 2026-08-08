@@ -1,5 +1,6 @@
 import { Beaker, BrainCircuit, CalendarDays, FileCheck2, Mail, ShieldCheck } from "lucide-react"
 import Link from "next/link"
+import { notFound } from "next/navigation"
 
 import { OfflineRehearsalForm } from "@/components/rehearsal/offline-rehearsal-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,9 +10,10 @@ import { offlineRehearsalEnabled } from "@/lib/rehearsal/offline-email"
 import { createClient } from "@/lib/supabase/server"
 
 export default async function OfflineRehearsalPage() {
+  if (!offlineRehearsalEnabled()) notFound()
   const supabase = await createClient()
   const [user, ai] = await Promise.all([getCurrentUser(), Promise.resolve(getAiConfigurationSummary())])
-  const enabled = offlineRehearsalEnabled()
+  const enabled = true
   const administrator = user?.role === "administrator"
   const { data: activeRuns } = administrator
     ? await supabase.from("rehearsal_runs").select("id,label,created_at").eq("status", "active").order("created_at", { ascending: false })

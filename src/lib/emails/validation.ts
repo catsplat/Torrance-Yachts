@@ -52,7 +52,6 @@ export const emailClassificationSchema = z.object({
   enquirySummary: z.string().trim().max(2000).default(""),
   guestCount: z.union([z.literal(""), z.coerce.number().int().min(1).max(36)]).default(""),
   messageId: z.uuid(),
-  reason: z.string().trim().min(2).max(2000),
   requestedYachtId: z.union([z.literal(""), z.uuid()]).default(""),
 }).superRefine((value, context) => {
   if (value.classification === "new_enquiry") {

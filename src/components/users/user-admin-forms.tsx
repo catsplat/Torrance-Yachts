@@ -31,7 +31,6 @@ export function UserAdministrationForm({ profile }: { profile: Tables<"profiles"
     <Input defaultValue={profile.display_name} name="displayName" required />
     <div className="grid gap-2 sm:grid-cols-2"><Input defaultValue={profile.phone ?? ""} name="phone" placeholder="Phone" /><Input defaultValue={profile.telegram_chat_id ?? ""} name="telegramChatId" placeholder="Telegram chat ID" /></div>
     <div className="grid gap-2 sm:grid-cols-2"><select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue={profile.role} name="role"><option value="administrator">Administrator</option><option value="staff">Staff</option></select><select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue={profile.active ? "true" : "false"} name="active"><option value="true">Active</option><option value="false">Inactive</option></select></div>
-    <Input name="reason" placeholder="Reason for account change" required />
     <Button disabled={pending} type="submit" variant="outline">Save account</Button>
     <Feedback state={state} />
   </form>
@@ -39,5 +38,5 @@ export function UserAdministrationForm({ profile }: { profile: Tables<"profiles"
 
 export function RecoveryEmailForm({ email }: { email: string }) {
   const [state, action, pending] = useActionState(sendRecoveryEmailAction, initialState)
-  return <form action={action} className="mt-3 grid gap-2"><input name="email" type="hidden" value={email} /><Input name="reason" placeholder="Reason for recovery request" required /><Button disabled={pending} type="submit" variant="ghost">Send recovery email</Button><Feedback state={state} /></form>
+  return <form action={action} className="mt-3 grid gap-2"><input name="email" type="hidden" value={email} /><Button disabled={pending} type="submit" variant="ghost">Send recovery email</Button><Feedback state={state} /></form>
 }

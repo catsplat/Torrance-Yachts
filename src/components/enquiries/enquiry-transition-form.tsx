@@ -54,19 +54,6 @@ export function EnquiryTransitionForm({
           ))}
         </select>
       </div>
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium" htmlFor="transition_reason">
-          Reason
-        </label>
-        <textarea
-          className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-          id="transition_reason"
-          maxLength={1000}
-          name="reason"
-          placeholder="Record why the operational state is changing"
-          required
-        />
-      </div>
       <p
         aria-live="polite"
         className={state.success ? "text-xs text-emerald-700" : "text-xs text-destructive"}
@@ -74,7 +61,7 @@ export function EnquiryTransitionForm({
         {state.message}
       </p>
       <Button className="w-full" disabled={pending} type="submit">
-        {pending ? "Recording…" : "Record status change"}
+        {pending ? "Saving…" : "Update status"}
       </Button>
     </form>
   )
