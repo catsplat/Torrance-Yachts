@@ -1,0 +1,115 @@
+import { afterEach, describe, expect, it, vi } from "vitest"
+
+vi.mock("server-only", () => ({}))
+
+import { dispatchInternalAlert, safeDeliveryFailure } from "./alert-dispatch"
+
+type DeliveryFixture = Parameters<typeof dispatchInternalAlert>[1]
+
+function delivery(overrides: Partial<DeliveryFixture>): DeliveryFixture {
+  return {
+    attempt_count: 0,
+    claimed_at: null,
+    claimed_by: null,
+    credential_user_id: null,
+    created_at: "2026-08-08T12:00:00.000Z",
+    delivered_at: null,
+    external_id: null,
+    external_url: null,
+    id: "10000000-0000-4000-8000-000000000001",
+    idempotency_key: "synthetic-provider-contract-1",
+    last_error_code: null,
+    last_error_message: null,
+    lease_expires_at: null,
+    next_attempt_at: "2026-08-08T12:00:00.000Z",
+    operation: "telegram_send",
+    payload: {
+      action_url: "/emails/10000000-0000-4000-8000-000000000001",
+      body: "A fictional enquiry needs review.",
+      recipient: "100000000",
+      title: "Fictional enquiry",
+    },
+    provider: "telegram",
+    source_id: "10000000-0000-4000-8000-000000000002",
+    source_type: "notification",
+    status: "claimed",
+    updated_at: "2026-08-08T12:00:00.000Z",
+    ...overrides,
+  }
+}
+
+const unusedAdmin = {
+  rpc: vi.fn(),
+} as never
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
+
+describe("external alert provider contracts", () => {
+  it("formats a Telegram alert with the secure in-app review link", async () => {
+    vi.stubEnv("TELEGRAM_BOT_TOKEN", "fictional-test-token")
+    const request = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
+      ok: true,
+      result: { message_id: 73 },
+    }), { status: 200 }))
+
+    await expect(dispatchInternalAlert(unusedAdmin, delivery({}), undefined, request)).resolves.toEqual({
+      externalId: "73",
+      externalUrl: "",
+    })
+    expect(request).toHaveBeenCalledTimes(1)
+    const [url, options] = request.mock.calls[0]
+    expect(String(url)).toContain("api.telegram.org/botfictional-test-token/sendMessage")
+    expect(JSON.parse(String(options?.body))).toEqual({
+      chat_id: "100000000",
+      disable_web_page_preview: true,
+      text: "Fictional enquiry\n\nA fictional enquiry needs review.\n\nhttp://localhost:3000/emails/10000000-0000-4000-8000-000000000001",
+    })
+  })
+
+  it("creates a Gmail draft rather than sending a broker-facing email", async () => {
+    const admin = {
+      rpc: vi.fn().mockResolvedValue({
+        data: [{
+          account_email: "staff@example.test",
+          client_id: "fictional-client-id",
+          client_secret: "fictional-client-secret",
+          refresh_token: "fictional-refresh-token",
+        }],
+        error: null,
+      }),
+    } as never
+    const request = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "fictional-access-token" }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "draft-73" }), { status: 200 }))
+
+    await expect(dispatchInternalAlert(admin, delivery({
+      operation: "gmail_create_draft",
+      payload: { body: "Fictional offer reply.", recipient: "broker@example.test", title: "Review fictional offer" },
+      provider: "gmail",
+    }), undefined, request)).resolves.toEqual({
+      externalId: "draft-73",
+      externalUrl: "https://mail.google.com/mail/u/0/#drafts",
+    })
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(String(request.mock.calls[1][0])).toBe("https://gmail.googleapis.com/gmail/v1/users/me/drafts")
+    expect(String(request.mock.calls[1][0])).not.toContain("messages/send")
+    const raw = JSON.parse(String(request.mock.calls[1][1]?.body)).message.raw as string
+    const mime = Buffer.from(raw, "base64url").toString("utf8")
+    expect(mime).toContain("To: broker@example.test")
+    expect(mime).toContain("Fictional offer reply.")
+  })
+
+  it("keeps unavailable OAuth credentials visible and non-retryable", async () => {
+    const admin = { rpc: vi.fn().mockResolvedValue({ data: [], error: null }) } as never
+    await expect(dispatchInternalAlert(admin, delivery({ operation: "gmail_create_draft", provider: "gmail" }))).rejects.toThrow(
+      "Connected Gmail OAuth credentials are unavailable.",
+    )
+    expect(safeDeliveryFailure(new Error("Connected Gmail OAuth credentials are unavailable."))).toEqual({
+      errorCode: "oauth_error",
+      errorMessage: "Connected Gmail OAuth credentials are unavailable.",
+      retryable: false,
+    })
+  })
+})

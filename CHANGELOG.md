@@ -10,6 +10,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
   local commission-invoice evidence, Yachtfolio/captain/broker hand-off
   evidence, fictional payment settlement, charter completion and broker
   follow-up, all resettable with the existing run-scoped cleanup.
+- Network-isolated Gmail and Telegram provider-contract tests covering secure
+  Telegram review alerts, Gmail draft-only delivery, and OAuth configuration
+  failure handling.
 
 ### Changed
 

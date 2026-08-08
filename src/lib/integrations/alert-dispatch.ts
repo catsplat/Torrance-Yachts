@@ -6,6 +6,7 @@ import type { Database } from "@/types/database"
 
 type Delivery = Database["public"]["Tables"]["integration_deliveries"]["Row"]
 type AdminClient = SupabaseClient<Database>
+type FetchImplementation = typeof fetch
 
 function applicationBaseUrl() {
   return (process.env.APP_BASE_URL || "http://localhost:3000").replace(/\/+$/, "")
@@ -25,7 +26,11 @@ function alertText(payload: Delivery["payload"]) {
   }
 }
 
-async function dispatchTelegram(delivery: Delivery, signal?: AbortSignal) {
+async function dispatchTelegram(
+  delivery: Delivery,
+  signal?: AbortSignal,
+  request: FetchImplementation = fetch,
+) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN
   if (!botToken) throw new Error("Telegram bot delivery is not configured.")
   const payload = delivery.payload && typeof delivery.payload === "object" &&
@@ -37,7 +42,7 @@ async function dispatchTelegram(delivery: Delivery, signal?: AbortSignal) {
     throw new Error("Telegram recipient is missing.")
   }
   const alert = alertText(delivery.payload)
-  const response = await fetch(
+  const response = await request(
     `https://api.telegram.org/bot${encodeURIComponent(botToken)}/sendMessage`,
     {
       body: JSON.stringify({
@@ -81,7 +86,12 @@ function encodeMimeMessage(values: {
   return Buffer.from(message, "utf8").toString("base64url")
 }
 
-async function dispatchGmail(admin: AdminClient, delivery: Delivery, signal?: AbortSignal) {
+async function dispatchGmail(
+  admin: AdminClient,
+  delivery: Delivery,
+  signal?: AbortSignal,
+  request: FetchImplementation = fetch,
+) {
   const { data, error } = await admin.rpc("get_delivery_oauth_credentials", {
     p_delivery_id: delivery.id,
   })
@@ -89,7 +99,7 @@ async function dispatchGmail(admin: AdminClient, delivery: Delivery, signal?: Ab
   if (error || !credentials) {
     throw new Error("Connected Gmail OAuth credentials are unavailable.")
   }
-  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+  const tokenResponse = await request("https://oauth2.googleapis.com/token", {
     body: new URLSearchParams({
       client_id: credentials.client_id,
       client_secret: credentials.client_secret,
@@ -117,7 +127,7 @@ async function dispatchGmail(admin: AdminClient, delivery: Delivery, signal?: Ab
   }
   const alert = alertText(delivery.payload)
   const draftOnly = delivery.operation === "gmail_create_draft"
-  const sendResponse = await fetch(
+  const sendResponse = await request(
     draftOnly
       ? "https://gmail.googleapis.com/gmail/v1/users/me/drafts"
       : "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
@@ -167,19 +177,21 @@ export async function dispatchInternalAlert(
   admin: AdminClient,
   delivery: Delivery,
   signal?: AbortSignal,
+  request: FetchImplementation = fetch,
 ) {
-  if (delivery.operation === "telegram_send") return dispatchTelegram(delivery, signal)
+  if (delivery.operation === "telegram_send") return dispatchTelegram(delivery, signal, request)
   if (delivery.operation === "gmail_send_internal" || delivery.operation === "gmail_create_draft") {
-    return dispatchGmail(admin, delivery, signal)
+    return dispatchGmail(admin, delivery, signal, request)
   }
   throw new Error("This delivery is not an internal staff alert.")
 }
 
 export function safeDeliveryFailure(error: unknown) {
   const message = error instanceof Error ? error.message : "Internal alert delivery failed."
+  const normalized = message.toLowerCase()
   return {
-    errorCode: message.toLowerCase().includes("oauth") ? "oauth_error" : "provider_error",
+    errorCode: normalized.includes("oauth") || normalized.includes("credentials") ? "oauth_error" : "provider_error",
     errorMessage: message.slice(0, 2000),
-    retryable: !message.toLowerCase().includes("credentials are unavailable"),
+    retryable: !normalized.includes("credentials are unavailable"),
   }
 }
