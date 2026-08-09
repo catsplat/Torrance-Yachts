@@ -38,9 +38,9 @@ authoritative function internally.
 
 | Item | Status and decision |
 | --- | --- |
-| Google Sheets mirror | Optional one-way convenience export. PostgreSQL remains authoritative. Select and build/activate the n8n provider worker only if the client still wants a spreadsheet copy. |
-| Google Drive mirror | Optional convenience copy. Supabase private Storage is the supported document store. Select and build/activate only after a protected client-owned Drive destination and retention rule exist. |
-| Google Calendar mirror | Optional convenience copy. The internal calendar is complete. Select and build/activate only after the client chooses the target calendar. |
+| Google Sheets mirror | Application-owned one-way adapter implemented with immutable row IDs, raw formula-safe values, controlled tab replacement and fake-provider coverage. Live acceptance still requires an approved client spreadsheet. PostgreSQL remains authoritative. |
+| Google Drive mirror | Application-owned replay-safe adapter and folder picker implemented. Only clean, verified private documents can be copied. Live acceptance still requires an approved protected folder and retention rule. |
+| Google Calendar mirror | Application-owned stable-ID private-event adapter implemented with update, create and cancellation behaviour. Live acceptance still requires the client to approve the target calendar. |
 | SMS/WhatsApp | Not requested as a launch requirement; phone numbers are retained for routing and a later approved provider. |
 | Direct Yachtfolio API | Not available or approved in the brief; the supported launch workflow is an audited human task. |
 | Electron/downloadable edition | A separately documented future distribution. The user explicitly prioritised the hosted version; packaging, local update/signing, local backups and macOS/Windows distribution are not part of hosted v1 completion. |

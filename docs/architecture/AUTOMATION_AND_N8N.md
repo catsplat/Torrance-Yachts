@@ -19,9 +19,13 @@ Outbox delivery claim
               |
               v
 n8n workflow
-  - calls Gmail, Telegram, Drive, Calendar or Sheets
+  - schedules bounded application adapters
+              |
+              v
+Application provider adapter
+  - calls the approved provider with Vault-backed credentials
   - records provider identifiers and delivery result
-  - retries transient failures idempotently
+  - retries transient failures idempotently through the outbox
               |
               v
 Visible success or failure in the application
@@ -52,10 +56,11 @@ reports provider success or failure using those delivery identifiers. A crashed
 worker can therefore be retried without losing the work or changing authoritative
 business records.
 
-Real Gmail, Telegram, Google Calendar, Drive, and Sheets credentials remain
-deliberately disconnected until client launch acceptance. Phase 11 proves the
-application-to-worker contract with synthetic delivery data; it does not claim
-that live provider accounts have been commissioned.
+Staff-authorised Google credentials are encrypted behind Supabase Vault and are
+never exposed to n8n or the browser UI. Live Gmail monitoring, Telegram delivery,
+Calendar events, Drive copies and Sheet writes remain disabled until their
+separate acceptance steps. Synthetic contracts do not claim live provider
+commissioning.
 
 ## Production topology
 
@@ -63,8 +68,9 @@ Phase 12 selected managed Supabase Pro plus a protected Linux VPS running the
 standalone Next.js application, pinned n8n Community Edition, ClamAV, and an
 outbound-only Cloudflare Tunnel as the primary hosted release. Cloudflare Access
 protects the sole application hostname; n8n has no public application route.
-PostgreSQL remains authoritative and provider credentials remain outside the
-application database and source control.
+PostgreSQL remains authoritative. Provider credentials remain outside source
+control and ordinary application tables; Google refresh credentials are held
+behind the service-only Vault boundary.
 
 The separately requested local packaged version remains documented as a future
 secondary distribution. It requires Windows and macOS packaging, signing,

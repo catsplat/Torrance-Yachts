@@ -1969,6 +1969,45 @@ export type Database = {
           },
         ]
       }
+      google_workspace_dispatch_settings: {
+        Row: {
+          enabled: boolean
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_workspace_dispatch_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "google_workspace_dispatch_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_connections: {
         Row: {
           configuration_notes: string | null
@@ -4769,6 +4808,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      configure_google_workspace_dispatch: {
+        Args: { p_enabled: boolean; p_user_id: string }
+        Returns: {
+          enabled: boolean
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "google_workspace_dispatch_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       configure_rehearsal_fixture_yacht: {
         Args: { p_rehearsal_run_id: string }
         Returns: Json
@@ -5063,6 +5118,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_active_google_workspace_dispatch_credentials: {
+        Args: never
+        Returns: {
+          account_email: string
+          client_id: string
+          client_secret: string
+          refresh_token: string
+          scopes: string[]
+          user_id: string
+        }[]
+      }
       get_delivery_oauth_credentials: {
         Args: { p_delivery_id: string }
         Returns: {
@@ -5297,6 +5363,17 @@ export type Database = {
           last_error: string
           last_failure_at: string
           last_success_at: string
+          selected: boolean
+          user_id: string
+        }[]
+      }
+      list_google_workspace_dispatch_candidates: {
+        Args: never
+        Returns: {
+          account_email: string
+          dispatch_enabled: boolean
+          display_name: string
+          scopes: string[]
           selected: boolean
           user_id: string
         }[]

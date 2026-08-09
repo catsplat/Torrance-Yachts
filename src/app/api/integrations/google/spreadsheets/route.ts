@@ -4,7 +4,7 @@ import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 import {
   listGoogleSpreadsheets,
 } from "@/lib/integrations/google-workspace"
-import { getGoogleWorkspaceCredentials } from "@/lib/integrations/google-workspace-server"
+import { getActiveGoogleWorkspaceDispatchCredentials } from "@/lib/integrations/google-workspace-server"
 
 export async function GET() {
   const context = await getAuthenticatedRequestContext()
@@ -14,7 +14,7 @@ export async function GET() {
   }
 
   try {
-    const credentials = await getGoogleWorkspaceCredentials(context.userId)
+    const credentials = await getActiveGoogleWorkspaceDispatchCredentials()
     const spreadsheets = await listGoogleSpreadsheets(credentials)
     return NextResponse.json({ spreadsheets }, {
       headers: { "Cache-Control": "private, no-store" },

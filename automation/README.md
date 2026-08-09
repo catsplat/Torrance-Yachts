@@ -74,10 +74,10 @@ application to deliver staff Telegram alerts, staff email alerts, and approved
 Gmail drafts. This narrow adapter can safely use each staff member's encrypted
 OAuth connection without exposing credentials to n8n.
 
-The remaining shared operational providers continue to use the generic
-claim/result contract. Production workflows claim deliveries, switch on
-`operation`, call the relevant n8n node, and POST either the completion or failure
-result.
+The core scheduler calls the application-owned Google Workspace dispatcher.
+Calendar, Drive and Sheets use the administrator-selected staff OAuth connection
+held in Vault; n8n never receives those credentials. The generic claim/result
+contract remains available for explicit future adapters and compatibility.
 
 | Operation            | n8n adapter                                                                                            |
 | -------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -90,10 +90,11 @@ result.
 | `drive_upload`       | Download the leased private file URL, then upload to the configured protected Drive folder             |
 | `sheets_snapshot`    | Replace the Enquiries, Bookings, and Captains tabs from the one-way snapshot payload                   |
 
-Personal Gmail credentials are encrypted in Supabase Vault through
+Personal Google credentials are encrypted in Supabase Vault through
 `Settings -> My alerts and connections`; the UI cannot read them back. The shared
-Telegram bot token remains server-only. Calendar, Drive, Sheets, and operational
-mailbox credentials are configured inside n8n and are never exported to Git.
+Telegram bot token remains server-only. The administrator selects which connected
+staff account supplies Gmail intake and shared Google delivery; n8n receives only
+the application scheduler secret.
 
 ## Failure contract
 

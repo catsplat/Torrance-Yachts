@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
+  listGoogleDriveFolders,
   listGoogleSpreadsheets,
   refreshGoogleAccessToken,
   type GoogleWorkspaceCredentials,
@@ -61,5 +62,24 @@ describe("Google Workspace resource selection", () => {
       return new Response(JSON.stringify({ access_token: "" }), { status: 200 })
     })
     await expect(refreshGoogleAccessToken(credentials, request)).rejects.toThrow("Reconnect Google Workspace")
+  })
+
+  it("lists only Drive folder metadata for administrator selection", async () => {
+    const request = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "access-token" }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ files: [{
+        id: "folder-1",
+        modifiedTime: "2026-08-08T12:00:00Z",
+        name: "Charter documents",
+        webViewLink: "https://drive.google.com/drive/folders/folder-1",
+      }] }), { status: 200 }))
+    await expect(listGoogleDriveFolders(credentials, request)).resolves.toEqual([{
+      id: "folder-1",
+      modifiedTime: "2026-08-08T12:00:00Z",
+      name: "Charter documents",
+      webViewLink: "https://drive.google.com/drive/folders/folder-1",
+    }])
+    const url = new URL(String(request.mock.calls[1]?.[0]))
+    expect(url.searchParams.get("q")).toContain("application/vnd.google-apps.folder")
   })
 })

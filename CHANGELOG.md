@@ -4,6 +4,24 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-08-09
+
+### Added
+
+- User-authorised Google Calendar, Drive and Sheets delivery adapters with one
+  administrator-selected staff account, encrypted Vault credentials, bounded
+  dispatch, stable provider identifiers and visible retry/failure handling.
+- Fake-provider acceptance coverage for Calendar upsert/cancellation, controlled
+  Sheet replacement and replay-safe Drive uploads.
+- An administrator Google-account selector and a name-based Drive folder picker;
+  staff can refresh Google consent without copying credentials.
+
+### Changed
+
+- Reporting snapshots now include immutable PostgreSQL identifiers and use raw,
+  formula-safe cell values. The core n8n scheduler calls the application-owned
+  Google dispatcher and no longer needs Calendar, Drive or Sheets credentials.
+
 ## [0.16.0] - 2026-08-09
 
 ### Added

@@ -12,7 +12,7 @@ import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 import {
   listGoogleSpreadsheets,
 } from "@/lib/integrations/google-workspace"
-import { getGoogleWorkspaceCredentials } from "@/lib/integrations/google-workspace-server"
+import { getActiveGoogleWorkspaceDispatchCredentials } from "@/lib/integrations/google-workspace-server"
 import {
   createTelegramPairingToken,
   createTelegramPairingUrl,
@@ -160,7 +160,7 @@ export async function selectGoogleSpreadsheetAction(
   if (context.role !== "administrator") return { message: "Administrator access is required." }
 
   try {
-    const credentials = await getGoogleWorkspaceCredentials(context.userId)
+    const credentials = await getActiveGoogleWorkspaceDispatchCredentials()
     const spreadsheets = await listGoogleSpreadsheets(credentials)
     const selected = spreadsheets.find((sheet) => sheet.id === parsed.data.spreadsheetId)
     if (!selected || selected.name !== parsed.data.spreadsheetName) {

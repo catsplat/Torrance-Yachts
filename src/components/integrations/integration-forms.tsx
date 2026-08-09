@@ -1,10 +1,11 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useState } from "react"
 
 import {
   approveInvoiceProfileAction,
   configureGmailIngestionAction,
+  configureGoogleWorkspaceDispatchAction,
   createNotificationDraftAction,
   createInvoiceProfileAction,
   generateInvoiceAction,
@@ -14,6 +15,7 @@ import {
   retryDeliveryAction,
   reviewNotificationAction,
   runAutomationNowAction,
+  selectGoogleDriveFolderAction,
   updateConnectionAction,
 } from "@/app/(workspace)/integrations/actions"
 import { Button } from "@/components/ui/button"
@@ -40,7 +42,7 @@ export function ConnectionForm({
   const connectionLabel = connection.provider === "gmail"
     ? "Create approved drafts and staff email alerts"
     : "Use this connection"
-  const showAdvanced = !["gmail", "google_sheets"].includes(connection.provider)
+  const showAdvanced = !["gmail", "google_calendar", "google_drive", "google_sheets"].includes(connection.provider)
   return (
     <form action={action} className="space-y-4">
       <input name="provider" type="hidden" value={connection.provider} />
@@ -60,7 +62,10 @@ export function ConnectionForm({
             <textarea className="min-h-20 rounded-md border bg-background p-3 text-sm" defaultValue={connection.configuration_notes ?? ""} name="configurationNotes" />
           </label>
         </div>
-      </details> : null}
+      </details> : <>
+        <input name="targetReference" type="hidden" value={connection.target_reference ?? ""} />
+        <input name="configurationNotes" type="hidden" value={connection.configuration_notes ?? ""} />
+      </>}
       <Button disabled={pending} type="submit" variant="outline">{pending ? "Saving…" : "Save"}</Button>
       <Feedback state={state} />
     </form>
@@ -100,6 +105,80 @@ export function GmailIngestionForm({ candidates }: { candidates: GmailMailboxCan
       <Feedback state={state} />
     </form>
   )
+}
+
+type GoogleWorkspaceCandidate = {
+  account_email: string
+  dispatch_enabled: boolean
+  display_name: string
+  scopes: string[]
+  selected: boolean
+  user_id: string
+}
+
+export function GoogleWorkspaceDispatchForm({ candidates }: { candidates: GoogleWorkspaceCandidate[] }) {
+  const [state, action, pending] = useActionState(configureGoogleWorkspaceDispatchAction, initialState)
+  const selected = candidates.find((candidate) => candidate.selected)
+  return (
+    <form action={action} className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+      {candidates.length ? <label className="grid gap-2 text-sm font-medium">Google account
+        <select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue={selected?.user_id ?? candidates[0]?.user_id} name="userId">
+          {candidates.map((candidate) => <option key={candidate.user_id} value={candidate.user_id}>{candidate.display_name} · {candidate.account_email}</option>)}
+        </select>
+      </label> : <p className="text-sm text-muted-foreground">Connect a staff Google account before enabling shared services.</p>}
+      <label className="flex min-h-9 items-center gap-3 rounded-lg border px-3 text-sm font-medium">
+        <input defaultChecked={selected?.dispatch_enabled ?? false} disabled={!candidates.length} name="enabled" type="checkbox" />
+        Calendar, Drive and Sheets
+      </label>
+      <div className="md:col-span-2"><Button disabled={pending || !candidates.length} type="submit" variant="outline">{pending ? "Saving…" : "Save Google account"}</Button></div>
+      <Feedback state={state} />
+    </form>
+  )
+}
+
+type GoogleDriveFolder = {
+  id: string
+  modifiedTime: string | null
+  name: string
+  webViewLink: string | null
+}
+
+export function GoogleDriveFolderPicker({ selectedId, selectedName }: { selectedId: string | null; selectedName: string | null }) {
+  const [state, action, pending] = useActionState(selectGoogleDriveFolderAction, initialState)
+  const [folders, setFolders] = useState<GoogleDriveFolder[] | null>(null)
+  const [selection, setSelection] = useState(selectedId ?? "")
+  const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState("")
+  const selected = folders?.find((folder) => folder.id === selection)
+  async function loadFolders() {
+    setLoading(true)
+    setLoadError("")
+    try {
+      const response = await fetch("/api/integrations/google/folders", { cache: "no-store" })
+      const result = await response.json() as { folders?: GoogleDriveFolder[]; message?: string }
+      if (!response.ok || !Array.isArray(result.folders)) throw new Error(result.message || "Google Drive folders could not be loaded.")
+      setFolders(result.folders)
+      setSelection((current) => current || result.folders?.[0]?.id || "")
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Google Drive folders could not be loaded.")
+    } finally {
+      setLoading(false)
+    }
+  }
+  return <div className="space-y-3 border-t pt-4">
+    <div><p className="text-sm font-medium">Document folder</p><p className="mt-1 text-xs text-muted-foreground">{selectedName ?? "Not selected"}</p></div>
+    {folders ? <form action={action} className="grid gap-3">
+      <label className="grid gap-2 text-sm font-medium">Folder
+        <select className="h-9 rounded-md border bg-background px-3 text-sm" name="folderId" onChange={(event) => setSelection(event.target.value)} value={selection}>
+          {folders.map((folder) => <option key={folder.id} value={folder.id}>{folder.name}</option>)}
+        </select>
+      </label>
+      <input name="folderName" type="hidden" value={selected?.name ?? ""} />
+      <div><Button disabled={pending || !selected} type="submit">{pending ? "Saving…" : "Use this folder"}</Button></div>
+    </form> : <Button disabled={loading} onClick={loadFolders} type="button" variant="outline">{loading ? "Loading…" : "Choose folder"}</Button>}
+    {loadError ? <p aria-live="polite" className="text-sm text-destructive">{loadError}</p> : null}
+    <Feedback state={state} />
+  </div>
 }
 
 export function NotificationReviewForm({ notificationId }: { notificationId: string }) {

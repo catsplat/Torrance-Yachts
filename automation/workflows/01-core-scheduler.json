@@ -64,6 +64,29 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [500, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TORRANCE_APP_URL }}/api/integrations/automation/dispatch-google-workspace",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.AUTOMATION_SHARED_SECRET }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "3b77c459-161e-4d56-a207-1b1b6edc4418",
+      "name": "Deliver Google Workspace mirrors",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 0]
     }
   ],
   "connections": {
@@ -83,6 +106,17 @@
         [
           {
             "node": "Deliver internal staff alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deliver internal staff alerts": {
+      "main": [
+        [
+          {
+            "node": "Deliver Google Workspace mirrors",
             "type": "main",
             "index": 0
           }

@@ -6,7 +6,6 @@ import {
   GmailOauthDisconnectForm,
   TelegramPairingForm,
 } from "@/components/alerts/alert-settings-forms"
-import { GoogleSpreadsheetPicker } from "@/components/alerts/google-spreadsheet-picker"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -43,16 +42,12 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
   if (!user) return null
   const notices = await searchParams
   const supabase = await createClient()
-  const [profileResult, preferenceResult, oauthResult, sheetResult] = await Promise.all([
+  const [profileResult, preferenceResult, oauthResult] = await Promise.all([
     supabase.from("profiles").select("phone, telegram_chat_id").eq("id", user.id).single(),
     supabase.from("user_notification_preferences").select("*").eq("user_id", user.id).single(),
     supabase.rpc("get_my_oauth_connections"),
-    supabase.from("integration_connections")
-      .select("target_reference, configuration_notes")
-      .eq("provider", "google_sheets")
-      .maybeSingle(),
   ])
-  if (profileResult.error || preferenceResult.error || oauthResult.error || sheetResult.error) {
+  if (profileResult.error || preferenceResult.error || oauthResult.error) {
     throw new Error("Unable to load your personal alert settings.")
   }
   const gmail = oauthResult.data?.find((connection) => connection.provider === "gmail")
@@ -107,13 +102,7 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
                 <Badge>Connected</Badge><span>{gmail.account_email}</span>
               </div>
             ) : null}
-            {gmailConnected ? null : googleConfigured ? <Link className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50" href="/api/integrations/google/connect">Connect Google Workspace</Link> : <p className="text-sm text-muted-foreground">Google Workspace is not available yet.</p>}
-            {gmailConnected && user.role === "administrator" ? (
-              <GoogleSpreadsheetPicker
-                selectedId={sheetResult.data?.target_reference ?? null}
-                selectedName={sheetResult.data?.configuration_notes?.replace(/^Selected spreadsheet:\s*/, "") ?? null}
-              />
-            ) : null}
+            {googleConfigured ? <Link className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50" href="/api/integrations/google/connect">{gmailConnected ? "Update Google access" : "Connect Google Workspace"}</Link> : <p className="text-sm text-muted-foreground">Google Workspace is not available yet.</p>}
             {gmailConnected ? (
               <div className="border-t pt-5">
                 <GmailOauthDisconnectForm />

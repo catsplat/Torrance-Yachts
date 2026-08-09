@@ -29,6 +29,8 @@ describe("Google OAuth setup helpers", () => {
     expect(url.searchParams.get("scope")).toContain("gmail.compose")
     expect(url.searchParams.get("scope")).toContain("spreadsheets")
     expect(url.searchParams.get("scope")).toContain("drive.metadata.readonly")
+    expect(url.searchParams.get("scope")).toContain("calendar.events")
+    expect(url.searchParams.get("scope")).toContain("drive.file")
   })
 
   it("round-trips only a well-formed pending connection", () => {

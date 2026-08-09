@@ -10,6 +10,8 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { generateNextPendingEmailSuggestion } from "@/lib/ai/service"
 import { getInvoiceGenerationContext } from "@/lib/integrations/data"
 import { generateInvoicePdf } from "@/lib/integrations/invoice"
+import { listGoogleDriveFolders } from "@/lib/integrations/google-workspace"
+import { getActiveGoogleWorkspaceDispatchCredentials } from "@/lib/integrations/google-workspace-server"
 import {
   connectionSettingsSchema,
   deliveryRetrySchema,
@@ -91,6 +93,73 @@ export async function configureGmailIngestionAction(
   if (error) return { message: "The Gmail inbox could not be updated." }
   refreshIntegrations()
   return { message: parsed.data.enabled ? "Incoming Gmail enabled." : "Incoming Gmail paused.", success: true }
+}
+
+const googleWorkspaceDispatchSchema = z.object({
+  enabled: z.boolean(),
+  userId: z.union([z.literal(""), z.uuid()]),
+})
+
+export async function configureGoogleWorkspaceDispatchAction(
+  _state: IntegrationActionState,
+  formData: FormData,
+): Promise<IntegrationActionState> {
+  const parsed = googleWorkspaceDispatchSchema.safeParse({
+    enabled: Boolean(formData.get("enabled")),
+    userId: formData.get("userId") ?? "",
+  })
+  if (!parsed.success || (parsed.data.enabled && !parsed.data.userId)) {
+    return { message: "Choose a connected Google account." }
+  }
+  const context = await contextOrMessage()
+  if ("message" in context) return context
+  const { error } = await context.supabase.rpc("configure_google_workspace_dispatch", {
+    p_enabled: parsed.data.enabled,
+    p_user_id: parsed.data.userId || context.userId,
+  })
+  if (error) {
+    return { message: "Reconnect Google Workspace to approve Calendar, Drive and Sheets access." }
+  }
+  refreshIntegrations()
+  return {
+    message: parsed.data.enabled ? "Google Workspace delivery enabled." : "Google Workspace delivery paused.",
+    success: true,
+  }
+}
+
+const googleDriveFolderSchema = z.object({
+  folderId: z.string().trim().min(1).max(500),
+  folderName: z.string().trim().min(1).max(500),
+})
+
+export async function selectGoogleDriveFolderAction(
+  _state: IntegrationActionState,
+  formData: FormData,
+): Promise<IntegrationActionState> {
+  const parsed = googleDriveFolderSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { message: "Choose a Drive folder." }
+  const context = await contextOrMessage()
+  if ("message" in context) return context
+  if (context.role !== "administrator") return { message: "Administrator access is required." }
+  try {
+    const credentials = await getActiveGoogleWorkspaceDispatchCredentials()
+    const folders = await listGoogleDriveFolders(credentials)
+    const selected = folders.find((folder) => folder.id === parsed.data.folderId)
+    if (!selected || selected.name !== parsed.data.folderName) {
+      return { message: "That folder is no longer available. Refresh the list." }
+    }
+    const { error } = await context.supabase.rpc("update_integration_connection", {
+      p_configuration_notes: `Selected folder: ${selected.name}`,
+      p_enabled: true,
+      p_provider: "google_drive",
+      p_target_reference: selected.id,
+    })
+    if (error) return { message: "The Drive folder could not be saved." }
+  } catch (error) {
+    return { message: error instanceof Error ? error.message : "Google Drive folders could not be loaded." }
+  }
+  refreshIntegrations()
+  return { message: "Drive folder selected.", success: true }
 }
 
 export async function reviewNotificationAction(

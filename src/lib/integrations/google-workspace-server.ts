@@ -12,3 +12,11 @@ export async function getGoogleWorkspaceCredentials(userId: string): Promise<Goo
   if (error || !credentials) throw new Error("Connect Google Workspace first.")
   return credentials
 }
+
+export async function getActiveGoogleWorkspaceDispatchCredentials(): Promise<GoogleWorkspaceCredentials> {
+  const admin = createAdminClient()
+  const { data, error } = await admin.rpc("get_active_google_workspace_dispatch_credentials")
+  const credentials = data?.[0]
+  if (error || !credentials) throw new Error("Select a connected Google account first.")
+  return credentials
+}

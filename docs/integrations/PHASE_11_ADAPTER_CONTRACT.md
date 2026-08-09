@@ -40,6 +40,22 @@ Claims and delivers only:
 The route never sends an external email. Gmail drafts still require a person to
 review and send them from Gmail.
 
+## Shared Google Workspace delivery
+
+`POST /api/integrations/automation/dispatch-google-workspace`
+
+Claims only `calendar_upsert`, `drive_upload` and `sheets_snapshot`. The
+application refreshes the administrator-selected staff OAuth connection behind
+the Vault boundary, calls Google with bounded timeouts, and verifies database
+completion or failure. n8n supplies only the scheduler request and application
+automation secret.
+
+- Calendar uses stable internal event IDs, private visibility and no attendees.
+- Drive searches by the delivery idempotency key before upload and accepts only
+  clean, verified private source documents.
+- Sheets replaces three controlled tabs using immutable PostgreSQL identifiers,
+  raw values and spreadsheet-formula neutralisation.
+
 ## Claim
 
 `POST /api/integrations/deliveries/claim`
