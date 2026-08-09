@@ -60,11 +60,21 @@ export async function inviteInternalUserAction(
   if ("message" in context) return context
   try {
     const admin = createAdminClient()
-    const { error } = await admin.auth.admin.inviteUserByEmail(parsed.data.email, {
+    const invitation = await admin.auth.admin.inviteUserByEmail(parsed.data.email, {
       data: { display_name: parsed.data.displayName },
       redirectTo: `${applicationBaseUrl()}/auth/callback?next=/account/update-password`,
     })
-    if (error) return { message: "The invitation could not be sent. Check SMTP and whether the account already exists." }
+    if (invitation.error || !invitation.data.user) {
+      return { message: "The invitation could not be sent. Check SMTP and whether the account already exists." }
+    }
+    const approval = await admin.rpc("approve_internal_user_invitation", {
+      p_approved_by: context.userId,
+      p_user_id: invitation.data.user.id,
+    })
+    if (approval.error || !approval.data) {
+      await admin.auth.admin.deleteUser(invitation.data.user.id)
+      return { message: "The invitation could not be approved safely. No usable account was retained." }
+    }
     revalidatePath("/settings/users")
     return { message: "Invitation sent.", success: true }
   } catch {

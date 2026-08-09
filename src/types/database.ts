@@ -2756,6 +2756,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          access_approved_at: string | null
+          access_approved_by: string | null
           active: boolean
           created_at: string
           display_name: string
@@ -2767,6 +2769,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          access_approved_at?: string | null
+          access_approved_by?: string | null
           active?: boolean
           created_at?: string
           display_name: string
@@ -2778,6 +2782,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          access_approved_at?: string | null
+          access_approved_by?: string | null
           active?: boolean
           created_at?: string
           display_name?: string
@@ -2788,7 +2794,15 @@ export type Database = {
           telegram_chat_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_access_approved_by_fkey"
+            columns: ["access_approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rehearsal_run_records: {
         Row: {
@@ -4392,6 +4406,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      approve_internal_user_invitation: {
+        Args: { p_approved_by: string; p_user_id: string }
+        Returns: boolean
+      }
       approve_invoice_profile: {
         Args: { p_profile_id: string; p_reason: string }
         Returns: undefined
@@ -5859,6 +5877,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      should_approve_new_internal_profile: {
+        Args: {
+          p_initial_setup_pending: boolean
+          p_invited_at: string
+          p_trusted_database_insert: boolean
+        }
+        Returns: boolean
+      }
       start_ai_analysis: { Args: { p_run_id: string }; Returns: undefined }
       start_tutorial: {
         Args: never
@@ -6006,6 +6032,8 @@ export type Database = {
           p_user_id: string
         }
         Returns: {
+          access_approved_at: string | null
+          access_approved_by: string | null
           active: boolean
           created_at: string
           display_name: string

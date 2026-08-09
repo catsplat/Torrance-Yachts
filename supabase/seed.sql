@@ -428,7 +428,9 @@ select set_config('app.phase10_command', '', false);
 update public.profiles profile
 set display_name = 'Local Administrator',
     role = 'administrator',
-    active = true
+    active = true,
+    access_approved_at = coalesce(profile.access_approved_at, now()),
+    access_approved_by = coalesce(profile.access_approved_by, profile.id)
 from auth.users auth_user
 where profile.id = auth_user.id
   and auth_user.email = 'local.admin@example.test';
