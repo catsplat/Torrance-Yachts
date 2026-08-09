@@ -22,6 +22,11 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Changed
 
+- Replaced the fixed Offers, Bookings and Tasks register windows with stable
+  server-side cursor pagination, PostgreSQL search/filtering and exact result
+  counts so historical operational records remain discoverable.
+- Expired or invalid Supabase browser sessions now clear only their own auth
+  cookies and return to sign-in instead of leaving a protected page empty.
 - Reworked the application around the daily Inbox → Enquiries → Offers →
   Bookings → Tasks sequence. The dashboard now has one attention queue, primary
   navigation excludes technical sub-tools, Settings separates routine and

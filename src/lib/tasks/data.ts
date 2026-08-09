@@ -1,8 +1,32 @@
 import "server-only"
 
 import { cache } from "react"
+import { z } from "zod"
 
 import { createClient } from "@/lib/supabase/server"
+import type { Enums } from "@/types/database"
+
+export const taskRegisterPageSize = 50
+
+const taskCursorSchema = z.object({
+  createdAt: z.iso.datetime(),
+  dueSort: z.iso.date(),
+  id: z.uuid(),
+})
+
+function decodeTaskCursor(value: string | undefined) {
+  if (!value || value.length > 256) return null
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8"))
+    return taskCursorSchema.safeParse(parsed).data ?? null
+  } catch {
+    return null
+  }
+}
+
+function encodeTaskCursor(cursor: z.infer<typeof taskCursorSchema>) {
+  return Buffer.from(JSON.stringify(cursor)).toString("base64url")
+}
 
 export const getActiveTaskAssignees = cache(async () => {
   const supabase = await createClient()
@@ -50,20 +74,54 @@ export async function getTaskTemplateDetail(id: string) {
   }
 }
 
-export async function getTaskRegister() {
+export type TaskRegisterFilters = {
+  assigneeId?: string
+  cursor?: string
+  dueState?: "future" | "none" | "overdue" | "today"
+  priority?: Enums<"task_priority">
+  query?: string
+  status?: Enums<"task_status">
+  unassigned?: boolean
+}
+
+export async function getTaskRegisterPage(filters: TaskRegisterFilters) {
+  const cursor = decodeTaskCursor(filters.cursor)
   const supabase = await createClient()
-  const { data, error } = await supabase.from("tasks").select(`
-    id, reference, booking_id, step_code, title, status, priority, source,
-    required, due_date, blocked_reason, external_action, assigned_user_id,
-    booking:bookings!tasks_booking_id_fkey(
-      reference,
-      yacht:yachts!bookings_yacht_id_fkey(id, name)
-    ),
-    assignee:profiles!tasks_assigned_user_id_fkey(display_name)
-  `).order("due_date", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: false }).limit(1000)
-  if (error) throw new Error("Unable to load tasks.")
-  return data
+  const [{ data: page, error: pageError }, { data: totalCount, error: countError }] =
+    await Promise.all([
+      supabase.rpc("list_task_register_page", {
+        p_assignee_id: filters.assigneeId,
+        p_cursor_created_at: cursor?.createdAt,
+        p_cursor_due_sort: cursor?.dueSort,
+        p_cursor_id: cursor?.id,
+        p_due_state: filters.dueState,
+        p_limit: taskRegisterPageSize + 1,
+        p_priority: filters.priority,
+        p_query: filters.query,
+        p_status: filters.status,
+        p_unassigned: filters.unassigned ?? false,
+      }),
+      supabase.rpc("count_task_register", {
+        p_assignee_id: filters.assigneeId,
+        p_due_state: filters.dueState,
+        p_priority: filters.priority,
+        p_query: filters.query,
+        p_status: filters.status,
+        p_unassigned: filters.unassigned ?? false,
+      }),
+    ])
+  if (pageError || countError) throw new Error("Unable to load the complete task register.")
+
+  const hasNextPage = page.length > taskRegisterPageSize
+  const tasks = page.slice(0, taskRegisterPageSize)
+  const last = tasks.at(-1)
+  return {
+    nextCursor: hasNextPage && last
+      ? encodeTaskCursor({ createdAt: last.created_at, dueSort: last.due_sort, id: last.id })
+      : null,
+    tasks,
+    totalCount: totalCount ?? 0,
+  }
 }
 
 export async function getTaskDetail(id: string) {

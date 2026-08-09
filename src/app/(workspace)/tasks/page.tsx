@@ -1,10 +1,12 @@
 import { AlertTriangle, CheckCircle2, Clock3, ListChecks, Search, Settings2 } from "lucide-react"
 import Link from "next/link"
+import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getTaskRegister } from "@/lib/tasks/data"
+import { CursorPagination } from "@/components/ui/cursor-pagination"
+import { getActiveTaskAssignees, getTaskRegisterPage } from "@/lib/tasks/data"
 import {
   formatTaskDate,
   taskDueState,
@@ -14,59 +16,62 @@ import {
   taskStatusValues,
 } from "@/lib/tasks/options"
 import { cn } from "@/lib/utils"
+import type { Enums } from "@/types/database"
 
 type Props = {
   searchParams: Promise<{
-    q?: string; status?: string; priority?: string; due?: string; assignee?: string
+    assignee?: string; cursor?: string; due?: string; priority?: string; q?: string; status?: string
   }>
 }
 
 export default async function TasksPage({ searchParams }: Props) {
   const filters = await searchParams
-  const tasks = await getTaskRegister()
-  const search = filters.q?.trim().toLocaleLowerCase("en-GB").slice(0, 160) ?? ""
-  const status = taskStatusValues.includes(filters.status as typeof taskStatusValues[number])
-    ? filters.status! : ""
-  const priority = taskPriorityValues.includes(filters.priority as typeof taskPriorityValues[number])
-    ? filters.priority! : ""
-  const visible = tasks.filter((task) => {
-    const dueState = taskDueState(task.due_date, task.status)
-    const matchesSearch = !search || [
-      task.reference, task.step_code ?? "", task.title,
-      task.booking.reference, task.booking.yacht.name,
-    ].some((value) => value.toLocaleLowerCase("en-GB").includes(search))
-    return matchesSearch &&
-      (!status || task.status === status) &&
-      (!priority || task.priority === priority) &&
-      (!filters.due || dueState === filters.due) &&
-      (!filters.assignee || (filters.assignee === "unassigned"
-        ? !task.assigned_user_id : task.assigned_user_id === filters.assignee))
-  })
+  const search = filters.q?.trim().slice(0, 160) ?? ""
+  const status = taskStatusValues.includes(filters.status as Enums<"task_status">)
+    ? (filters.status as Enums<"task_status">) : undefined
+  const priority = taskPriorityValues.includes(filters.priority as Enums<"task_priority">)
+    ? (filters.priority as Enums<"task_priority">) : undefined
+  const dueState = ["future", "none", "overdue", "today"].includes(filters.due ?? "")
+    ? (filters.due as "future" | "none" | "overdue" | "today")
+    : undefined
+  const unassigned = filters.assignee === "unassigned"
+  const assigneeId = !unassigned && z.uuid().safeParse(filters.assignee).success
+    ? filters.assignee
+    : undefined
+  const [taskRegister, assignees] = await Promise.all([
+    getTaskRegisterPage({
+      assigneeId,
+      cursor: filters.cursor,
+      dueState,
+      priority,
+      query: search,
+      status,
+      unassigned,
+    }),
+    getActiveTaskAssignees(),
+  ])
+  const visible = taskRegister.tasks
   const ready = visible.filter((task) => task.status === "ready").length
   const blocked = visible.filter((task) => task.status === "blocked").length
   const overdue = visible.filter((task) => taskDueState(task.due_date, task.status) === "overdue").length
-  const assignees = Array.from(new Map(
-    tasks.filter((task) => task.assigned_user_id && task.assignee)
-      .map((task) => [task.assigned_user_id!, task.assignee!.display_name]),
-  ))
 
   return <div className="mx-auto max-w-7xl space-y-5" data-tutorial-anchor="task-register">
     <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-semibold tracking-tight">Tasks</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Booking checklists, due dates and dependencies.</p></div><Link className={cn(buttonVariants({ variant: "outline" }))} href="/tasks/templates"><Settings2 />Task templates</Link></div>
-    <div className="grid gap-3 sm:grid-cols-4"><Metric icon={ListChecks} label="Matching tasks" value={visible.length} /><Metric icon={CheckCircle2} label="Ready" value={ready} /><Metric icon={Clock3} label="Blocked" value={blocked} /><Metric icon={AlertTriangle} label="Overdue" value={overdue} /></div>
+    <div className="grid gap-3 sm:grid-cols-4"><Metric icon={ListChecks} label="Matching tasks" value={taskRegister.totalCount} /><Metric icon={CheckCircle2} label="Ready on page" value={ready} /><Metric icon={Clock3} label="Blocked on page" value={blocked} /><Metric icon={AlertTriangle} label="Overdue on page" value={overdue} /></div>
     <Card>
       <CardHeader className="border-b"><CardTitle>All tasks</CardTitle></CardHeader>
       <CardContent className="pt-5">
         <form className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_10rem_10rem_9rem_12rem_auto]" method="get">
           <label className="relative"><Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" /><input aria-label="Search tasks" className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm" defaultValue={filters.q} name="q" placeholder="Task, booking or yacht" /></label>
-          <Select name="status" value={status} label="Status"><option value="">All states</option>{taskStatusValues.map((value) => <option key={value} value={value}>{taskStatusLabels[value]}</option>)}</Select>
-          <Select name="priority" value={priority} label="Priority"><option value="">All priorities</option>{taskPriorityValues.map((value) => <option key={value} value={value}>{taskPriorityLabels[value]}</option>)}</Select>
-          <Select name="due" value={filters.due ?? ""} label="Due state"><option value="">Any date</option><option value="overdue">Overdue</option><option value="today">Today</option><option value="future">Future</option><option value="none">No active date</option></Select>
-          <Select name="assignee" value={filters.assignee ?? ""} label="Assignee"><option value="">Anyone</option><option value="unassigned">Unassigned</option>{assignees.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</Select>
+          <Select name="status" value={status ?? ""} label="Status"><option value="">All states</option>{taskStatusValues.map((value) => <option key={value} value={value}>{taskStatusLabels[value]}</option>)}</Select>
+          <Select name="priority" value={priority ?? ""} label="Priority"><option value="">All priorities</option>{taskPriorityValues.map((value) => <option key={value} value={value}>{taskPriorityLabels[value]}</option>)}</Select>
+          <Select name="due" value={dueState ?? ""} label="Due state"><option value="">Any date</option><option value="overdue">Overdue</option><option value="today">Today</option><option value="future">Future</option><option value="none">No active date</option></Select>
+          <Select name="assignee" value={unassigned ? "unassigned" : assigneeId ?? ""} label="Assignee"><option value="">Anyone</option><option value="unassigned">Unassigned</option>{assignees.map((assignee) => <option key={assignee.id} value={assignee.id}>{assignee.display_name}</option>)}</Select>
           <button className={cn(buttonVariants({ variant: "outline" }), "h-9")} type="submit">Apply</button>
         </form>
       </CardContent>
     </Card>
-    <Card><CardContent className="p-0">{visible.length ? <div className="divide-y">{visible.map((task) => <Link className="block px-5 py-4 hover:bg-muted/40" href={`/tasks/${task.id}`} key={task.id}><div className="flex flex-wrap items-start justify-between gap-3"><div><div className="flex flex-wrap items-center gap-2"><p className="font-semibold">{task.step_code ? `${task.step_code} · ` : ""}{task.title}</p><Badge variant={task.status === "ready" ? "default" : "outline"}>{taskStatusLabels[task.status]}</Badge>{taskDueState(task.due_date, task.status) === "overdue" ? <Badge className="border-rose-300 bg-rose-50 text-rose-900" variant="outline">Overdue</Badge> : null}{!task.required ? <Badge variant="secondary">Optional</Badge> : null}</div><p className="mt-1 text-xs text-muted-foreground">{task.reference} · {task.booking.reference} · {task.booking.yacht.name}</p>{task.blocked_reason ? <p className="mt-2 text-xs text-amber-800">{task.blocked_reason}</p> : null}</div><div className="text-right"><p className="text-sm font-medium">{formatTaskDate(task.due_date)}</p><p className="mt-1 text-xs text-muted-foreground">{task.assignee?.display_name ?? "Unassigned"} · {taskPriorityLabels[task.priority]}</p></div></div></Link>)}</div> : <p className="px-5 py-14 text-center text-sm text-muted-foreground">No matching tasks.</p>}</CardContent></Card>
+    <Card><CardContent className="p-0">{visible.length ? <div className="divide-y">{visible.map((task) => <Link className="block px-5 py-4 hover:bg-muted/40" href={`/tasks/${task.id}`} key={task.id}><div className="flex flex-wrap items-start justify-between gap-3"><div><div className="flex flex-wrap items-center gap-2"><p className="font-semibold">{task.step_code ? `${task.step_code} · ` : ""}{task.title}</p><Badge variant={task.status === "ready" ? "default" : "outline"}>{taskStatusLabels[task.status]}</Badge>{taskDueState(task.due_date, task.status) === "overdue" ? <Badge className="border-rose-300 bg-rose-50 text-rose-900" variant="outline">Overdue</Badge> : null}{!task.required ? <Badge variant="secondary">Optional</Badge> : null}</div><p className="mt-1 text-xs text-muted-foreground">{task.reference} · {task.booking_reference} · {task.yacht_name}</p>{task.blocked_reason ? <p className="mt-2 text-xs text-amber-800">{task.blocked_reason}</p> : null}</div><div className="text-right"><p className="text-sm font-medium">{formatTaskDate(task.due_date)}</p><p className="mt-1 text-xs text-muted-foreground">{task.assignee_name ?? "Unassigned"} · {taskPriorityLabels[task.priority]}</p></div></div></Link>)}</div> : <p className="px-5 py-14 text-center text-sm text-muted-foreground">No matching tasks.</p>}<CursorPagination currentCount={visible.length} nextCursor={taskRegister.nextCursor} pathname="/tasks" searchParams={{ assignee: unassigned ? "unassigned" : assigneeId, cursor: filters.cursor, due: dueState, priority, q: search, status }} totalCount={taskRegister.totalCount} /></CardContent></Card>
   </div>
 }
 

@@ -4751,6 +4751,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      count_booking_register: {
+        Args: {
+          p_query?: string
+          p_status?: Database["public"]["Enums"]["booking_status"]
+          p_yacht_id?: string
+        }
+        Returns: number
+      }
       count_email_inbox: {
         Args: {
           p_classification?: Database["public"]["Enums"]["email_classification"]
@@ -4766,6 +4774,25 @@ export type Database = {
           p_query?: string
           p_status?: Database["public"]["Enums"]["enquiry_status"]
           p_yacht_id?: string
+        }
+        Returns: number
+      }
+      count_offer_register: {
+        Args: {
+          p_query?: string
+          p_status?: Database["public"]["Enums"]["offer_status"]
+          p_yacht_id?: string
+        }
+        Returns: number
+      }
+      count_task_register: {
+        Args: {
+          p_assignee_id?: string
+          p_due_state?: string
+          p_priority?: Database["public"]["Enums"]["task_priority"]
+          p_query?: string
+          p_status?: Database["public"]["Enums"]["task_status"]
+          p_unassigned?: boolean
         }
         Returns: number
       }
@@ -4980,6 +5007,31 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_booking_register_page: {
+        Args: {
+          p_cursor_charter_start_date?: string
+          p_cursor_id?: string
+          p_limit?: number
+          p_query?: string
+          p_status?: Database["public"]["Enums"]["booking_status"]
+          p_yacht_id?: string
+        }
+        Returns: {
+          charter_end_date: string
+          charter_start_date: string
+          enquiry_reference: string
+          enquiry_summary: string
+          id: string
+          reference: string
+          reservation_active: boolean
+          reserved_from: string
+          reserved_through: string
+          status: Database["public"]["Enums"]["booking_status"]
+          yacht_id: string
+          yacht_name: string
+          yachtfolio_status: Database["public"]["Enums"]["yachtfolio_action_status"]
+        }[]
+      }
       list_email_inbox_page: {
         Args: {
           p_classification?: Database["public"]["Enums"]["email_classification"]
@@ -5029,6 +5081,65 @@ export type Database = {
           status: Database["public"]["Enums"]["enquiry_status"]
           summary: string
           updated_at: string
+          yacht_name: string
+        }[]
+      }
+      list_offer_register_page: {
+        Args: {
+          p_cursor_id?: string
+          p_cursor_updated_at?: string
+          p_limit?: number
+          p_query?: string
+          p_status?: Database["public"]["Enums"]["offer_status"]
+          p_yacht_id?: string
+        }
+        Returns: {
+          currency: string
+          enquiry_reference: string
+          id: string
+          pricing_basis: Database["public"]["Enums"]["offer_pricing_basis"]
+          proposed_charter_fee: number
+          recipient_name: string
+          reference: string
+          status: Database["public"]["Enums"]["offer_status"]
+          subject_snapshot: string
+          updated_at: string
+          version_number: number
+          yacht_id: string
+          yacht_name: string
+        }[]
+      }
+      list_task_register_page: {
+        Args: {
+          p_assignee_id?: string
+          p_cursor_created_at?: string
+          p_cursor_due_sort?: string
+          p_cursor_id?: string
+          p_due_state?: string
+          p_limit?: number
+          p_priority?: Database["public"]["Enums"]["task_priority"]
+          p_query?: string
+          p_status?: Database["public"]["Enums"]["task_status"]
+          p_unassigned?: boolean
+        }
+        Returns: {
+          assigned_user_id: string
+          assignee_name: string
+          blocked_reason: string
+          booking_id: string
+          booking_reference: string
+          created_at: string
+          due_date: string
+          due_sort: string
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reference: string
+          required: boolean
+          source: Database["public"]["Enums"]["task_source"]
+          status: Database["public"]["Enums"]["task_status"]
+          step_code: string
+          title: string
           yacht_name: string
         }[]
       }

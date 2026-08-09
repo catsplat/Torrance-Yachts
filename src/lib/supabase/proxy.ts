@@ -1,8 +1,16 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
+import { isSupabaseAuthCookie } from "@/lib/supabase/auth-cookies"
 import { getSupabaseConfig } from "@/lib/supabase/config"
 import type { Database } from "@/types/database"
+
+function clearSupabaseAuthCookies(response: NextResponse, request: NextRequest) {
+  request.cookies.getAll()
+    .filter(({ name }) => isSupabaseAuthCookie(name))
+    .forEach(({ name }) => response.cookies.delete(name))
+  return response
+}
 
 export async function updateSession(request: NextRequest, requestHeaders = request.headers) {
   const { publishableKey, url } = getSupabaseConfig()
@@ -21,16 +29,18 @@ export async function updateSession(request: NextRequest, requestHeaders = reque
     },
   })
 
-  const { data: verifiedToken } = await supabase.auth.getClaims()
+  const { data: verifiedToken, error: claimsError } = await supabase.auth.getClaims()
   const claims = verifiedToken?.claims
 
   const isLoginRoute = request.nextUrl.pathname === "/login"
 
-  if (!claims?.sub && !isLoginRoute) {
+  if (claimsError || !claims?.sub) {
+    if (isLoginRoute) return clearSupabaseAuthCookies(response, request)
+
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = "/login"
     loginUrl.search = ""
-    return NextResponse.redirect(loginUrl)
+    return clearSupabaseAuthCookies(NextResponse.redirect(loginUrl), request)
   }
 
   return response
