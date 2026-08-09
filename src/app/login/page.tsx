@@ -45,9 +45,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <p className="mb-3 text-sm font-semibold tracking-[0.2em] text-teal-300 uppercase">
             Torrance Yachts
           </p>
-          <h1 className="max-w-xl text-4xl leading-tight font-semibold tracking-tight">
+          <p className="max-w-xl text-4xl leading-tight font-semibold tracking-tight">
             Charter operations
-          </h1>
+          </p>
           <p className="mt-4 max-w-lg text-base leading-7 text-slate-300">
             Enquiries, offers, bookings and charter tasks in one place.
           </p>
@@ -59,7 +59,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               <ShipWheel aria-hidden="true" className="size-5" />
             </div>
             <div>
-              <CardTitle className="text-2xl">Sign in</CardTitle>
+              <CardTitle className="text-2xl"><h1>Sign in</h1></CardTitle>
               <CardDescription className="mt-1.5 leading-6">
                 Use your work account.
               </CardDescription>

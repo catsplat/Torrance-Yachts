@@ -1,6 +1,6 @@
 {
   "name": "torrance-yachts-platform",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "private": true,
   "packageManager": "npm@11.16.0",
   "scripts": {
@@ -9,7 +9,10 @@
     "start": "node ops/start-standalone.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run src",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install chromium firefox webkit",
     "check": "npm run lint && npm run typecheck && npm run test",
     "db:start": "node ops/run-supabase.mjs start --network-id torrance-yachts-local",
     "db:stop": "node ops/run-supabase.mjs stop",
@@ -43,6 +46,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

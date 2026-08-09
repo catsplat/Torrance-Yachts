@@ -4,6 +4,32 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-08-09
+
+### Added
+
+- A committed Playwright acceptance suite covering unauthenticated access,
+  approved-administrator sign-in, the core operational workspace, notification
+  navigation, theme persistence, and an isolated five-route email rehearsal.
+- Chromium, Firefox, and WebKit execution with automated WCAG 2 A/AA checks on
+  Inbox, Enquiries, Bookings, Tasks, and Settings.
+- A disposable CI environment generator that reads the local Supabase boundary,
+  creates runtime-only test credentials, and keeps them out of source control
+  and workflow logs.
+- A dedicated GitHub Actions browser job with retained failure traces,
+  screenshots, videos, and HTML reports.
+
+### Fixed
+
+- Login and initial-administrator setup now expose their visible titles as real
+  page headings.
+- Sidebar section labels meet the automated WCAG AA contrast threshold.
+- Five-route rehearsals now keep internal, circular, and unknown messages in
+  separate provider threads while preserving the intended enquiry follow-up
+  thread and replay identifiers.
+- Rehearsal reset confirmation is rendered once instead of being repeated for
+  every active fictional run.
+
 ## [0.17.0] - 2026-08-09
 
 ### Added

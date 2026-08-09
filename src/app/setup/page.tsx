@@ -23,7 +23,7 @@ export default async function InitialSetupPage() {
       <Card className="w-full max-w-2xl shadow-2xl">
         <CardHeader className="border-b">
           <div className="mb-2 flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground"><Anchor className="size-5" /></div>
-          <CardTitle className="text-2xl">Initial administrator setup</CardTitle>
+          <CardTitle className="text-2xl"><h1>Initial administrator setup</h1></CardTitle>
           <CardDescription>This one-time route creates the first internal administrator. It closes automatically as soon as any account exists.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 pt-5">
