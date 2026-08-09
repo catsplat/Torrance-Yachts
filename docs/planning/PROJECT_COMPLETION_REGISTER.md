@@ -1,6 +1,6 @@
 # Project completion register
 
-**Reviewed:** 8 August 2026
+**Reviewed:** 9 August 2026
 
 **Definition of done:** the hosted internal release is code-complete locally when
 all rows in the first table pass. It is live-complete only after the client-owned
@@ -28,6 +28,7 @@ evidence that a provider was connected or that a person accepted the workflow.
 | Notifications | Per-user email/phone/Telegram preferences, AI-summary preference, central notification/outbox state, approval queue, retries, permanent failure and recovery visibility |
 | Automation | Self-hosted n8n scheduler, development simulator guard, readiness monitor, user-authorised Gmail history reconciliation, and provider-action workers; workflows import inactive and contain no credentials |
 | Security and operations | Security headers, server-only secrets, private documents, database lint/tests, dependency audit, health endpoints, backup/export/restore tooling, incident and maintenance runbooks |
+| Browser acceptance | Serial Playwright acceptance across Chromium, Firefox and WebKit; protected-route, approved-login, core-workspace, notification, theme, WCAG A/AA and isolated five-route rehearsal coverage; CI retains failure evidence |
 | Training and demonstration | Guided tutorial, five-route email rehearsal, and resettable fictional enquiry-to-post-charter rehearsal covering compliance-document quarantine/verification, contract review, instalments, local invoice evidence, Yachtfolio evidence, charter completion and broker follow-up; every external delivery remains simulated and visibly fictional |
 | Portfolio and audit | Architecture, decisions, schema notes, phase diaries, changelog, sanitised case studies and acceptance evidence structure |
 
@@ -51,7 +52,8 @@ authoritative function internally.
 1. Keep all application, database and n8n tests passing.
 2. Validate every workflow against the pinned n8n version and import it inactive.
 3. Validate the production Compose and environment contract without real values.
-4. Complete responsive browser smoke checks and record accepted development-only warnings.
+4. Keep the automated cross-browser acceptance suite passing and complete the
+   final physical macOS walkthrough with the client before launch.
 5. Keep documentation, changelog and release evidence aligned with the code.
 
 Those items are completed as part of the completion-gap closure milestone. They

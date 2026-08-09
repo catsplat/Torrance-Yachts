@@ -92,8 +92,8 @@ export function OfflineRehearsalForm({ activeRuns, enabled }: { activeRuns: Acti
           <Button disabled={resetPending} type="submit" variant="destructive">
             {resetPending ? "Removing fictional run…" : "Remove this fictional run"}
           </Button>
-          <ActionFeedback state={resetState} />
           </form>)}
+          <ActionFeedback state={resetState} />
         </div>
       ) : null}
 

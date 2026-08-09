@@ -68,6 +68,55 @@ jobs:
         if: always()
         run: supabase stop --no-backup
 
+  browser:
+    name: Cross-browser acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Install browser runtimes
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: 2.109.1
+
+      - name: Start disposable local Supabase
+        run: supabase start -x edge-runtime,imgproxy,logflare,mailpit,postgres-meta,realtime,storage-api,studio,supavisor,vector
+
+      - name: Prepare disposable browser environment
+        run: node ops/e2e/prepare-local-environment.mjs
+
+      - name: Run browser acceptance suite
+        run: npm run test:e2e
+
+      - name: Publish browser failure evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: browser-acceptance-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Stop disposable local Supabase
+        if: always()
+        run: supabase stop --no-backup
+
   operations:
     name: Deployment and recovery package
     runs-on: ubuntu-latest

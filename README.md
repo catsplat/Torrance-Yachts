@@ -2,7 +2,7 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** All twelve implementation phases and the `v0.17.0`
+> **Development status:** All twelve implementation phases and the `v0.18.0`
 > activation-readiness release are complete in the release candidate. Production
 > activation remains blocked until client-owned infrastructure, credentials,
 > policies, staff acceptance, training, and launch sign-off are recorded. Do not
@@ -61,7 +61,8 @@ The current candidate provides the secured operational master-data, enquiry, off
   documented future desktop distribution;
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
-- 125 unit tests, 798 database permission/behaviour tests, database linting,
+- 125 unit tests, 798 database permission/behaviour tests, 13 automated
+  Chromium/Firefox/WebKit acceptance tests, database linting,
   deployment-package validation, and matching CI gates.
 
 Confirmed bookings generate their workflow, private document checklist, reviewed contract data, payments, calendar records, reminders, and controlled delivery work. External adapters remain observable and cannot change operational authority. The application does not send consequential communications or update Yachtfolio automatically. Production approval is evidence-driven in `/settings/launch`; code completion alone does not permit live data.
@@ -73,7 +74,7 @@ Confirmed bookings generate their workflow, private document checklist, reviewed
 - Tailwind CSS 4
 - shadcn/ui using Base UI primitives
 - Supabase Auth, PostgreSQL, and the Supabase local development stack
-- Zod and Vitest
+- Zod, Vitest, Playwright, and axe-core
 - ESLint
 - npm
 

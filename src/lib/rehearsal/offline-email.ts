@@ -43,7 +43,7 @@ export function createOfflineRehearsalEmail(
     received_at: receivedAt,
     recipient_emails: ["operations@example.test"],
   }
-  const threadId = options.threadId ?? `offline-rehearsal-thread-${suffix}`
+  const threadId = options.threadId ?? `offline-rehearsal-thread-${kind}-${suffix}`
 
   if (kind === "enquiry_follow_up") {
     return gmailIngestionSchema.parse({

@@ -16,10 +16,13 @@ describe("offline rehearsal email", () => {
     const runId = "test-run"
     const fixtures = offlineEmailKinds.map((kind) => createOfflineRehearsalEmail(kind, { runId }))
     expect(new Set(fixtures.map((fixture) => fixture.provider_event_id)).size).toBe(5)
+    expect(new Set(fixtures.map((fixture) => fixture.provider_thread_id)).size).toBe(5)
     expect(createOfflineRehearsalEmail("circular", { runId }).has_list_unsubscribe).toBe(true)
     expect(createOfflineRehearsalEmail("internal", { runId, internalDomain: "internal.example.test" }).sender_email)
       .toBe("operations@internal.example.test")
     expect(createOfflineRehearsalEmail("new_enquiry", { runId }).provider_event_id)
       .toBe(createOfflineRehearsalEmail("new_enquiry", { runId }).provider_event_id)
+    expect(createOfflineRehearsalEmail("new_enquiry", { runId }).provider_thread_id)
+      .toBe(createOfflineRehearsalEmail("new_enquiry", { runId }).provider_thread_id)
   })
 })

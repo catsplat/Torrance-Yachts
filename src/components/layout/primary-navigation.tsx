@@ -18,7 +18,7 @@ export function PrimaryNavigation({ onNavigate }: PrimaryNavigationProps) {
       {navigationGroups.map((group, groupIndex) => (
         <div key={group.label ?? `navigation-${groupIndex}`} className="space-y-1">
           {group.label ? (
-            <p className="px-3 pb-1 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/45">
+            <p className="px-3 pb-1 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/65">
               {group.label}
             </p>
           ) : null}

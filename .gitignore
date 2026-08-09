@@ -21,6 +21,9 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 *.lcov
+playwright-report/
+test-results/
+playwright/.auth/
 
 # nyc test coverage
 .nyc_output
@@ -69,6 +72,7 @@ web_modules/
 .env
 .env.*
 !.env.example
+!.env.e2e.example
 !automation/.env.example
 !deploy/production/.env.example
 
