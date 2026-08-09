@@ -21,7 +21,11 @@ function Feedback({ state }: { state: UserAdminActionState }) {
 
 export function InviteUserForm() {
   const [state, action, pending] = useActionState(inviteInternalUserAction, initialState)
-  return <form action={action} className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"><Input name="displayName" placeholder="Staff display name" required /><Input name="email" placeholder="staff@company.example" required type="email" /><Button disabled={pending} type="submit">Send invitation</Button><div className="md:col-span-3"><Feedback state={state} /></div></form>
+  return <form action={action} className="grid gap-4 md:grid-cols-2">
+    <label className="grid gap-2 text-sm font-medium">Name<Input autoComplete="name" name="displayName" required /></label>
+    <label className="grid gap-2 text-sm font-medium">Work email<Input autoComplete="email" name="email" required type="email" /></label>
+    <div className="flex items-center gap-3 md:col-span-2"><Button disabled={pending} type="submit">{pending ? "Sending…" : "Send invitation"}</Button><Feedback state={state} /></div>
+  </form>
 }
 
 export function UserAdministrationForm({ profile }: { profile: Tables<"profiles"> }) {

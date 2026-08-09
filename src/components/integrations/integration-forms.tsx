@@ -4,6 +4,7 @@ import { useActionState } from "react"
 
 import {
   approveInvoiceProfileAction,
+  configureGmailIngestionAction,
   createNotificationDraftAction,
   createInvoiceProfileAction,
   generateInvoiceAction,
@@ -36,14 +37,18 @@ export function ConnectionForm({
   connection: Tables<"integration_connections">
 }) {
   const [state, action, pending] = useActionState(updateConnectionAction, initialState)
+  const connectionLabel = connection.provider === "gmail"
+    ? "Create approved drafts and staff email alerts"
+    : "Use this connection"
+  const showAdvanced = !["gmail", "google_sheets"].includes(connection.provider)
   return (
     <form action={action} className="space-y-4">
       <input name="provider" type="hidden" value={connection.provider} />
       <label className="flex min-h-11 items-center gap-3 rounded-lg border px-3 py-2.5 text-sm font-medium">
         <input defaultChecked={connection.enabled} name="enabled" type="checkbox" />
-        Use this connection
+        {connectionLabel}
       </label>
-      <details className="rounded-lg border bg-muted/20">
+      {showAdvanced ? <details className="rounded-lg border bg-muted/20">
         <summary className="cursor-pointer px-3 py-2.5 text-sm font-medium">Advanced</summary>
         <div className="grid gap-3 border-t p-3">
           <label className="grid gap-1.5 text-sm">
@@ -55,8 +60,43 @@ export function ConnectionForm({
             <textarea className="min-h-20 rounded-md border bg-background p-3 text-sm" defaultValue={connection.configuration_notes ?? ""} name="configurationNotes" />
           </label>
         </div>
-      </details>
+      </details> : null}
       <Button disabled={pending} type="submit" variant="outline">{pending ? "Saving…" : "Save"}</Button>
+      <Feedback state={state} />
+    </form>
+  )
+}
+
+type GmailMailboxCandidate = {
+  account_email: string
+  display_name: string
+  ingestion_enabled: boolean
+  last_error: string | null
+  last_failure_at: string | null
+  last_success_at: string | null
+  selected: boolean
+  user_id: string
+}
+
+export function GmailIngestionForm({ candidates }: { candidates: GmailMailboxCandidate[] }) {
+  const [state, action, pending] = useActionState(configureGmailIngestionAction, initialState)
+  const selected = candidates.find((candidate) => candidate.selected)
+  return (
+    <form action={action} className="space-y-4 border-t pt-4">
+      <div>
+        <p className="text-sm font-medium">Incoming mail</p>
+        <p className="mt-1 text-xs text-muted-foreground">{selected?.last_error ?? "Choose the connected inbox used for enquiries."}</p>
+      </div>
+      {candidates.length ? <label className="grid gap-2 text-sm font-medium">Inbox
+        <select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue={selected?.user_id ?? candidates[0]?.user_id} name="userId">
+          {candidates.map((candidate) => <option key={candidate.user_id} value={candidate.user_id}>{candidate.display_name} · {candidate.account_email}</option>)}
+        </select>
+      </label> : <p className="text-sm text-muted-foreground">No staff Google account is connected.</p>}
+      <label className="flex min-h-11 items-center gap-3 rounded-lg border px-3 py-2.5 text-sm font-medium">
+        <input defaultChecked={selected?.ingestion_enabled ?? false} disabled={!candidates.length} name="enabled" type="checkbox" />
+        Monitor this inbox
+      </label>
+      <Button disabled={pending || !candidates.length} type="submit" variant="outline">{pending ? "Saving…" : "Save"}</Button>
       <Feedback state={state} />
     </form>
   )

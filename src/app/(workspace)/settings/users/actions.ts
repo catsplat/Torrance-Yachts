@@ -65,7 +65,8 @@ export async function inviteInternalUserAction(
       redirectTo: `${applicationBaseUrl()}/auth/callback?next=/account/update-password`,
     })
     if (error) return { message: "The invitation could not be sent. Check SMTP and whether the account already exists." }
-    return { message: "Invitation email requested. Confirm delivery before granting operational work.", success: true }
+    revalidatePath("/settings/users")
+    return { message: "Invitation sent.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }

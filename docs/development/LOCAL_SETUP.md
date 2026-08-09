@@ -71,7 +71,36 @@ This procedure creates an isolated development environment. It must contain synt
    npm run dev
    ```
 
+   To rehearse the production build locally, use `npm run build` followed by
+   `npm start`. The standalone launcher binds to loopback by default and copies
+   the generated static/public assets into the runtime bundle.
+
 10. Sign in at `http://localhost:3000/login`.
+
+## Optional local Google connection
+
+Google sign-in remains private: an administrator must invite a staff email
+before that person can use **Continue with Google**.
+
+1. Create separate web OAuth clients for application sign-in and Workspace
+   access. Use these local redirect URIs:
+   - sign-in: `http://127.0.0.1:54321/auth/v1/callback`;
+   - Workspace: `http://localhost:3000/api/integrations/google/callback`.
+2. Copy each value from Google Cloud and store it without printing it:
+
+   ```powershell
+   .\ops\configure-google-oauth.ps1 -Field LoginClientId
+   .\ops\configure-google-oauth.ps1 -Field LoginClientSecret
+   .\ops\configure-google-oauth.ps1 -Field WorkspaceClientId
+   .\ops\configure-google-oauth.ps1 -Field WorkspaceClientSecret
+   ```
+
+3. Restart Supabase and the web application. The Supabase command wrapper loads
+   the ignored `.env.local` automatically.
+
+Staff then use **Continue with Google** to enter the application and separately
+choose **Connect Google Workspace** when they want Gmail alerts and controlled
+reporting access. No staff member handles an OAuth client secret.
 
 ## Daily commands
 

@@ -339,9 +339,10 @@ email_optional = false
 # Google is used for the familiar "Continue with Google" application sign-in.
 # This does not grant mailbox or spreadsheet access by itself. Those permissions
 # are requested separately through the authenticated Workspace connection flow.
-# Keep this disabled until the company-owned Google OAuth application is configured.
+# Values are supplied from the ignored local/production environment; the CLI
+# wrapper loads local values before parsing this configuration.
 [auth.external.google]
-enabled = false
+enabled = true
 client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 redirect_uri = ""

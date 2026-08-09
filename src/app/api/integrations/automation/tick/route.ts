@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { generateNextPendingEmailSuggestion } from "@/lib/ai/service"
+import { reconcileConfiguredGmailMailbox } from "@/lib/emails/gmail-reconciliation"
 import { hasValidAutomationToken } from "@/lib/integrations/auth"
 import { createAdminClient } from "@/lib/supabase/admin"
 
@@ -9,6 +10,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
   try {
+    let gmailResult: Awaited<ReturnType<typeof reconcileConfiguredGmailMailbox>> | null = null
+    let gmailError = false
+    try {
+      gmailResult = await reconcileConfiguredGmailMailbox()
+    } catch {
+      gmailError = true
+    }
     let aiResult: Awaited<ReturnType<typeof generateNextPendingEmailSuggestion>> | null = null
     let aiError = false
     try {
@@ -26,6 +34,11 @@ export async function POST(request: Request) {
       ...summary,
       ai_email_processed: aiResult?.processed ?? false,
       ai_processing_failed: aiError,
+      gmail_configured: gmailResult?.configured ?? gmailError,
+      gmail_cursor_initialized: gmailResult?.initialized ?? false,
+      gmail_messages_processed: gmailResult?.processed ?? 0,
+      gmail_reconciliation_failed: gmailError,
+      gmail_recovery_used: gmailResult?.recovered ?? false,
     })
   } catch {
     return NextResponse.json({ error: "Automation is not configured" }, { status: 503 })

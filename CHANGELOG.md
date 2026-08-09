@@ -4,8 +4,22 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-08-09
+
 ### Added
 
+- Administrator-selected incoming Gmail using the staff member's normal Google
+  Workspace connection, with durable history cursors, bounded reconciliation,
+  expired-cursor recovery and no second Gmail credential inside n8n.
+- Fake-provider Gmail API coverage and database controls for mailbox selection,
+  encrypted credential access, cursor durability and visible failures.
+- Local Google Cloud activation with separate OAuth clients for approved staff
+  sign-in and user-authorised Gmail/Sheets access, plus a clipboard-only helper
+  that keeps credentials out of commands, logs and version control.
+- A Supabase CLI wrapper that loads ignored local provider configuration before
+  starting or inspecting the local stack.
+- A production-style local launcher that serves the standalone Next.js output
+  on loopback and assembles its public/static assets before startup.
 - Optional familiar **Continue with Google** login for approved staff accounts,
   alongside a separate Google Workspace consent flow for the Gmail account and
   controlled Google Sheets reporting scope. Staff never see OAuth secrets or
@@ -22,6 +36,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Changed
 
+- Failed Google sign-in now directs uninvited users to the administrator instead
+  of describing the failure as an expired password-recovery link; successful
+  invitations also appear immediately in staff administration.
 - Replaced the fixed Offers, Bookings and Tasks register windows with stable
   server-side cursor pagination, PostgreSQL search/filtering and exact result
   counts so historical operational records remain discoverable.

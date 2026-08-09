@@ -1889,6 +1889,86 @@ export type Database = {
           },
         ]
       }
+      gmail_ingestion_settings: {
+        Row: {
+          enabled: boolean
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gmail_ingestion_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gmail_ingestion_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gmail_reconciliation_states: {
+        Row: {
+          account_email: string
+          last_error: string | null
+          last_failure_at: string | null
+          last_history_id: string | null
+          last_success_at: string | null
+          last_sync_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_email: string
+          last_error?: string | null
+          last_failure_at?: string | null
+          last_history_id?: string | null
+          last_success_at?: string | null
+          last_sync_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_email?: string
+          last_error?: string | null
+          last_failure_at?: string | null
+          last_history_id?: string | null
+          last_success_at?: string | null
+          last_sync_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gmail_reconciliation_states_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_connections: {
         Row: {
           configuration_notes: string | null
@@ -4607,6 +4687,10 @@ export type Database = {
         }
         Returns: string
       }
+      complete_gmail_reconciliation: {
+        Args: { p_history_id: string; p_synced_at: string; p_user_id: string }
+        Returns: undefined
+      }
       complete_initial_administrator: {
         Args: {
           p_display_name: string
@@ -4668,6 +4752,22 @@ export type Database = {
       complete_telegram_pairing: {
         Args: { p_telegram_chat_id: string; p_token_hash: string }
         Returns: string
+      }
+      configure_gmail_ingestion: {
+        Args: { p_enabled: boolean; p_user_id: string }
+        Returns: {
+          enabled: boolean
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "gmail_ingestion_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       configure_rehearsal_fixture_yacht: {
         Args: { p_rehearsal_run_id: string }
@@ -4932,6 +5032,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      fail_gmail_reconciliation: {
+        Args: { p_error: string; p_failed_at: string; p_user_id: string }
+        Returns: undefined
+      }
       fail_integration_delivery: {
         Args: {
           p_delivery_id: string
@@ -4947,6 +5051,18 @@ export type Database = {
         Returns: number
       }
       get_activation_readiness_snapshot: { Args: never; Returns: Json }
+      get_active_gmail_ingestion_credentials: {
+        Args: never
+        Returns: {
+          account_email: string
+          client_id: string
+          client_secret: string
+          last_history_id: string
+          refresh_token: string
+          scopes: string[]
+          user_id: string
+        }[]
+      }
       get_delivery_oauth_credentials: {
         Args: { p_delivery_id: string }
         Returns: {
@@ -5170,6 +5286,19 @@ export type Database = {
           summary: string
           updated_at: string
           yacht_name: string
+        }[]
+      }
+      list_google_mailbox_candidates: {
+        Args: never
+        Returns: {
+          account_email: string
+          display_name: string
+          ingestion_enabled: boolean
+          last_error: string
+          last_failure_at: string
+          last_success_at: string
+          selected: boolean
+          user_id: string
         }[]
       }
       list_my_notification_page: {

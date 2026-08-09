@@ -6,11 +6,11 @@ The Gmail intake endpoint instead uses the independent
 `EMAIL_INGESTION_TOKEN`, so compromise of one adapter secret does not grant the
 other adapter boundary.
 
-## Gmail intake
+## Gmail intake compatibility boundary
 
 `POST /api/integrations/gmail/n8n-message`
 
-Accepts one unsimplified item from n8n's pinned Gmail Trigger node. The
+Accepts one unsimplified item from an optional n8n Gmail Trigger node. The
 application normalises address objects, header signals, full text, Gmail IDs,
 thread ID, labels, and received time into its bounded ingestion contract. The
 stable Gmail message ID becomes the replay key, and PostgreSQL remains the
@@ -20,9 +20,11 @@ idempotency authority.
 
 `POST /api/integrations/automation/tick`
 
-Creates due notifications, Gmail provider actions, and internal calendar records.
-It also processes at most one pending email AI summary per tick before
-notifications are materialised. The operation is idempotent.
+Reconciles the administrator-selected, user-authorised Gmail inbox before
+creating due notifications, Gmail provider actions and internal calendar
+records. It also processes at most one pending email AI summary per tick before
+notifications are materialised. All boundaries are idempotent; n8n needs only
+the application automation secret, not a Gmail credential.
 
 ## Personal staff delivery
 

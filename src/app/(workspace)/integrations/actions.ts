@@ -66,6 +66,33 @@ export async function updateConnectionAction(
   return { message: "Integration metadata updated. No credential was stored in the database.", success: true }
 }
 
+const gmailIngestionSchema = z.object({
+  enabled: z.boolean(),
+  userId: z.union([z.literal(""), z.uuid()]),
+})
+
+export async function configureGmailIngestionAction(
+  _state: IntegrationActionState,
+  formData: FormData,
+): Promise<IntegrationActionState> {
+  const parsed = gmailIngestionSchema.safeParse({
+    enabled: Boolean(formData.get("enabled")),
+    userId: formData.get("userId") ?? "",
+  })
+  if (!parsed.success || (parsed.data.enabled && !parsed.data.userId)) {
+    return { message: "Choose the inbox to monitor." }
+  }
+  const context = await contextOrMessage()
+  if ("message" in context) return context
+  const { error } = await context.supabase.rpc("configure_gmail_ingestion", {
+    p_enabled: parsed.data.enabled,
+    p_user_id: parsed.data.userId || context.userId,
+  })
+  if (error) return { message: "The Gmail inbox could not be updated." }
+  refreshIntegrations()
+  return { message: parsed.data.enabled ? "Incoming Gmail enabled." : "Incoming Gmail paused.", success: true }
+}
+
 export async function reviewNotificationAction(
   _state: IntegrationActionState,
   formData: FormData,

@@ -38,6 +38,13 @@ export const getIntegrationWorkspace = cache(async () => {
   }
 })
 
+export const getGoogleMailboxCandidates = cache(async () => {
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc("list_google_mailbox_candidates")
+  if (error) throw new Error("Unable to load connected Gmail inboxes.")
+  return data
+})
+
 export const getCalendarWorkspace = cache(async () => {
   const supabase = await createClient()
   const { data, error } = await supabase.from("calendar_events").select("*")

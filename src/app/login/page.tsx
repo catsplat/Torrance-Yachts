@@ -31,7 +31,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     : params.oauth === "not-configured"
       ? "Google sign-in has not been enabled for this workspace yet."
       : params.oauth === "failed"
-        ? "Google sign-in could not be started. Please try again or use your password."
+        ? "Google sign-in could not be completed. Ask an administrator to confirm your account has been invited, or use your password."
         : null
 
   return (

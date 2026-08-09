@@ -1,8 +1,10 @@
 # Phase 9 email-ingestion architecture
 
 ```text
-Gmail watch/history sync (Phase 11 n8n adapter)
-  -> authenticated POST /api/integrations/gmail/messages
+Administrator-selected staff Google Workspace connection
+  -> n8n scheduled POST /api/integrations/automation/tick
+  -> Vault-held token refresh + Gmail history reconciliation
+  -> shared validated ingestion command
   -> payload validation and service-role command
   -> unique Gmail message/thread/event records
   -> deterministic safe routing
@@ -13,11 +15,11 @@ Gmail watch/history sync (Phase 11 n8n adapter)
   -> durable workflow event / provider action outbox
 ```
 
-Google's Gmail API requires a mailbox `watch` renewal at least every seven days and
-recommends daily renewal. Notifications contain a history ID rather than the full
-message, so the adapter will use `history.list` and then fetch each message. Google
-also recommends periodic history synchronisation because notifications can be
-delayed or dropped:
+The preferred adapter uses periodic `history.list` reconciliation and then fetches
+each full message. The first run establishes a cursor without importing historical
+mail. An expired cursor uses a bounded seven-day recovery. The existing raw n8n
+Gmail endpoint remains as a compatibility/test boundary, but the preferred setup
+does not require a second Gmail credential inside n8n.
 
 - https://developers.google.com/workspace/gmail/api/guides/push
 - https://developers.google.com/workspace/gmail/api/reference/rest

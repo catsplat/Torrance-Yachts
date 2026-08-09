@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import { emailAddressesFrom, plainTextFromHtml } from "./message-content"
 import { gmailIngestionSchema } from "./validation"
 
 const rawN8nGmailMessageSchema = z.object({
@@ -16,25 +17,6 @@ const rawN8nGmailMessageSchema = z.object({
   threadId: z.string().trim().min(1).max(500),
   to: z.unknown().optional(),
 }).passthrough()
-
-const emailPattern = /[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+/gi
-
-function emailsFrom(value: unknown) {
-  const discovered: string[] = []
-  const collect = (candidate: unknown) => {
-    if (typeof candidate === "string") {
-      discovered.push(...(candidate.match(emailPattern) ?? []))
-      return
-    }
-    if (!candidate || typeof candidate !== "object") return
-    const record = candidate as Record<string, unknown>
-    if (typeof record.address === "string") collect(record.address)
-    if (typeof record.text === "string") collect(record.text)
-    if (Array.isArray(record.value)) record.value.forEach(collect)
-  }
-  collect(value)
-  return [...new Set(discovered.map((email) => email.toLowerCase()))]
-}
 
 function senderName(value: unknown) {
   if (!value || typeof value !== "object") return ""
@@ -55,30 +37,18 @@ function headerMap(value: Record<string, unknown>) {
   )
 }
 
-function plainTextFallback(value: unknown) {
-  if (typeof value !== "string") return ""
-  return value
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/\s+/g, " ")
-    .trim()
-}
-
 export function normaliseN8nGmailMessage(input: unknown) {
   const message = rawN8nGmailMessageSchema.parse(input)
   const headers = headerMap(message.headers)
-  const senderEmails = emailsFrom(message.from)
-  const ccEmails = emailsFrom(message.cc)
+  const senderEmails = emailAddressesFrom(message.from)
+  const ccEmails = emailAddressesFrom(message.cc)
   const recipientEmails = [
-    ...emailsFrom(message.to),
-    ...emailsFrom(headers["delivered-to"]),
+    ...emailAddressesFrom(message.to),
+    ...emailAddressesFrom(headers["delivered-to"]),
   ]
   const receivedAt = new Date(message.date)
   if (!Number.isFinite(receivedAt.getTime())) throw new Error("Gmail message date is invalid.")
-  const bodyText = (message.text.trim() || plainTextFallback(message.html)).slice(0, 200_000)
+  const bodyText = (message.text.trim() || plainTextFromHtml(message.html)).slice(0, 200_000)
   const hasListId = Boolean(headers["list-id"])
   const hasListUnsubscribe = Boolean(headers["list-unsubscribe"])
   const precedence = headers.precedence?.toLowerCase() ?? ""
