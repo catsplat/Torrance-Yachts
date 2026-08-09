@@ -11,11 +11,11 @@ export async function getAuthenticatedRequestContext() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("active, role")
+    .select("access_approved_at, active, role")
     .eq("id", userId)
     .single()
 
-  if (!profile?.active) return null
+  if (!profile?.active || !profile.access_approved_at) return null
 
   return {
     role: profile.role,

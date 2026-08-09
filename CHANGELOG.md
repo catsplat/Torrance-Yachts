@@ -8,6 +8,13 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- Explicit internal-access approval for every Auth identity, enforced by the
+  OAuth callback, request context and PostgreSQL authorization functions. A
+  successful but uninvited Google identity remains inactive and cannot read
+  operational data.
+- A service-only, administrator-attributed invitation approval command plus
+  permission coverage for invited, uninvited, active and deactivated OAuth
+  identities, including RLS assertions for yachts and enquiries.
 - User-authorised Google Calendar, Drive and Sheets delivery adapters with one
   administrator-selected staff account, encrypted Vault credentials, bounded
   dispatch, stable provider identifiers and visible retry/failure handling.
@@ -18,6 +25,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Changed
 
+- Repaired the cross-platform dependency lock and production CI preflight so
+  Linux clean installs and the complete deployment image are verified again.
+- Updated release documentation and verification totals to match v0.17.0.
 - Reporting snapshots now include immutable PostgreSQL identifiers and use raw,
   formula-safe cell values. The core n8n scheduler calls the application-owned
   Google dispatcher and no longer needs Calendar, Drive or Sheets credentials.

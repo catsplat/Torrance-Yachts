@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 
-import { failedAuthCallbackPath, safeAuthNextPath } from "@/lib/auth/callback-routing"
+import {
+  failedAuthCallbackPath,
+  hasApprovedInternalAccess,
+  safeAuthNextPath,
+} from "@/lib/auth/callback-routing"
 import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request: Request) {
@@ -13,9 +17,15 @@ export async function GET(request: Request) {
     if (!error) {
       const { data: userResult } = await supabase.auth.getUser()
       const { data: profile } = userResult.user
-        ? await supabase.from("profiles").select("active").eq("id", userResult.user.id).maybeSingle()
+        ? await supabase
+            .from("profiles")
+            .select("access_approved_at, active")
+            .eq("id", userResult.user.id)
+            .maybeSingle()
         : { data: null }
-      if (profile?.active) return NextResponse.redirect(new URL(next, url.origin))
+      if (hasApprovedInternalAccess(profile)) {
+        return NextResponse.redirect(new URL(next, url.origin))
+      }
       await supabase.auth.signOut()
       return NextResponse.redirect(new URL("/login?oauth=inactive", url.origin))
     }

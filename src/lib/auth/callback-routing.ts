@@ -8,3 +8,8 @@ export function failedAuthCallbackPath(nextPath: string) {
     : "/login?oauth=failed"
 }
 
+export function hasApprovedInternalAccess(
+  profile: { access_approved_at: string | null; active: boolean } | null,
+) {
+  return Boolean(profile?.active && profile.access_approved_at)
+}

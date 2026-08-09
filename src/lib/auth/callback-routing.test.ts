@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { failedAuthCallbackPath, safeAuthNextPath } from "./callback-routing"
+import {
+  failedAuthCallbackPath,
+  hasApprovedInternalAccess,
+  safeAuthNextPath,
+} from "./callback-routing"
 
 describe("authentication callback routing", () => {
   it("accepts local paths and rejects protocol-relative redirects", () => {
@@ -13,5 +17,15 @@ describe("authentication callback routing", () => {
     expect(failedAuthCallbackPath("/account/update-password")).toBe("/login?recovery=invalid")
     expect(failedAuthCallbackPath("/")).toBe("/login?oauth=failed")
   })
-})
 
+  it("requires both administrator approval and an active profile", () => {
+    expect(hasApprovedInternalAccess(null)).toBe(false)
+    expect(hasApprovedInternalAccess({ access_approved_at: null, active: true })).toBe(false)
+    expect(
+      hasApprovedInternalAccess({ access_approved_at: "2026-08-09T12:00:00Z", active: false }),
+    ).toBe(false)
+    expect(
+      hasApprovedInternalAccess({ access_approved_at: "2026-08-09T12:00:00Z", active: true }),
+    ).toBe(true)
+  })
+})
