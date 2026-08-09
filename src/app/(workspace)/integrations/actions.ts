@@ -10,7 +10,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { generateNextPendingEmailSuggestion } from "@/lib/ai/service"
 import { getInvoiceGenerationContext } from "@/lib/integrations/data"
 import { generateInvoicePdf } from "@/lib/integrations/invoice"
-import { listGoogleDriveFolders } from "@/lib/integrations/google-workspace"
+import { listGoogleDriveFolders, safeGoogleConnectionMessage } from "@/lib/integrations/google-workspace"
 import { getActiveGoogleWorkspaceDispatchCredentials } from "@/lib/integrations/google-workspace-server"
 import {
   connectionSettingsSchema,
@@ -156,7 +156,7 @@ export async function selectGoogleDriveFolderAction(
     })
     if (error) return { message: "The Drive folder could not be saved." }
   } catch (error) {
-    return { message: error instanceof Error ? error.message : "Google Drive folders could not be loaded." }
+    return { message: safeGoogleConnectionMessage(error, "Google Drive folders could not be loaded.") }
   }
   refreshIntegrations()
   return { message: "Drive folder selected.", success: true }
@@ -173,7 +173,7 @@ export async function reviewNotificationAction(
   const { error } = await context.supabase.rpc("review_notification", {
     p_approved: parsed.data.approved,
     p_notification_id: parsed.data.notificationId,
-    p_reason: parsed.data.approved ? "Notification approved" : "Notification cancelled",
+    p_reason: parsed.data.approved ? "Notification approved" : parsed.data.reason,
   })
   if (error) {
     return { message: "The notification could not be reviewed. Check recipient and integration configuration." }

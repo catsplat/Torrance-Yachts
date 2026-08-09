@@ -244,6 +244,69 @@ export type Database = {
           },
         ]
       }
+      ai_work_queue: {
+        Row: {
+          attempt_count: number
+          claimed_at: string | null
+          claimed_by: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          last_error: string | null
+          lease_expires_at: string | null
+          next_attempt_at: string
+          owner_user_id: string
+          source_id: string
+          status: Database["public"]["Enums"]["ai_work_status"]
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          claimed_at?: string | null
+          claimed_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          lease_expires_at?: string | null
+          next_attempt_at?: string
+          owner_user_id: string
+          source_id: string
+          status?: Database["public"]["Enums"]["ai_work_status"]
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          claimed_at?: string | null
+          claimed_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          lease_expires_at?: string | null
+          next_attempt_at?: string
+          owner_user_id?: string
+          source_id?: string
+          status?: Database["public"]["Enums"]["ai_work_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_work_queue_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_work_queue_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: true
+            referencedRelation: "email_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_events: {
         Row: {
           action: string
@@ -1160,6 +1223,7 @@ export type Database = {
           id: string
           mime_type: string
           original_filename: string
+          quarantine_removed_at: string | null
           released_at: string | null
           requirement_id: string | null
           retention_class: string
@@ -1188,6 +1252,7 @@ export type Database = {
           id?: string
           mime_type: string
           original_filename: string
+          quarantine_removed_at?: string | null
           released_at?: string | null
           requirement_id?: string | null
           retention_class?: string
@@ -1216,6 +1281,7 @@ export type Database = {
           id?: string
           mime_type?: string
           original_filename?: string
+          quarantine_removed_at?: string | null
           released_at?: string | null
           requirement_id?: string | null
           retention_class?: string
@@ -2884,6 +2950,27 @@ export type Database = {
           },
         ]
       }
+      request_rate_limits: {
+        Row: {
+          request_count: number
+          scope: string
+          subject_hash: string
+          window_started_at: string
+        }
+        Insert: {
+          request_count: number
+          scope: string
+          subject_hash: string
+          window_started_at: string
+        }
+        Update: {
+          request_count?: number
+          scope?: string
+          subject_hash?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
       task_dependencies: {
         Row: {
           created_at: string
@@ -3470,6 +3557,61 @@ export type Database = {
             foreignKeyName: "tutorial_sessions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      upload_byte_quotas: {
+        Row: {
+          consumed_bytes: number
+          user_id: string
+          window_started_at: string
+        }
+        Insert: {
+          consumed_bytes: number
+          user_id: string
+          window_started_at: string
+        }
+        Update: {
+          consumed_bytes?: number
+          user_id?: string
+          window_started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_byte_quotas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      upload_leases: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_leases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4502,6 +4644,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      archive_stale_enquiries: {
+        Args: { p_enquiry_ids: string[]; p_reason: string }
+        Returns: number
+      }
       calculate_charter_fee: {
         Args: {
           p_charter_days: number
@@ -4571,6 +4717,15 @@ export type Database = {
           conflicting_reference: string
           reserved_from: string
           reserved_through: string
+        }[]
+      }
+      claim_ai_email_work: {
+        Args: { p_limit?: number; p_worker_id: string }
+        Returns: {
+          attempt_count: number
+          claimed_source_id: string
+          owner_user_id: string
+          work_id: string
         }[]
       }
       claim_integration_deliveries: {
@@ -4673,6 +4828,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      claim_upload_capacity: {
+        Args: {
+          p_max_bytes_per_hour?: number
+          p_max_concurrent?: number
+          p_size_bytes: number
+          p_user_id: string
+        }
+        Returns: string
+      }
       classify_email_message: {
         Args: {
           p_classification: Database["public"]["Enums"]["email_classification"]
@@ -4743,6 +4907,10 @@ export type Database = {
           p_summary: string
         }
         Returns: string
+      }
+      complete_ai_email_work: {
+        Args: { p_work_id: string; p_worker_id: string }
+        Returns: undefined
       }
       complete_gmail_reconciliation: {
         Args: { p_history_id: string; p_synced_at: string; p_user_id: string }
@@ -4924,6 +5092,30 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      consume_rate_limit: {
+        Args: {
+          p_max_requests: number
+          p_scope: string
+          p_subject_hash: string
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
+      count_ai_review: {
+        Args: { p_status?: Database["public"]["Enums"]["ai_suggestion_status"] }
+        Returns: number
+      }
+      count_audit_events: {
+        Args: {
+          p_action?: string
+          p_actor_user_id?: string
+          p_entity_type?: string
+          p_from?: string
+          p_source?: string
+          p_to?: string
+        }
+        Returns: number
+      }
       count_booking_register: {
         Args: {
           p_query?: string
@@ -4971,6 +5163,13 @@ export type Database = {
         }
         Returns: number
       }
+      count_integration_deliveries: {
+        Args: {
+          p_provider?: Database["public"]["Enums"]["integration_provider"]
+          p_status?: Database["public"]["Enums"]["integration_delivery_status"]
+        }
+        Returns: number
+      }
       count_my_notifications: { Args: { p_read?: boolean }; Returns: number }
       count_offer_register: {
         Args: {
@@ -4980,6 +5179,7 @@ export type Database = {
         }
         Returns: number
       }
+      count_stale_enquiries: { Args: { p_query?: string }; Returns: number }
       count_task_register: {
         Args: {
           p_assignee_id?: string
@@ -5105,6 +5305,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      fail_ai_email_work: {
+        Args: {
+          p_error: string
+          p_retryable: boolean
+          p_work_id: string
+          p_worker_id: string
+        }
+        Returns: undefined
+      }
       fail_gmail_reconciliation: {
         Args: { p_error: string; p_failed_at: string; p_user_id: string }
         Returns: undefined
@@ -5147,6 +5356,8 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_ai_queue_health: { Args: never; Returns: Json }
+      get_business_readiness: { Args: never; Returns: Json }
       get_delivery_oauth_credentials: {
         Args: { p_delivery_id: string }
         Returns: {
@@ -5154,6 +5365,7 @@ export type Database = {
           client_id: string
           client_secret: string
           refresh_token: string
+          user_id: string
         }[]
       }
       get_initial_setup_profile_count: { Args: never; Returns: number }
@@ -5187,6 +5399,7 @@ export type Database = {
         Args: { p_environment: string }
         Returns: Json
       }
+      get_operations_health: { Args: never; Returns: Json }
       get_user_google_workspace_credentials: {
         Args: { p_user_id: string }
         Returns: {
@@ -5197,6 +5410,7 @@ export type Database = {
           scopes: string[]
         }[]
       }
+      get_workspace_dashboard_summary: { Args: never; Returns: Json }
       ingest_gmail_message: {
         Args: {
           p_attachments?: Json
@@ -5228,6 +5442,62 @@ export type Database = {
           target_status: Database["public"]["Enums"]["enquiry_status"]
         }
         Returns: boolean
+      }
+      list_active_enquiry_choices: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          id: string
+          reference: string
+          status: Database["public"]["Enums"]["enquiry_status"]
+          summary: string
+        }[]
+      }
+      list_ai_review_page: {
+        Args: {
+          p_cursor_created_at?: string
+          p_cursor_id?: string
+          p_limit?: number
+          p_status?: Database["public"]["Enums"]["ai_suggestion_status"]
+        }
+        Returns: {
+          analysis_kind: Database["public"]["Enums"]["ai_analysis_kind"]
+          confidence: number
+          created_at: string
+          href: string
+          id: string
+          model: string
+          provider: string
+          source_id: string
+          source_label: string
+          source_type: string
+          status: Database["public"]["Enums"]["ai_suggestion_status"]
+          summary: string
+        }[]
+      }
+      list_audit_event_page: {
+        Args: {
+          p_action?: string
+          p_actor_user_id?: string
+          p_cursor_created_at?: string
+          p_cursor_id?: number
+          p_entity_type?: string
+          p_from?: string
+          p_limit?: number
+          p_source?: string
+          p_to?: string
+        }
+        Returns: {
+          action: string
+          actor_name: string
+          actor_user_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: number
+          new_values: Json
+          old_values: Json
+          source: string
+        }[]
       }
       list_booking_register_page: {
         Args: {
@@ -5396,6 +5666,44 @@ export type Database = {
           user_id: string
         }[]
       }
+      list_integration_delivery_page: {
+        Args: {
+          p_cursor_created_at?: string
+          p_cursor_id?: string
+          p_limit?: number
+          p_provider?: Database["public"]["Enums"]["integration_provider"]
+          p_status?: Database["public"]["Enums"]["integration_delivery_status"]
+        }
+        Returns: {
+          attempt_count: number
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          credential_user_id: string | null
+          delivered_at: string | null
+          external_id: string | null
+          external_url: string | null
+          id: string
+          idempotency_key: string
+          last_error_code: string | null
+          last_error_message: string | null
+          lease_expires_at: string | null
+          next_attempt_at: string
+          operation: Database["public"]["Enums"]["integration_operation"]
+          payload: Json
+          provider: Database["public"]["Enums"]["integration_provider"]
+          source_id: string
+          source_type: string
+          status: Database["public"]["Enums"]["integration_delivery_status"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "integration_deliveries"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       list_my_notification_page: {
         Args: {
           p_cursor_created_at?: string
@@ -5440,6 +5748,30 @@ export type Database = {
           yacht_name: string
         }[]
       }
+      list_stale_enquiry_page: {
+        Args: {
+          p_cursor_id?: string
+          p_cursor_updated_at?: string
+          p_limit?: number
+          p_query?: string
+        }
+        Returns: {
+          broker_company_name: string
+          broker_name: string
+          charter_end_date: string
+          charter_start_date: string
+          customer_name: string
+          guest_count: number
+          id: string
+          owner_name: string
+          priority: Database["public"]["Enums"]["enquiry_priority"]
+          reference: string
+          status: Database["public"]["Enums"]["enquiry_status"]
+          summary: string
+          updated_at: string
+          yacht_name: string
+        }[]
+      }
       list_task_register_page: {
         Args: {
           p_assignee_id?: string
@@ -5475,6 +5807,10 @@ export type Database = {
         }[]
       }
       mark_all_notifications_read: { Args: never; Returns: number }
+      mark_document_quarantine_removed: {
+        Args: { p_document_id: string; p_reason: string }
+        Returns: undefined
+      }
       mark_notification_read: {
         Args: { p_notification_id: string }
         Returns: undefined
@@ -5552,6 +5888,14 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: Database["public"]["Enums"]["notification_channel"][]
       }
+      prepare_synthetic_acceptance_administrator: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      prepare_synthetic_acceptance_staff: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       queue_document_drive_sync: {
         Args: { p_document_id: string; p_reason: string }
         Returns: string
@@ -5603,6 +5947,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_google_oauth_health: {
+        Args: {
+          p_error?: string
+          p_recorded_at?: string
+          p_requires_reauthentication?: boolean
+          p_succeeded: boolean
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       record_tutorial_event: {
         Args: {
           p_details?: Json
@@ -5613,6 +5967,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      redact_audit_json: { Args: { p_value: Json }; Returns: Json }
       refresh_booking_task_states: {
         Args: { p_booking_id: string }
         Returns: undefined
@@ -5707,6 +6062,10 @@ export type Database = {
             }
             Returns: string
           }
+      reject_quarantined_document: {
+        Args: { p_document_id: string; p_reason: string }
+        Returns: undefined
+      }
       release_clean_booking_document: {
         Args: {
           p_document_id: string
@@ -5714,6 +6073,10 @@ export type Database = {
           p_reason: string
         }
         Returns: undefined
+      }
+      release_upload_capacity: {
+        Args: { p_lease_id: string }
+        Returns: boolean
       }
       reopen_task: {
         Args: { p_reason: string; p_task_id: string }
@@ -5851,6 +6214,19 @@ export type Database = {
           p_scopes: string[]
         }
         Returns: undefined
+      }
+      search_workspace: {
+        Args: { p_limit_per_type?: number; p_query: string }
+        Returns: {
+          entity_id: string
+          entity_type: string
+          href: string
+          primary_label: string
+          rank: number
+          secondary_label: string
+          status_label: string
+          total_count: number
+        }[]
       }
       set_yachtfolio_action_status: {
         Args: {
@@ -6304,6 +6680,7 @@ export type Database = {
         | "approved"
         | "rejected"
         | "superseded"
+      ai_work_status: "pending" | "claimed" | "completed" | "permanent_failure"
       backup_verification_status: "started" | "passed" | "failed"
       booking_status: "confirmed" | "charter_active" | "completed" | "cancelled"
       calendar_event_kind: "charter" | "payment" | "task"
@@ -6602,6 +6979,7 @@ export const Constants = {
         "rejected",
         "superseded",
       ],
+      ai_work_status: ["pending", "claimed", "completed", "permanent_failure"],
       backup_verification_status: ["started", "passed", "failed"],
       booking_status: ["confirmed", "charter_active", "completed", "cancelled"],
       calendar_event_kind: ["charter", "payment", "task"],

@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import {
+  GoogleOAuthError,
   refreshGoogleAccessToken,
   type GoogleWorkspaceCredentials,
 } from "./google-workspace"
@@ -302,6 +303,14 @@ export async function dispatchGoogleDrive(
 }
 
 export function safeGoogleProviderFailure(error: unknown) {
+  if (error instanceof GoogleOAuthError) {
+    return {
+      errorCode: "google_authorisation",
+      errorMessage: error.message,
+      ...(error.requiresReauthentication ? { requiresReauthentication: true } : {}),
+      retryable: !error.requiresReauthentication,
+    }
+  }
   if (error instanceof GoogleProviderError) {
     return { errorCode: error.code, errorMessage: error.message, retryable: error.retryable }
   }

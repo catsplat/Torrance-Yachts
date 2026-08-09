@@ -1,86 +1,89 @@
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { phaseFourOpenStatuses } from "@/lib/enquiries/state-machine";
 import { createClient } from "@/lib/supabase/server";
 import { formatTaskDate, taskDueState, taskStatusLabels } from "@/lib/tasks/options";
 import { redirect } from "next/navigation";
+import { z } from "zod";
+
+const dashboardSummarySchema = z.object({
+  ai: z.object({ pending_review: z.coerce.number() }),
+  bookings: z.object({ active: z.coerce.number(), yachtfolio_pending: z.coerce.number() }),
+  documents: z.object({ awaiting_review: z.coerce.number(), missing_required: z.coerce.number() }),
+  email: z.object({ relevant_received: z.coerce.number(), review_required: z.coerce.number() }),
+  enquiries: z.object({
+    awaiting_signatures: z.coerce.number(), contract_issued: z.coerce.number(),
+    negotiating: z.coerce.number(), new: z.coerce.number(), offer_sent: z.coerce.number(),
+    open: z.coerce.number(), waiting_for_reply: z.coerce.number(),
+  }),
+  integrations: z.object({ failed_deliveries: z.coerce.number(), pending_approval: z.coerce.number() }),
+  offers: z.object({ approved_not_sent: z.coerce.number(), awaiting_approval: z.coerce.number() }),
+  payments: z.object({ scheduled: z.coerce.number() }),
+  tasks: z.object({ open: z.coerce.number(), overdue: z.coerce.number() }),
+});
 
 export default async function DashboardPage() {
   const currentUser = await getCurrentUser();
   if (!currentUser) redirect("/login");
 
   const supabase = await createClient();
-  const today = new Date().toISOString().slice(0, 10);
-  const [enquiriesResult, offersResult, bookingsResult, tasksResult, taskCountResult, overdueTaskCountResult, requirementsResult, paymentsResult, emailsResult, aiResult, notificationsResult, deliveriesResult] = await Promise.all([
-    supabase.from("enquiries").select("status").in("status", phaseFourOpenStatuses),
-    supabase.from("offers").select("status").in("status", ["draft", "approved"]),
+  const [summaryResult, bookingsResult, tasksResult] = await Promise.all([
+    supabase.rpc("get_workspace_dashboard_summary"),
     supabase.from("bookings").select("id,reference,status,charter_start_date,charter_end_date,yacht:yachts!bookings_yacht_id_fkey(name),yachtfolio:yachtfolio_booking_actions!yachtfolio_booking_actions_booking_id_fkey(status)").in("status", ["confirmed", "charter_active"]).order("charter_start_date").limit(5),
     supabase.from("tasks").select("id,title,status,priority,due_date,booking:bookings!tasks_booking_id_fkey(reference,yacht:yachts!bookings_yacht_id_fkey(name))").in("status", ["ready", "blocked"]).order("due_date", { ascending: true, nullsFirst: false }).limit(50),
-    supabase.from("tasks").select("id", { count: "exact", head: true }).in("status", ["ready", "blocked"]),
-    supabase.from("tasks").select("id", { count: "exact", head: true }).eq("status", "ready").lt("due_date", today),
-    supabase.from("booking_document_requirements").select("status,required").in("status", ["missing", "uploaded"]),
-    supabase.from("payment_schedules").select("status,due_date").eq("status", "scheduled"),
-    supabase.from("email_messages").select("processing_status,classification")
-      .in("processing_status", ["review_required", "classified", "linked"]),
-    supabase.from("ai_suggestions").select("status").eq("status", "pending_review"),
-    supabase.from("notifications").select("status").eq("status", "pending_approval"),
-    supabase.from("integration_deliveries").select("status").eq("status", "failed"),
   ]);
-  const { data: openEnquiries, error } = enquiriesResult;
-
-  if (error || offersResult.error || bookingsResult.error || tasksResult.error || taskCountResult.error || overdueTaskCountResult.error || requirementsResult.error || paymentsResult.error || emailsResult.error || aiResult.error || notificationsResult.error || deliveriesResult.error) throw new Error("Unable to load the live dashboard summary.");
-
-  const countStatus = (status: (typeof phaseFourOpenStatuses)[number]) =>
-    openEnquiries.filter((enquiry) => enquiry.status === status).length;
+  if (summaryResult.error || bookingsResult.error || tasksResult.error) throw new Error("Unable to load the live dashboard summary.");
+  const parsedSummary = dashboardSummarySchema.safeParse(summaryResult.data);
+  if (!parsedSummary.success) throw new Error("The dashboard summary contract is invalid.");
+  const summary = parsedSummary.data;
 
   return (
     <DashboardOverview
-      aiSummary={{ pendingReview: aiResult.data.length }}
+      aiSummary={{ pendingReview: summary.ai.pending_review }}
       integrationSummary={{
-        failedDeliveries: deliveriesResult.data.length,
-        pendingApproval: notificationsResult.data.length,
+        failedDeliveries: summary.integrations.failed_deliveries,
+        pendingApproval: summary.integrations.pending_approval,
       }}
       displayName={currentUser.displayName}
       enquirySummary={{
         needsResponse:
-          countStatus("new") + countStatus("waiting_for_reply"),
-        openCount: openEnquiries.length,
+          summary.enquiries.new + summary.enquiries.waiting_for_reply,
+        openCount: summary.enquiries.open,
         pipeline: [
-          { label: "New", tone: "bg-sky-500", value: countStatus("new") },
+          { label: "New", tone: "bg-sky-500", value: summary.enquiries.new },
           {
             label: "Waiting for reply",
             tone: "bg-amber-500",
-            value: countStatus("waiting_for_reply"),
+            value: summary.enquiries.waiting_for_reply,
           },
           {
             label: "Offer sent",
             tone: "bg-violet-500",
-            value: countStatus("offer_sent"),
+            value: summary.enquiries.offer_sent,
           },
           {
             label: "Negotiating",
             tone: "bg-teal-600",
-            value: countStatus("negotiating"),
+            value: summary.enquiries.negotiating,
           },
           {
             label: "Contract issued",
             tone: "bg-indigo-500",
-            value: countStatus("contract_issued"),
+            value: summary.enquiries.contract_issued,
           },
           {
             label: "Awaiting signatures",
             tone: "bg-orange-500",
-            value: countStatus("awaiting_signatures"),
+            value: summary.enquiries.awaiting_signatures,
           },
         ],
       }}
       offerSummary={{
-        awaitingApproval: offersResult.data.filter((offer) => offer.status === "draft").length,
-        approvedNotSent: offersResult.data.filter((offer) => offer.status === "approved").length,
+        awaitingApproval: summary.offers.awaiting_approval,
+        approvedNotSent: summary.offers.approved_not_sent,
       }}
       bookingSummary={{
-        activeCount: bookingsResult.data.length,
-        yachtfolioPending: bookingsResult.data.filter((booking) => booking.yachtfolio?.status === "pending").length,
+        activeCount: summary.bookings.active,
+        yachtfolioPending: summary.bookings.yachtfolio_pending,
         upcoming: bookingsResult.data.map((booking) => ({
           id: booking.id,
           reference: booking.reference,
@@ -91,8 +94,8 @@ export default async function DashboardPage() {
         })),
       }}
       taskSummary={{
-        openCount: taskCountResult.count ?? 0,
-        overdueCount: overdueTaskCountResult.count ?? 0,
+        openCount: summary.tasks.open,
+        overdueCount: summary.tasks.overdue,
         priorities: [...tasksResult.data]
           .sort((a, b) => {
             const priority = { urgent: 0, high: 1, normal: 2, low: 3 };
@@ -117,13 +120,13 @@ export default async function DashboardPage() {
           }),
       }}
       documentSummary={{
-        missingRequired: requirementsResult.data.filter((requirement) => requirement.required && requirement.status === "missing").length,
-        awaitingReview: requirementsResult.data.filter((requirement) => requirement.status === "uploaded").length,
-        paymentsDue: paymentsResult.data.length,
+        missingRequired: summary.documents.missing_required,
+        awaitingReview: summary.documents.awaiting_review,
+        paymentsDue: summary.payments.scheduled,
       }}
       emailSummary={{
-        reviewRequired: emailsResult.data.filter((message) => message.processing_status === "review_required").length,
-        relevantReceived: emailsResult.data.filter((message) => message.classification !== "circular").length,
+        reviewRequired: summary.email.review_required,
+        relevantReceived: summary.email.relevant_received,
       }}
     />
   );

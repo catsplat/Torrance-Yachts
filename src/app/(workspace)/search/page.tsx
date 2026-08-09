@@ -23,47 +23,26 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     .replaceAll(/[^\p{L}\p{N}@._+\-\s]/gu, " ")
     .replaceAll(/\s+/g, " ")
     .trim()
-  const pattern = `%${safeQuery}%`
-  const results = safeQuery.length >= 2
-    ? await Promise.all([
-        supabase.from("enquiries").select("id, reference, summary, status").or(`reference.ilike.${pattern},summary.ilike.${pattern}`).limit(8),
-        supabase.from("bookings").select("id, reference, status, yacht:yachts!bookings_yacht_id_fkey(name)").or(`reference.ilike.${pattern},embarkation_port.ilike.${pattern},disembarkation_port.ilike.${pattern}`).limit(8),
-        supabase.from("tasks").select("id, title, status, step_code").or(`title.ilike.${pattern},step_code.ilike.${pattern}`).limit(8),
-        supabase.from("yachts").select("id, name, builder, status").or(`name.ilike.${pattern},builder.ilike.${pattern}`).limit(8),
-        supabase.from("contacts").select("id, full_name, email").or(`full_name.ilike.${pattern},email.ilike.${pattern}`).limit(8),
-        supabase.from("email_messages").select("id, subject, sender_email, classification").or(`subject.ilike.${pattern},sender_email.ilike.${pattern}`).limit(8),
-      ])
-    : null
-  if (results?.some((result) => result.error)) {
-    throw new Error("The workspace search could not be completed.")
+  const { data: results, error } = safeQuery.length >= 2
+    ? await supabase.rpc("search_workspace", { p_limit_per_type: 8, p_query: safeQuery })
+    : { data: [], error: null }
+  if (error) throw new Error("The workspace search could not be completed.")
+  const labels: Record<string, string> = {
+    booking: "Bookings", contact: "Contacts", email: "Emails",
+    enquiry: "Enquiries", task: "Tasks", yacht: "Yachts",
   }
-  const sections = results ? [
-    {
-      label: "Enquiries",
-      rows: (results[0].data ?? []).map((row) => ({ href: `/enquiries/${row.id}`, primary: row.reference, secondary: row.summary, status: row.status })),
-    },
-    {
-      label: "Bookings",
-      rows: (results[1].data ?? []).map((row) => ({ href: `/bookings/${row.id}`, primary: row.reference, secondary: row.yacht.name, status: row.status })),
-    },
-    {
-      label: "Tasks",
-      rows: (results[2].data ?? []).map((row) => ({ href: `/tasks/${row.id}`, primary: row.title, secondary: row.step_code ?? "Operational task", status: row.status })),
-    },
-    {
-      label: "Yachts",
-      rows: (results[3].data ?? []).map((row) => ({ href: `/yachts/${row.id}`, primary: row.name, secondary: row.builder ?? "Builder not recorded", status: row.status })),
-    },
-    {
-      label: "Contacts",
-      rows: (results[4].data ?? []).map((row) => ({ href: `/contacts/${row.id}`, primary: row.full_name, secondary: row.email ?? "No email", status: "contact" })),
-    },
-    {
-      label: "Emails",
-      rows: (results[5].data ?? []).map((row) => ({ href: `/emails/${row.id}`, primary: row.subject, secondary: row.sender_email, status: row.classification })),
-    },
-  ] : []
-  const total = sections.reduce((sum, section) => sum + section.rows.length, 0)
+  const sections = Object.entries(labels).map(([type, label]) => {
+    const rows = (results ?? []).filter((row) => row.entity_type === type)
+    return {
+      label,
+      rows: rows.map((row) => ({
+        href: row.href, primary: row.primary_label,
+        secondary: row.secondary_label, status: row.status_label,
+      })),
+      totalCount: Number(rows[0]?.total_count ?? 0),
+    }
+  })
+  const total = sections.reduce((sum, section) => sum + section.totalCount, 0)
   return (
     <div className="mx-auto max-w-6xl space-y-5">
       <div>
@@ -88,7 +67,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               <Card key={section.label}>
                 <CardHeader className="border-b">
                   <CardTitle>{section.label}</CardTitle>
-                  <CardDescription>{section.rows.length} matching records</CardDescription>
+                  <CardDescription>
+                    {section.totalCount} matching record{section.totalCount === 1 ? "" : "s"}
+                    {section.totalCount > section.rows.length ? ` · showing ${section.rows.length}` : ""}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="divide-y p-0">
                   {section.rows.map((row) => (

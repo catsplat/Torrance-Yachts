@@ -14,6 +14,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CursorPagination } from "@/components/ui/cursor-pagination"
 import { Input } from "@/components/ui/input"
+import { BulkArchiveStaleForm } from "@/components/enquiries/bulk-archive-stale-form"
 import { getEnquiryRegisterPage } from "@/lib/enquiries/data"
 import {
   enquiryPriorityLabels,
@@ -36,6 +37,7 @@ type EnquiriesPageProps = {
     priority?: string
     q?: string
     status?: string
+    stale?: string
     yacht?: string
   }>
 }
@@ -52,6 +54,7 @@ function formatDate(value: string | null) {
 
 export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps) {
   const filters = await searchParams
+  const stale = filters.stale === "true"
   const search = normaliseEnquirySearch(filters.q)
   const status = enquiryStatusValues.includes(filters.status as Enums<"enquiry_status">)
     ? (filters.status as Enums<"enquiry_status">)
@@ -71,6 +74,7 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
       cursor: filters.cursor,
       priority,
       query: search,
+      stale,
       status,
       yachtId,
     }),
@@ -93,7 +97,7 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Enquiries</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Track requests from first contact through to booking.
+            {stale ? "Review inactive enquiries before archiving them." : "Track requests from first contact through to booking."}
           </p>
         </div>
         <Link
@@ -111,6 +115,7 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
             className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_12rem_10rem_12rem_auto]"
             method="get"
           >
+            {stale ? <input name="stale" type="hidden" value="true" /> : null}
             <div className="relative">
               <Search
                 aria-hidden="true"
@@ -210,6 +215,8 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
         </Card>
       </div>
 
+      {stale && visibleEnquiries.length ? <BulkArchiveStaleForm /> : null}
+
       <Card>
         <CardHeader className="border-b">
           <CardTitle>Operational pipeline</CardTitle>
@@ -224,10 +231,11 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
           ) : (
             <div className="divide-y">
               {visibleEnquiries.map((enquiry) => (
+                <div className={stale ? "grid grid-cols-[auto_minmax(0,1fr)] items-center" : ""} key={enquiry.id}>
+                  {stale ? <input aria-label={`Select ${enquiry.reference}`} className="ml-5 size-4" form="bulk-stale-enquiries" name="enquiryId" type="checkbox" value={enquiry.id} /> : null}
                 <Link
                   className="group grid gap-3 px-5 py-4 transition-colors hover:bg-muted/50 lg:grid-cols-[9rem_minmax(0,1.5fr)_minmax(12rem,0.7fr)_auto] lg:items-center"
                   href={`/enquiries/${enquiry.id}`}
-                  key={enquiry.id}
                 >
                   <div>
                     <p className="font-mono text-xs font-semibold text-primary">
@@ -263,6 +271,7 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
                     />
                   </div>
                 </Link>
+                </div>
               ))}
             </div>
           )}
@@ -275,6 +284,7 @@ export default async function EnquiriesPage({ searchParams }: EnquiriesPageProps
               priority,
               q: search,
               status,
+              stale: stale ? "true" : undefined,
               yacht: yachtId,
             }}
             totalCount={enquiryRegister.totalCount}

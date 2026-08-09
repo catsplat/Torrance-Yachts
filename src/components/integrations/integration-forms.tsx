@@ -182,16 +182,25 @@ export function GoogleDriveFolderPicker({ selectedId, selectedName }: { selected
 }
 
 export function NotificationReviewForm({ notificationId }: { notificationId: string }) {
-  const [state, action, pending] = useActionState(reviewNotificationAction, initialState)
+  const [approveState, approveAction, approvePending] = useActionState(reviewNotificationAction, initialState)
+  const [cancelState, cancelAction, cancelPending] = useActionState(reviewNotificationAction, initialState)
   return (
-    <form action={action} className="grid gap-2">
-      <input name="notificationId" type="hidden" value={notificationId} />
-      <div className="flex gap-2">
-        <Button disabled={pending} name="approved" type="submit" value="true">Approve and queue</Button>
-        <Button disabled={pending} name="approved" type="submit" value="false" variant="outline">Cancel</Button>
-      </div>
-      <Feedback state={state} />
-    </form>
+    <div className="grid gap-3">
+      <form action={approveAction} className="grid gap-2">
+        <input name="notificationId" type="hidden" value={notificationId} />
+        <input name="approved" type="hidden" value="true" />
+        <input name="reason" type="hidden" value="" />
+        <Button disabled={approvePending} type="submit">Approve and queue</Button>
+        <Feedback state={approveState} />
+      </form>
+      <form action={cancelAction} className="grid gap-2">
+        <input name="notificationId" type="hidden" value={notificationId} />
+        <input name="approved" type="hidden" value="false" />
+        <label className="grid gap-1 text-xs font-medium">Cancellation reason<Input name="reason" required /></label>
+        <Button disabled={cancelPending} type="submit" variant="outline">Cancel draft</Button>
+        <Feedback state={cancelState} />
+      </form>
+    </div>
   )
 }
 

@@ -24,3 +24,34 @@ test("administrator can create, inspect, and reset an isolated five-route rehear
   await runCard.getByRole("button", { name: "Remove this fictional run" }).click()
   await expect(page.getByText("The fictional run was removed. Its reset audit evidence remains.")).toBeVisible()
 })
+
+test("administrator can complete and reset the full fictional charter lifecycle", async ({ page }) => {
+  test.setTimeout(120_000)
+  await page.goto("/settings/rehearsal")
+  await page.getByRole("button", { name: "Create full charter rehearsal" }).click()
+  await expect(page.getByText(/Full fictional charter rehearsal created/)).toBeVisible()
+
+  await page.getByRole("button", { name: "Rehearse compliance and contract review" }).click()
+  await expect(page.getByText(/Fictional KYC, passport, CDD, and signed agreement completed/)).toBeVisible()
+
+  await page.getByRole("button", { name: "Rehearse post-contract charter lifecycle" }).click()
+  await expect(page.getByText(/Fictional invoice evidence, Yachtfolio confirmation/)).toBeVisible()
+  const bookingHref = await page.getByRole("link", { name: "Open completed fictional booking" }).getAttribute("href")
+  expect(bookingHref).toMatch(/^\/bookings\/[0-9a-f-]+$/)
+
+  await page.goto(bookingHref!)
+  await expect(page.getByRole("heading", { name: /charter$/ })).toBeVisible()
+  await expect(page.getByText("Completed", { exact: true }).first()).toBeVisible()
+  if (process.env.CAPTURE_PORTFOLIO_SCREENSHOTS === "true") {
+    await page.screenshot({
+      fullPage: true,
+      path: "docs/screenshots/v0.19.0-fictional-booking.png",
+    })
+  }
+
+  await page.goto("/settings/rehearsal")
+  const fullRun = page.getByText("Full fictional charter rehearsal", { exact: true }).first()
+  await expect(fullRun).toBeVisible()
+  await fullRun.locator("xpath=ancestor::form").getByRole("button", { name: "Remove this fictional run" }).click()
+  await expect(page.getByText("The fictional run was removed. Its reset audit evidence remains.")).toBeVisible()
+})

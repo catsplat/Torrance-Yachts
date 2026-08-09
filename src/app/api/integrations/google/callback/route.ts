@@ -8,6 +8,7 @@ import {
   parsePendingGoogleOAuthConnection,
 } from "@/lib/integrations/google-oauth"
 import { getGoogleOAuthConfiguration } from "@/lib/integrations/google-oauth-server"
+import { consumeRateLimit } from "@/lib/security/rate-limit"
 
 const pendingConnectionCookie = "torrance_google_oauth_pending"
 
@@ -41,6 +42,9 @@ function completeRedirect(request: NextRequest, notice: string) {
 }
 
 export async function GET(request: NextRequest) {
+  if (!await consumeRateLimit("google_oauth_callback", 20, 600)) {
+    return completeRedirect(request, "rate-limited")
+  }
   const providerError = request.nextUrl.searchParams.get("error")
   if (providerError) return completeRedirect(request, "declined")
 

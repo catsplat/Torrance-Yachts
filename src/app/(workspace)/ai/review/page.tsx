@@ -9,12 +9,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { getAiReviewQueue } from "@/lib/ai/data"
+import { CursorPagination } from "@/components/ui/cursor-pagination"
+import { getAiReviewPage } from "@/lib/ai/data"
 
-export default async function AiReviewQueuePage() {
-  const suggestions = await getAiReviewQueue()
-  const pending = suggestions.filter((item) => item.status === "pending_review")
-  const reviewed = suggestions.filter((item) => item.status !== "pending_review")
+export default async function AiReviewQueuePage({ searchParams }: {
+  searchParams: Promise<{ cursor?: string; status?: string }>
+}) {
+  const params = await searchParams
+  const allowedStatuses = ["approved", "pending_review", "rejected", "superseded"] as const
+  const status = allowedStatuses.find((candidate) => candidate === params.status)
+  const page = await getAiReviewPage({ cursor: params.cursor, status })
+  const pending = page.suggestions.filter((item) => item.status === "pending_review")
+  const reviewed = page.suggestions.filter((item) => item.status !== "pending_review")
   return (
     <div className="mx-auto max-w-6xl space-y-5">
       <div>
@@ -23,6 +29,19 @@ export default async function AiReviewQueuePage() {
           Check extracted email and contract details before they are used.
         </p>
       </div>
+      <form className="flex flex-wrap gap-2">
+        <label className="grid gap-1 text-sm font-medium">
+          Status
+          <select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue={status ?? ""} name="status">
+            <option value="">All suggestions</option>
+            <option value="pending_review">Pending review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="superseded">Superseded</option>
+          </select>
+        </label>
+        <button className="self-end rounded-md border px-3 py-2 text-sm font-medium" type="submit">Apply</button>
+      </form>
       <Card>
         <CardHeader className="border-b">
           <CardTitle className="flex items-center gap-2">
@@ -44,7 +63,7 @@ export default async function AiReviewQueuePage() {
                   <Badge variant="outline">
                     {Math.round(Number(item.confidence) * 100)}% confidence
                   </Badge>
-                  <Badge variant="secondary">{item.run.provider} · {item.run.model}</Badge>
+                  <Badge variant="secondary">{item.provider} · {item.model}</Badge>
                 </div>
                 <p className="mt-1 truncate text-sm text-muted-foreground">{item.sourceLabel}</p>
                 <p className="mt-2 text-sm">{item.summary}</p>
@@ -69,6 +88,13 @@ export default async function AiReviewQueuePage() {
           </CardContent>
         </Card>
       ) : null}
+      <CursorPagination
+        currentCount={page.suggestions.length}
+        nextCursor={page.nextCursor}
+        pathname="/ai/review"
+        searchParams={{ cursor: params.cursor, status }}
+        totalCount={page.totalCount}
+      />
     </div>
   )
 }

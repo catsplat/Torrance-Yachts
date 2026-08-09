@@ -8,6 +8,7 @@ import {
 } from "@/components/integrations/integration-forms"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CursorPagination } from "@/components/ui/cursor-pagination"
 import { getCurrentUser } from "@/lib/auth/current-user"
 import { getIntegrationWorkspace } from "@/lib/integrations/data"
 
@@ -20,8 +21,17 @@ function formatDateTime(value: string | null) {
   }).format(new Date(value))
 }
 
-export default async function IntegrationsPage() {
-  const [workspace, user] = await Promise.all([getIntegrationWorkspace(), getCurrentUser()])
+export default async function IntegrationsPage({ searchParams }: {
+  searchParams: Promise<{ cursor?: string; provider?: string; status?: string }>
+}) {
+  const params = await searchParams
+  const providers = ["gmail", "google_calendar", "google_drive", "google_sheets", "telegram"] as const
+  const statuses = ["claimed", "delivered", "failed", "pending"] as const
+  const provider = providers.find((item) => item === params.provider)
+  const status = statuses.find((item) => item === params.status)
+  const [workspace, user] = await Promise.all([
+    getIntegrationWorkspace({ cursor: params.cursor, provider, status }), getCurrentUser(),
+  ])
   const pendingReviews = workspace.notifications.filter((item) => item.status === "pending_approval")
   const failedDeliveries = workspace.deliveries.filter((item) => item.status === "failed")
   return (
@@ -68,6 +78,11 @@ export default async function IntegrationsPage() {
 
       <Card>
         <CardHeader className="border-b"><CardTitle>Delivery history</CardTitle></CardHeader>
+        <form className="flex flex-wrap gap-3 border-b px-5 py-4">
+          <label className="grid gap-1 text-xs font-medium">Provider<select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue={provider ?? ""} name="provider"><option value="">All providers</option>{providers.map((item) => <option key={item} value={item}>{item.replaceAll("_", " ")}</option>)}</select></label>
+          <label className="grid gap-1 text-xs font-medium">Status<select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue={status ?? ""} name="status"><option value="">All statuses</option>{statuses.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+          <button className="self-end rounded-md border px-3 py-2 text-sm font-medium" type="submit">Apply</button>
+        </form>
         <CardContent className="divide-y p-0">
           {workspace.deliveries.length ? workspace.deliveries.map((delivery) => (
             <div className="grid gap-3 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_10rem_minmax(18rem,.7fr)]" key={delivery.id}>
@@ -80,6 +95,9 @@ export default async function IntegrationsPage() {
             </div>
           )) : <p className="p-5 text-sm text-muted-foreground">No external delivery attempts yet.</p>}
         </CardContent>
+        <CursorPagination currentCount={workspace.deliveries.length} nextCursor={workspace.nextDeliveryCursor}
+          pathname="/integrations" searchParams={{ cursor: params.cursor, provider, status }}
+          totalCount={workspace.deliveryTotalCount} />
       </Card>
     </div>
   )

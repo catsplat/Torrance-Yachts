@@ -13,9 +13,10 @@ For the subsequent client-owned provider test, follow the separate
 
 ## Every morning
 
-1. Sign in with your individual account.
-2. Work across the dashboard sequence: Inbox, Enquiry, Offer, Booking,
-   Operations, Follow-up.
+1. Sign in with your individual account and complete the authenticator challenge.
+2. Open **Work** and choose the view that matches the next action: Inbox Review,
+   Stale Enquiries, Offers Awaiting Action, Booking Preparation, Overdue Payments,
+   or Post-charter Follow-up.
 3. Open the bell for your personal alerts and resolve unread items.
 4. Open Inbox and resolve messages waiting for review.
 
@@ -53,4 +54,4 @@ and commission-document work after charter end.
 - Google/Telegram/n8n failures do not change the booking record.
 - Never create public links for contracts, passports, KYC/CDD, or invoices.
 - Report suspected mistakes or access issues immediately; do not delete evidence.
-- Use Settings → Guided tutorial to practise safely at any time.
+- Use Settings > Guided tutorial to practise safely at any time.

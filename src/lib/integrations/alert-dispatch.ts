@@ -4,6 +4,8 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 
 import type { Database } from "@/types/database"
 
+import { GoogleOAuthError, refreshGoogleAccessToken } from "./google-workspace"
+
 type Delivery = Database["public"]["Tables"]["integration_deliveries"]["Row"]
 type AdminClient = SupabaseClient<Database>
 type FetchImplementation = typeof fetch
@@ -99,28 +101,27 @@ async function dispatchGmail(
   if (error || !credentials) {
     throw new Error("Connected Gmail OAuth credentials are unavailable.")
   }
-  const tokenResponse = await request("https://oauth2.googleapis.com/token", {
-    body: new URLSearchParams({
-      client_id: credentials.client_id,
-      client_secret: credentials.client_secret,
-      grant_type: "refresh_token",
-      refresh_token: credentials.refresh_token,
-    }),
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    method: "POST",
-    signal: signal ?? AbortSignal.timeout(8_000),
-  })
-  const token = await tokenResponse.json() as {
-    access_token?: string
-    error_description?: string
-  }
-  if (!tokenResponse.ok || !token.access_token) {
-    throw new Error(token.error_description || "Google rejected the OAuth refresh token.")
-  }
+  const accessToken = await refreshGoogleAccessToken(
+    { ...credentials, scopes: [] },
+    request,
+    signal ?? AbortSignal.timeout(8_000),
+  )
   const payload = delivery.payload && typeof delivery.payload === "object" &&
       !Array.isArray(delivery.payload)
     ? delivery.payload
     : {}
+  if (delivery.operation === "gmail_mark_read" || delivery.operation === "gmail_archive") {
+    const messageId = payload.provider_message_id
+    if (typeof messageId !== "string" || !messageId.trim()) throw new Error("Gmail provider message ID is missing.")
+    const response = await request(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(messageId)}/modify`, {
+      body: JSON.stringify({ removeLabelIds: [delivery.operation === "gmail_mark_read" ? "UNREAD" : "INBOX"] }),
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      method: "POST", signal: signal ?? AbortSignal.timeout(8_000),
+    })
+    const changed = await response.json() as { error?: { message?: string }; id?: string }
+    if (!response.ok || !changed.id) throw new Error(changed.error?.message || "Gmail rejected the mailbox action.")
+    return { externalId: changed.id, externalUrl: "" }
+  }
   const recipient = payload.recipient
   if (typeof recipient !== "string" || !recipient.trim()) {
     throw new Error("Email alert recipient is missing.")
@@ -152,7 +153,7 @@ async function dispatchGmail(
         }),
       }),
       headers: {
-        Authorization: `Bearer ${token.access_token}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       method: "POST",
@@ -180,7 +181,7 @@ export async function dispatchInternalAlert(
   request: FetchImplementation = fetch,
 ) {
   if (delivery.operation === "telegram_send") return dispatchTelegram(delivery, signal, request)
-  if (delivery.operation === "gmail_send_internal" || delivery.operation === "gmail_create_draft") {
+  if (["gmail_send_internal", "gmail_create_draft", "gmail_mark_read", "gmail_archive"].includes(delivery.operation)) {
     return dispatchGmail(admin, delivery, signal, request)
   }
   throw new Error("This delivery is not an internal staff alert.")
@@ -190,8 +191,11 @@ export function safeDeliveryFailure(error: unknown) {
   const message = error instanceof Error ? error.message : "Internal alert delivery failed."
   const normalized = message.toLowerCase()
   return {
-    errorCode: normalized.includes("oauth") || normalized.includes("credentials") ? "oauth_error" : "provider_error",
+    errorCode: error instanceof GoogleOAuthError || normalized.includes("oauth") || normalized.includes("credentials") ? "oauth_error" : "provider_error",
     errorMessage: message.slice(0, 2000),
-    retryable: !normalized.includes("credentials are unavailable"),
+    ...(error instanceof GoogleOAuthError && error.requiresReauthentication
+      ? { requiresReauthentication: true }
+      : {}),
+    retryable: !(error instanceof GoogleOAuthError && error.requiresReauthentication) && !normalized.includes("credentials are unavailable"),
   }
 }

@@ -6,8 +6,10 @@ import {
   approveContractReviewAction,
   type DocumentActionState,
   markPaymentPaidAction,
+  rejectQuarantinedDocumentAction,
   reviewBookingDocumentAction,
   saveContractReviewAction,
+  retryDocumentScanAction,
   uploadBookingDocumentAction,
   waiveRequirementAction,
 } from "@/app/(workspace)/documents/actions"
@@ -29,6 +31,17 @@ function Feedback({ state }: { state: DocumentActionState }) {
       {state.message}
     </p>
   )
+}
+
+export function DocumentRecoveryForm({ bookingId, documentId }: { bookingId: string; documentId: string }) {
+  const retry = retryDocumentScanAction.bind(null, bookingId)
+  const reject = rejectQuarantinedDocumentAction.bind(null, bookingId)
+  const [retryState, retryAction, retryPending] = useActionState(retry, initialState)
+  const [rejectState, rejectAction, rejectPending] = useActionState(reject, initialState)
+  return <div className="grid gap-3 rounded-md border border-amber-300/60 bg-amber-50/50 p-3 dark:bg-amber-950/20">
+    <form action={retryAction} className="grid gap-2"><input name="documentId" type="hidden" value={documentId} /><label className="grid gap-1 text-xs font-medium">Recovery note <span className="font-normal text-muted-foreground">(optional)</span><Input name="reason" /></label><Button disabled={retryPending} type="submit" variant="outline">Retry scan</Button><Feedback state={retryState} /></form>
+    <form action={rejectAction} className="grid gap-2"><input name="documentId" type="hidden" value={documentId} /><label className="grid gap-1 text-xs font-medium">Rejection reason<Input name="reason" minLength={10} required /></label><Button disabled={rejectPending} type="submit" variant="ghost">Reject file</Button><Feedback state={rejectState} /></form>
+  </div>
 }
 
 export function DocumentUploadForm({
@@ -66,7 +79,7 @@ export function DocumentReviewForm({ bookingId, documentId }: { bookingId: strin
   return (
     <form action={formAction} className="grid gap-2">
       <input name="documentId" type="hidden" value={documentId} />
-      <Input name="reason" placeholder="Review evidence or rejection reason" required />
+      <Input name="reason" placeholder="Optional verification note; required when rejecting" />
       <div className="flex gap-2">
         <Button disabled={pending} name="approved" type="submit" value="true">Verify</Button>
         <Button disabled={pending} name="approved" type="submit" value="false" variant="outline">Reject</Button>
@@ -151,7 +164,7 @@ export function PaymentPaidForm({ bookingId, paymentId }: { bookingId: string; p
   return (
     <form action={formAction} className="grid gap-2">
       <input name="paymentId" type="hidden" value={paymentId} />
-      <Input name="reason" placeholder="Payment evidence reviewed" required />
+      <Input name="reason" placeholder="Payment note (optional)" />
       <Button disabled={pending} type="submit" variant="outline">Record paid</Button>
       <Feedback state={state} />
     </form>

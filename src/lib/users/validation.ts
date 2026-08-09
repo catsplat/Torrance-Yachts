@@ -21,6 +21,11 @@ export const recoveryEmailSchema = z.object({
   email: z.email().trim().toLowerCase(),
 })
 
+export const resetMfaSchema = z.object({
+  reason: z.string().trim().min(10).max(1000),
+  userId: z.uuid(),
+})
+
 export const passwordUpdateSchema = z.object({
   confirmPassword: z.string(),
   password: z.string().min(12).max(256)

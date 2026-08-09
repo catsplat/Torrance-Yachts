@@ -1,6 +1,6 @@
 # ADR 0022: Gmail is connected through credential-free n8n adapters
 
-**Status:** Accepted
+**Status:** Superseded by ADR 0037
 
 **Date:** 27 July 2026
 

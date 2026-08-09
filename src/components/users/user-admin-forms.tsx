@@ -4,6 +4,7 @@ import { useActionState } from "react"
 
 import {
   inviteInternalUserAction,
+  resetUserMfaAction,
   sendRecoveryEmailAction,
   updateInternalUserAction,
   type UserAdminActionState,
@@ -43,4 +44,14 @@ export function UserAdministrationForm({ profile }: { profile: Tables<"profiles"
 export function RecoveryEmailForm({ email }: { email: string }) {
   const [state, action, pending] = useActionState(sendRecoveryEmailAction, initialState)
   return <form action={action} className="mt-3 grid gap-2"><input name="email" type="hidden" value={email} /><Button disabled={pending} type="submit" variant="ghost">Send recovery email</Button><Feedback state={state} /></form>
+}
+
+export function ResetMfaForm({ userId }: { userId: string }) {
+  const [state, action, pending] = useActionState(resetUserMfaAction, initialState)
+  return <form action={action} className="mt-3 grid gap-2">
+    <input name="userId" type="hidden" value={userId} />
+    <label className="grid gap-1 text-xs font-medium">Reset reason<Input name="reason" required minLength={10} /></label>
+    <Button disabled={pending} type="submit" variant="outline">Reset authenticator</Button>
+    <Feedback state={state} />
+  </form>
 }

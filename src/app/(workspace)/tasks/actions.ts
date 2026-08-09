@@ -12,6 +12,7 @@ import {
   adHocTaskSchema,
   cloneTemplateSchema,
   newTemplateStepSchema,
+  optionalTaskNoteSchema,
   parseForm,
   taskNoteSchema,
   taskReasonSchema,
@@ -57,15 +58,15 @@ async function runTaskReasonCommand(
 ): Promise<TaskActionState> {
   const validId = idSchema.safeParse(taskId)
   if (!validId.success) return { message: "The task reference is invalid." }
-  const parsed = command === "cancel_ad_hoc_task" ? parseForm(taskReasonSchema, formData) : null
-  if (parsed && !parsed.success) return validationState(parsed.error)
+  const parsed = command === "complete_task"
+    ? parseForm(optionalTaskNoteSchema, formData)
+    : parseForm(taskReasonSchema, formData)
+  if (!parsed.success) return validationState(parsed.error)
   const context = await contextOrMessage()
   if ("message" in context) return context
   const { data, error } = await context.supabase.rpc(command, {
     p_task_id: validId.data,
-    p_reason: parsed?.success
-      ? parsed.data.reason
-      : command === "complete_task" ? "Task completed" : "Task reopened",
+    p_reason: parsed.data.reason || "Task completed",
   })
   if (error || !data) {
     return {

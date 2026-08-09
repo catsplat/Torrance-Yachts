@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
-import { listGoogleDriveFolders } from "@/lib/integrations/google-workspace"
+import { listGoogleDriveFolders, safeGoogleConnectionMessage } from "@/lib/integrations/google-workspace"
 import { getActiveGoogleWorkspaceDispatchCredentials } from "@/lib/integrations/google-workspace-server"
 
 export async function GET() {
@@ -16,7 +16,7 @@ export async function GET() {
     return NextResponse.json({ folders }, { headers: { "Cache-Control": "private, no-store" } })
   } catch (error) {
     return NextResponse.json({
-      message: error instanceof Error ? error.message : "Google Drive folders could not be loaded.",
+      message: safeGoogleConnectionMessage(error, "Google Drive folders could not be loaded."),
     }, { status: 502 })
   }
 }

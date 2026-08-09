@@ -19,7 +19,7 @@ type ActivationSnapshot = {
   telegram_user_count: number
 }
 
-async function n8nState(): Promise<Pick<ActivationCheck, "detail" | "state">> {
+export async function checkN8nHealth(): Promise<Pick<ActivationCheck, "detail" | "state">> {
   const healthUrl = process.env.N8N_HEALTH_URL?.trim()
   if (!healthUrl) return { detail: "Set N8N_HEALTH_URL to the private /healthz endpoint, then activate reviewed workflows explicitly.", state: "setup_required" }
   try {
@@ -36,7 +36,7 @@ export async function getIntegrationActivationChecks(): Promise<ActivationCheck[
   const admin = createAdminClient()
   const [snapshotResult, n8n] = await Promise.all([
     admin.rpc("get_activation_readiness_snapshot"),
-    n8nState(),
+    checkN8nHealth(),
   ])
   if (snapshotResult.error || !snapshotResult.data) {
     throw new Error("Integration activation status could not be loaded.")
@@ -47,7 +47,7 @@ export async function getIntegrationActivationChecks(): Promise<ActivationCheck[
   const telegramConnection = connection("telegram")
   const gmailState = deriveGmailIngestionState({
     connectionEnabled: Boolean(gmailConnection?.enabled),
-    ingestionTokenConfigured: Boolean(process.env.EMAIL_INGESTION_TOKEN?.trim()),
+    ingestionTokenConfigured: snapshot.gmail_user_count > 0,
     lastReceivedAt: snapshot.last_email_received_at,
   })
   const ai = getAiConfigurationSummary()
@@ -58,8 +58,8 @@ export async function getIntegrationActivationChecks(): Promise<ActivationCheck[
 
   return [
     {
-      description: "Incoming Gmail is submitted by n8n through the authenticated ingestion boundary.",
-      detail: gmailState === "ready" ? `A message was ingested at ${new Date(snapshot.last_email_received_at!).toLocaleString("en-GB")}.` : gmailState === "attention" ? "Configuration is present, but no Gmail message has been received in the last seven days. Send a synthetic test enquiry and verify Inbox routing." : "Enable the Gmail adapter, configure the ingestion token, and test with synthetic mail before using live enquiries.",
+      description: "The selected staff Google connection supplies the shared inbox securely.",
+      detail: gmailState === "ready" ? `A message was ingested at ${new Date(snapshot.last_email_received_at!).toLocaleString("en-GB")}.` : gmailState === "attention" ? "The mailbox is connected, but no recent message has been received. Run a synthetic inbox test." : "Connect Google, select the shared inbox, and run a synthetic inbox test.",
       key: "gmail_ingestion",
       state: gmailState,
       title: "Gmail ingestion",
@@ -78,7 +78,7 @@ export async function getIntegrationActivationChecks(): Promise<ActivationCheck[
       state: telegramReady ? "ready" : "setup_required",
       title: "Telegram alerts",
     },
-    { description: "Self-hosted n8n performs scheduled and provider-specific adapter work.", detail: n8n.detail, key: "n8n", state: n8n.state, title: "Automation worker" },
+    { description: "Self-hosted n8n schedules the application workers and holds no provider credentials.", detail: n8n.detail, key: "n8n", state: n8n.state, title: "Automation scheduler" },
     {
       description: "Supabase Auth sends invitations and password recovery mail.",
       detail: production ? (smtpReady ? "Production SMTP is operator-confirmed. Complete an invitation and recovery delivery test before approval." : "Configure production SMTP outside the web app, then set AUTH_SMTP_CONFIGURED=true only after delivery is verified.") : "Local Auth mail is captured safely by Mailpit at http://127.0.0.1:54324.",

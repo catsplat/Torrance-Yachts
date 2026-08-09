@@ -18,10 +18,9 @@ its encrypted volume is stable and cannot collide with another folder named
 2. Generate a long random `N8N_ENCRYPTION_KEY`.
 3. Set the same random `AUTOMATION_SHARED_SECRET` in the application and n8n
    environments.
-4. Set the same independent `EMAIL_INGESTION_TOKEN` in both environments.
-5. Set the same independent `MONITORING_SHARED_SECRET` in both environments.
-6. Run `npm run automation:start`.
-7. Open `http://127.0.0.1:5678`, create the local owner, then run
+4. Set the same independent `MONITORING_SHARED_SECRET` in both environments.
+5. Run `npm run automation:start`.
+6. Open `http://127.0.0.1:5678`, create the local owner, then run
    `npm run automation:import`.
 
 The `N8N_ENCRYPTION_KEY` must remain unchanged for the lifetime of the data
@@ -45,27 +44,13 @@ Community packages, the public n8n API/playground, workflow templates, telemetry
 personalisation, and unverified packages are disabled. Built-in provider nodes
 remain available for the approved adapters.
 
-## Gmail intake
+## Gmail ownership
 
-`04-gmail-ingestion.json` is the production intake bridge. It is inactive on
-import and contains no credential. During staged activation, assign the
-client-owned Gmail OAuth credential to **Company Gmail inbox**, manually run it
-with a fictional message, verify the single durable Inbox record and replay
-safety, then activate it explicitly.
-
-The trigger requests full message text but never downloads attachments. It
-posts each message to the server-side n8n normalisation endpoint using
-`EMAIL_INGESTION_TOKEN`. The application validates and bounds the raw trigger
-item before calling the same idempotent PostgreSQL command as the offline
-rehearsal. Attachments remain metadata-only and cannot bypass the private
-document/quarantine workflow.
-
-`05-gmail-mark-read-worker.json` and `06-gmail-archive-worker.json` consume only
-their declared Gmail action from the shared outbox. Assign the same
-client-owned Gmail credential used by the intake trigger to each Gmail node.
-Each worker retries a transient provider request and reports both success and
-failure to the application; capability-scoped leases prevent either worker
-from claiming Calendar, Drive, or Sheets work it cannot perform.
+Gmail is owned entirely by the application adapter. Staff connect Google once
+through the normal OAuth consent screen; encrypted per-user tokens remain in
+Supabase Vault. The application reconciles Gmail history, ingests messages, and
+performs queued mark-read/archive operations with that same connection. n8n has
+no Google credentials and no Gmail nodes.
 
 ## Provider adapters
 

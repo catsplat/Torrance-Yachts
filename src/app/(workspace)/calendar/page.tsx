@@ -14,15 +14,21 @@ function formatDate(value: string) {
 
 const icons = { charter: Ship, payment: CircleDollarSign, task: ClipboardCheck }
 
-export default async function CalendarPage() {
-  const events = await getCalendarWorkspace()
+export default async function CalendarPage({ searchParams }: {
+  searchParams: Promise<{ month?: string }>
+}) {
+  const params = await searchParams
+  const { events, month } = await getCalendarWorkspace(params.month)
+  const monthDate = new Date(`${month}-01T00:00:00.000Z`)
+  const previousMonth = new Date(Date.UTC(monthDate.getUTCFullYear(), monthDate.getUTCMonth() - 1, 1)).toISOString().slice(0, 7)
+  const nextMonth = new Date(Date.UTC(monthDate.getUTCFullYear(), monthDate.getUTCMonth() + 1, 1)).toISOString().slice(0, 7)
   const months = Map.groupBy(events, (event) =>
     new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "Europe/London" })
       .format(new Date(event.start_at))
   )
   return (
     <div className="mx-auto max-w-6xl space-y-5" data-tutorial-anchor="calendar-register">
-      <div><h1 className="text-3xl font-semibold">Calendar</h1><p className="mt-2 text-sm text-muted-foreground">Charters, payments and task deadlines.</p></div>
+      <div className="flex flex-wrap items-end justify-between gap-3"><div><h1 className="text-3xl font-semibold">Calendar</h1><p className="mt-2 text-sm text-muted-foreground">Charters, payments and task deadlines.</p></div><nav aria-label="Calendar month" className="flex gap-2"><Link className="rounded-md border px-3 py-2 text-sm font-medium" href={`/calendar?month=${previousMonth}`}>Previous</Link><Link className="rounded-md border px-3 py-2 text-sm font-medium" href="/calendar">Today</Link><Link className="rounded-md border px-3 py-2 text-sm font-medium" href={`/calendar?month=${nextMonth}`}>Next</Link></nav></div>
       {[...months.entries()].map(([month, monthEvents]) => (
         <Card key={month}>
           <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><CalendarDays className="size-5 text-primary" />{month}</CardTitle><CardDescription>{monthEvents.length} operational dates</CardDescription></CardHeader>

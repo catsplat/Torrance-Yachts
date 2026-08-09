@@ -1,38 +1,45 @@
 # Browser acceptance
 
-The Playwright suite proves the application boundary with synthetic data only.
-It covers private access, approved administrator authentication, core route
-rendering, navigation, notifications, theme switching, WCAG A/AA checks, and
-the resettable five-route email rehearsal.
+The Playwright suite uses generated fictional identities and records. It covers
+administrator, staff, unapproved-user and mobile-review roles without storing
+credentials in Git.
 
-## Local run
+## Covered boundaries
 
-1. Start Docker Desktop and local Supabase.
-2. Copy `.env.e2e.example` to the ignored `.env.e2e.local` file.
-3. Enter an approved local development account. Never use a live password.
-4. Install browsers once with `npm run test:e2e:install`.
-5. Run `npm run test:e2e`.
+- bootstrap closure, password login, approved Google callback behaviour and
+  unapproved-account isolation;
+- TOTP enrolment/challenge and AAL2 workspace enforcement;
+- staff/administrator separation across every administration route;
+- private navigation, saved work views, notifications, theme and search;
+- five-route inbox rehearsal, replay protection and reset;
+- full enquiry-to-post-charter fictional workflow through the real UI;
+- document, payment, task, Yachtfolio and follow-up boundaries;
+- mobile review layout, keyboard focus/restore and automated WCAG A/AA checks;
+- principal acceptance on Chromium, Firefox and WebKit.
 
-The suite uses port 3000 and reuses a healthy local server when present. It runs
-one worker because all browser projects share one local database and the
-workflow test creates and resets a run-scoped fictional scenario.
+Database and route-contract suites complement browser tests for malformed AI,
+provider timeout/unavailability, availability conflicts, amendments,
+cancellation, one-to-three instalments, scanning states, outbox leases and
+provider reconciliation.
 
-## Disposable CI run
+## Run
 
-CI starts a fresh minimal Supabase stack and runs
-`ops/e2e/prepare-local-environment.mjs`. The script derives local database keys,
-generates runtime-only setup values, and writes an ignored environment file. The
-authentication setup project then creates the first administrator through the
-same one-time application route used by a new installation.
+```powershell
+npm run db:start
+node ops/e2e/prepare-local-environment.mjs
+npm run test:e2e
+```
 
-Failure evidence is uploaded as the `browser-acceptance-report` artifact. It may
-contain only synthetic fixture text, but it should still be handled as internal
-engineering evidence.
+The generator creates ignored synthetic accounts, passwords, TOTP factors and
+runtime environment values. The suite runs serially because projects share one
+local database. Failure traces, screenshots and video remain ignored engineering
+artifacts.
 
-## Boundaries
+`npm run release:verify` runs the browser suite after a clean install, fresh
+migration replay, database tests/lint, automation validation, production build,
+dependency audit and disposable backup/restore drill.
 
-- No Gmail, Telegram, Calendar, Drive, Sheets, Yachtfolio, cloud AI, or live
-  recipient is contacted.
-- The accessibility scan catches automatically detectable violations only.
-- A real macOS browser walkthrough, keyboard check, and client UAT remain launch
-  acceptance gates.
+## Remaining human checks
+
+Automated accessibility detects only machine-testable issues. A real macOS
+keyboard/browser walkthrough, staff training and client UAT remain launch gates.

@@ -31,7 +31,7 @@ jobs:
           cache: npm
 
       - name: Install locked dependencies
-        run: npm ci
+        run: npm install --global npm@11.6.2 && npm ci
 
       - name: Lint and typecheck
         run: npm run check
@@ -83,7 +83,7 @@ jobs:
           cache: npm
 
       - name: Install locked dependencies
-        run: npm ci
+        run: npm install --global npm@11.6.2 && npm ci
 
       - name: Install browser runtimes
         run: npx playwright install --with-deps chromium firefox webkit
@@ -143,7 +143,6 @@ jobs:
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: synthetic-publishable-key
           SUPABASE_SECRET_KEY: synthetic-secret-key
           AUTOMATION_SHARED_SECRET: synthetic-automation-secret
-          EMAIL_INGESTION_TOKEN: synthetic-ingestion-token
           MONITORING_SHARED_SECRET: synthetic-monitoring-secret
           N8N_ENCRYPTION_KEY: synthetic-n8n-encryption-key
           AUTH_SMTP_CONFIGURED: "true"

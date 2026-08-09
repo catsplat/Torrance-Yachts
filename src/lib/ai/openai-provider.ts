@@ -48,6 +48,7 @@ export class OpenAiProvider implements AiProvider {
   async analyzeEmail(
     input: EmailAiInput,
     safetyIdentifier: string,
+    signal?: AbortSignal,
   ): Promise<ProviderResult<EmailAiSuggestion>> {
     const response = await this.client.responses.parse({
       input: [
@@ -71,7 +72,7 @@ export class OpenAiProvider implements AiProvider {
       safety_identifier: safetyIdentifier,
       store: false,
       text: { format: zodTextFormat(emailAiSuggestionSchema, "email_triage_suggestion") },
-    })
+    }, { signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) })
     if (!response.output_parsed) throw new Error("OpenAI returned no validated email suggestion.")
     return {
       inputTokens: response.usage?.input_tokens ?? null,
@@ -86,6 +87,7 @@ export class OpenAiProvider implements AiProvider {
   async analyzeContract(
     input: ContractAiInput,
     safetyIdentifier: string,
+    signal?: AbortSignal,
   ): Promise<ProviderResult<ContractAiSuggestion>> {
     const response = await this.client.responses.parse({
       input: [
@@ -103,7 +105,7 @@ export class OpenAiProvider implements AiProvider {
       safety_identifier: safetyIdentifier,
       store: false,
       text: { format: zodTextFormat(contractAiSuggestionSchema, "contract_extraction_suggestion") },
-    })
+    }, { signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) })
     if (!response.output_parsed) throw new Error("OpenAI returned no validated contract suggestion.")
     return {
       inputTokens: response.usage?.input_tokens ?? null,

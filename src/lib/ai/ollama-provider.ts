@@ -138,6 +138,7 @@ export class OllamaProvider implements AiProvider {
   private async chat<T>(values: {
     schema: z.ZodType<T>
     safetyIdentifier: string
+    signal?: AbortSignal
     system: string
     user: unknown
   }): Promise<ProviderResult<T>> {
@@ -162,7 +163,9 @@ export class OllamaProvider implements AiProvider {
         ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
       },
       method: "POST",
-      signal: AbortSignal.timeout(60_000),
+      signal: values.signal
+        ? AbortSignal.any([values.signal, AbortSignal.timeout(20_000)])
+        : AbortSignal.timeout(20_000),
     })
     const payload = await response.json().catch(() => null) as OllamaResponse | null
     if (!response.ok) {
@@ -180,9 +183,10 @@ export class OllamaProvider implements AiProvider {
     }
   }
 
-  analyzeEmail(input: EmailAiInput, safetyIdentifier: string): Promise<ProviderResult<EmailAiSuggestion>> {
+  analyzeEmail(input: EmailAiInput, safetyIdentifier: string, signal?: AbortSignal): Promise<ProviderResult<EmailAiSuggestion>> {
     return this.chat({
       safetyIdentifier,
+      signal,
       schema: emailAiSuggestionSchema,
       system: emailInstructions,
       user: {
@@ -198,9 +202,10 @@ export class OllamaProvider implements AiProvider {
     })
   }
 
-  analyzeContract(input: ContractAiInput, safetyIdentifier: string): Promise<ProviderResult<ContractAiSuggestion>> {
+  analyzeContract(input: ContractAiInput, safetyIdentifier: string, signal?: AbortSignal): Promise<ProviderResult<ContractAiSuggestion>> {
     return this.chat({
       safetyIdentifier,
+      signal,
       schema: contractAiSuggestionSchema,
       system: contractInstructions,
       user: {

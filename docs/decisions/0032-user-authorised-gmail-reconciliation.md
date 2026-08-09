@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted.
+Superseded by ADR 0037. The selected-account and history-cursor decisions remain;
+the raw n8n compatibility endpoint has been removed.
 
 ## Context
 
@@ -38,4 +39,3 @@ administrator then chooses the inbox by name. Duplicate history events remain
 safe because the existing Gmail message and provider-event keys are unique.
 No email classification, enquiry creation, draft sending or booking action is
 made authoritative by Gmail or n8n.
-

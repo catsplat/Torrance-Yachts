@@ -48,7 +48,7 @@ export function TaskStateForm({
   const [state, action, pending] = useActionState(handler.bind(null, taskId), initialState)
   const label = mode === "complete" ? "Complete task" : mode === "reopen" ? "Reopen task" : "Cancel ad-hoc task"
   return <form action={action} className="space-y-3 rounded-xl border p-4">
-    {mode === "cancel" ? <label className="space-y-1.5 text-xs font-medium">Reason<textarea className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={2000} name="reason" required /></label> : null}
+    {mode === "complete" ? <label className="space-y-1.5 text-xs font-medium">Note <span className="font-normal text-muted-foreground">(optional)</span><textarea className="min-h-16 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={2000} name="reason" /></label> : <label className="space-y-1.5 text-xs font-medium">Reason<textarea className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={2000} name="reason" required /></label>}
     <Feedback state={state} />
     <Button className="w-full" disabled={pending} type="submit" variant={mode === "cancel" ? "destructive" : mode === "reopen" ? "outline" : "default"}>
       {pending ? "Recording…" : label}

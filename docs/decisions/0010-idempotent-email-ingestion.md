@@ -4,9 +4,10 @@
 
 ## Decision
 
-Use an authenticated server-to-server endpoint for Gmail/n8n delivery. Store Gmail
-message and thread identifiers in PostgreSQL with unique constraints so provider
-retries cannot duplicate operational records.
+Use an authenticated application-owned Gmail history adapter. Store Gmail message
+and thread identifiers in PostgreSQL with unique constraints so provider retries
+cannot duplicate operational records. (The original n8n intake transport was
+retired by ADR 0037; the idempotency decision remains.)
 
 Phase 9 automatically routes only cases supported by deterministic evidence:
 
@@ -22,8 +23,8 @@ request circular mark-read/archive actions. AI may suggest those decisions in Ph
 ## Consequences
 
 - Gmail push/history delivery can be retried safely.
-- Provider actions are durable outbox records for n8n in Phase 11.
+- Provider actions are durable outbox records claimed by application-owned adapters.
 - Raw provider credentials remain outside PostgreSQL and source control.
 - Plain-text message content is immutable to staff after ingestion.
-- Attachments remain metadata-only until an approved quarantine/storage policy is
-  implemented.
+- Attachments remain metadata-only at email intake; booking uploads use the
+  separate private quarantine and scanning pipeline.

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 import {
   listGoogleSpreadsheets,
+  safeGoogleConnectionMessage,
 } from "@/lib/integrations/google-workspace"
 import { getActiveGoogleWorkspaceDispatchCredentials } from "@/lib/integrations/google-workspace-server"
 
@@ -21,7 +22,7 @@ export async function GET() {
     })
   } catch (error) {
     return NextResponse.json({
-      message: error instanceof Error ? error.message : "Google Sheets could not be loaded.",
+      message: safeGoogleConnectionMessage(error, "Google Sheets could not be loaded."),
     }, { status: 502 })
   }
 }

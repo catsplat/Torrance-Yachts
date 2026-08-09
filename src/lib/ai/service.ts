@@ -111,6 +111,7 @@ export async function generateEmailSuggestion(
   context: RequestContext,
   messageId: string,
   requestToken: string,
+  signal?: AbortSignal,
 ) {
   const { data: message, error } = await context.supabase
     .from("email_messages")
@@ -143,7 +144,7 @@ export async function generateEmailSuggestion(
   const { error: startError } = await admin.rpc("start_ai_analysis", { p_run_id: run.id })
   if (startError) throw new Error("The AI analysis could not be started.")
   try {
-    const result = await provider.analyzeEmail(input, safetyIdentifier(context.userId))
+    const result = await provider.analyzeEmail(input, safetyIdentifier(context.userId), signal)
     const output = emailAiSuggestionSchema.parse(result.output)
     const sourceText = `${input.subject}\n${input.body}`
     const evidence = locateEvidence(output.evidence, sourceText, "email_message", message.id)
@@ -170,45 +171,48 @@ export async function generateEmailSuggestion(
   }
 }
 
-export async function generateNextPendingEmailSuggestion() {
+const automaticAiWorkerId = "application-ai-dispatcher"
+
+export async function generatePendingEmailSuggestionBatch() {
   const admin = createAdminClient()
-  const [messagesResult, runsResult, ownerResult] = await Promise.all([
-    admin
-      .from("email_messages")
-      .select("id")
-      .eq("classification", "unclassified")
-      .eq("processing_status", "review_required")
-      .order("received_at")
-      .limit(25),
-    admin
-      .from("ai_runs")
-      .select("source_id")
-      .eq("source_type", "email_message")
-      .eq("analysis_kind", "email_triage")
-      .in("status", ["queued", "processing", "completed"])
-      .limit(1000),
-    admin
-      .from("profiles")
-      .select("id")
-      .eq("active", true)
-      .order("role", { ascending: true })
-      .order("created_at")
-      .limit(1)
-      .maybeSingle(),
-  ])
-  if (messagesResult.error || runsResult.error || ownerResult.error) {
-    throw new Error("Pending AI email work could not be loaded.")
+  const { data: work, error } = await admin.rpc("claim_ai_email_work", {
+    p_limit: 5, p_worker_id: automaticAiWorkerId,
+  })
+  if (error) throw new Error("Pending AI email work could not be claimed.")
+  const deadline = Date.now() + 50_000
+  let completed = 0
+  let failed = 0
+  for (let offset = 0; offset < work.length && Date.now() < deadline; offset += 2) {
+    const group = work.slice(offset, offset + 2)
+    await Promise.all(group.map(async (item) => {
+      try {
+        const remainingMs = Math.max(1, deadline - Date.now())
+        await generateEmailSuggestion(
+          { supabase: admin, userId: item.owner_user_id }, item.claimed_source_id,
+          `automatic-${item.work_id}-a${item.attempt_count}`,
+          AbortSignal.timeout(Math.min(20_000, remainingMs)),
+        )
+        const result = await admin.rpc("complete_ai_email_work", {
+          p_work_id: item.work_id, p_worker_id: automaticAiWorkerId,
+        })
+        if (result.error) throw new Error("AI work completion could not be recorded.")
+        completed += 1
+      } catch (processingError) {
+        const failure = safeFailure(processingError)
+        const result = await admin.rpc("fail_ai_email_work", {
+          p_error: failure.message, p_retryable: failure.code !== "validation_error",
+          p_work_id: item.work_id, p_worker_id: automaticAiWorkerId,
+        })
+        if (result.error) throw new Error("AI work failure could not be recorded.")
+        failed += 1
+      }
+    }))
   }
-  if (!ownerResult.data) return { processed: false as const }
-  const existingSourceIds = new Set(runsResult.data.map((run) => run.source_id))
-  const message = messagesResult.data.find((candidate) => !existingSourceIds.has(candidate.id))
-  if (!message) return { processed: false as const }
-  const result = await generateEmailSuggestion(
-    { supabase: admin, userId: ownerResult.data.id },
-    message.id,
-    "automatic-v1",
-  )
-  return { messageId: message.id, processed: true as const, ...result }
+  return { claimed: work.length, completed, failed, processed: completed > 0, timedOut: completed + failed < work.length }
+}
+
+export async function generateNextPendingEmailSuggestion() {
+  return generatePendingEmailSuggestionBatch()
 }
 
 export async function generateContractSuggestion(
@@ -253,7 +257,7 @@ export async function generateContractSuggestion(
   const { error: startError } = await admin.rpc("start_ai_analysis", { p_run_id: run.id })
   if (startError) throw new Error("The contract extraction could not be started.")
   try {
-    const result = await provider.analyzeContract(input, safetyIdentifier(context.userId))
+    const result = await provider.analyzeContract(input, safetyIdentifier(context.userId), AbortSignal.timeout(20_000))
     const output = contractAiSuggestionSchema.parse(result.output)
     const evidence = locateEvidence(output.evidence, sourceText, "document", document.id)
     const { error: completeError } = await admin.rpc("complete_ai_analysis", {

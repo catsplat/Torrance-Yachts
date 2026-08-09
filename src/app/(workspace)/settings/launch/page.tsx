@@ -4,6 +4,8 @@ import { BackupVerificationForm, LaunchCheckForm } from "@/components/tutorial/t
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getLaunchReadinessWorkspace } from "@/lib/tutorial/data"
+import { getCurrentUser } from "@/lib/auth/current-user"
+import { redirect } from "next/navigation"
 
 const categoryLabels: Record<string, string> = {
   acceptance: "Client acceptance",
@@ -16,6 +18,8 @@ const categoryLabels: Record<string, string> = {
 }
 
 export default async function LaunchReadinessPage() {
+  const user = await getCurrentUser()
+  if (user?.role !== "administrator") redirect("/settings")
   const workspace = await getLaunchReadinessWorkspace()
   const grouped = Map.groupBy(workspace.checks, (check) => check.category)
   const configuredCount = workspace.configuration.filter((item) => item.configured).length

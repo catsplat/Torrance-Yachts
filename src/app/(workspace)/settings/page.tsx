@@ -8,6 +8,8 @@ import {
   GraduationCap,
   PlugZap,
   Rocket,
+  ServerCog,
+  ScrollText,
   UsersRound,
 } from "lucide-react"
 import Link from "next/link"
@@ -63,6 +65,8 @@ export default async function SettingsPage() {
           <h2 className="text-lg font-semibold">Workspace</h2>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <SettingsLink description="Staff access and roles." href="/settings/users" icon={UsersRound} title="Users" />
+            <SettingsLink description="Complete the business configuration." href="/settings/readiness" icon={CircleGauge} title="Business setup" />
+            <SettingsLink description="Search administrative and operational changes." href="/settings/audit" icon={ScrollText} title="Audit log" />
             <SettingsLink description="KYC, captain and follow-up wording." href="/settings/communications" icon={FilePenLine} title="Message templates" />
             <SettingsLink description="Booking workflow and dependencies." href="/tasks/templates" icon={Clock3} title="Task templates" />
             <SettingsLink description="Issuer and payment details." href="/settings/invoices" icon={FileText} title="Invoice profiles" />
@@ -74,6 +78,7 @@ export default async function SettingsPage() {
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <SettingsLink description="Gmail, Telegram and automation." href="/settings/integrations" icon={PlugZap} title="Connections" />
             <SettingsLink description="Provider connection status." href="/settings/activation" icon={CircleGauge} title="Connection status" />
+            <SettingsLink description="Queues, scanner and recovery." href="/settings/operations" icon={ServerCog} title="Operations" />
             <SettingsLink description="Practice the full workflow." href="/tutorial" icon={GraduationCap} title="Tutorial" />
           </div>
         </section>

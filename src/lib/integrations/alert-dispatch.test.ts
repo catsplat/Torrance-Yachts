@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 vi.mock("server-only", () => ({}))
 
 import { dispatchInternalAlert, safeDeliveryFailure } from "./alert-dispatch"
+import { GoogleOAuthError } from "./google-workspace"
 
 type DeliveryFixture = Parameters<typeof dispatchInternalAlert>[1]
 
@@ -101,6 +102,18 @@ describe("external alert provider contracts", () => {
     expect(mime).toContain("Fictional offer reply.")
   })
 
+  it("marks Gmail messages read through the application-owned OAuth adapter", async () => {
+    const admin = { rpc: vi.fn().mockResolvedValue({ data: [{ account_email: "staff@example.test", client_id: "client", client_secret: "secret", refresh_token: "refresh" }], error: null }) } as never
+    const request = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "access" }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "gmail-message-73" }), { status: 200 }))
+    await expect(dispatchInternalAlert(admin, delivery({
+      operation: "gmail_mark_read", payload: { provider_message_id: "gmail-message-73" }, provider: "gmail",
+    }), undefined, request)).resolves.toEqual({ externalId: "gmail-message-73", externalUrl: "" })
+    expect(String(request.mock.calls[1][0])).toContain("/messages/gmail-message-73/modify")
+    expect(JSON.parse(String(request.mock.calls[1][1]?.body))).toEqual({ removeLabelIds: ["UNREAD"] })
+  })
+
   it("keeps unavailable OAuth credentials visible and non-retryable", async () => {
     const admin = { rpc: vi.fn().mockResolvedValue({ data: [], error: null }) } as never
     await expect(dispatchInternalAlert(admin, delivery({ operation: "gmail_create_draft", provider: "gmail" }))).rejects.toThrow(
@@ -109,6 +122,15 @@ describe("external alert provider contracts", () => {
     expect(safeDeliveryFailure(new Error("Connected Gmail OAuth credentials are unavailable."))).toEqual({
       errorCode: "oauth_error",
       errorMessage: "Connected Gmail OAuth credentials are unavailable.",
+      retryable: false,
+    })
+  })
+
+  it("marks revoked Google grants as reconnect-required and non-retryable", () => {
+    expect(safeDeliveryFailure(new GoogleOAuthError("Reconnect Google Workspace.", true))).toEqual({
+      errorCode: "oauth_error",
+      errorMessage: "Reconnect Google Workspace.",
+      requiresReauthentication: true,
       retryable: false,
     })
   })

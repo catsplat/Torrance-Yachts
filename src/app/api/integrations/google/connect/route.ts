@@ -9,6 +9,7 @@ import {
   serialisePendingGoogleOAuthConnection,
 } from "@/lib/integrations/google-oauth"
 import { getGoogleOAuthConfiguration } from "@/lib/integrations/google-oauth-server"
+import { consumeRateLimit } from "@/lib/security/rate-limit"
 
 const pendingConnectionCookie = "torrance_google_oauth_pending"
 
@@ -19,6 +20,9 @@ function settingsRedirect(request: NextRequest, notice: string) {
 }
 
 export async function GET(request: NextRequest) {
+  if (!await consumeRateLimit("google_oauth_connect", 10, 600)) {
+    return NextResponse.redirect(settingsRedirect(request, "rate-limited"))
+  }
   const context = await getAuthenticatedRequestContext()
   if (!context) return NextResponse.redirect(new URL("/login", request.url))
 

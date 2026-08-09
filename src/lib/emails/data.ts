@@ -72,7 +72,7 @@ export async function getEmailInboxPage(filters: EmailInboxFilters) {
 
 export async function getEmailMessageDetail(id: string) {
   const supabase = await createClient()
-  const [messageResult, attachmentsResult, historyResult, actionsResult, contactsResult, enquiriesResult, yachtsResult] =
+  const [messageResult, attachmentsResult, historyResult, actionsResult, contactsResult, yachtsResult] =
     await Promise.all([
       supabase.from("email_messages").select(`
         *,
@@ -87,23 +87,16 @@ export async function getEmailMessageDetail(id: string) {
       ).eq("message_id", id).order("created_at", { ascending: false }),
       supabase.from("email_provider_actions").select("*").eq("message_id", id).order("created_at"),
       supabase.from("contacts").select("id, full_name, email, roles").eq("active", true).order("full_name"),
-      supabase.from("enquiries").select("id, reference, summary, status")
-        .in("status", [
-          "new", "waiting_for_reply", "offer_sent", "negotiating",
-          "contract_issued", "awaiting_signatures", "booked", "charter_active",
-        ])
-        .order("updated_at", { ascending: false }).limit(500),
       supabase.from("yachts").select("id, name").eq("status", "active").order("name"),
     ])
   if (
     messageResult.error || attachmentsResult.error || historyResult.error ||
-    actionsResult.error || contactsResult.error || enquiriesResult.error || yachtsResult.error
+    actionsResult.error || contactsResult.error || yachtsResult.error
   ) throw new Error("Unable to load the email review record.")
   return {
     actions: actionsResult.data,
     attachments: attachmentsResult.data,
     contacts: contactsResult.data,
-    enquiries: enquiriesResult.data,
     history: historyResult.data,
     message: messageResult.data,
     yachts: yachtsResult.data,

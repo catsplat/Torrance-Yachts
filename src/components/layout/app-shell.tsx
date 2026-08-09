@@ -40,6 +40,12 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="min-h-svh bg-background lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+      <a
+        className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-md transition-transform focus:translate-y-0"
+        href="#main-content"
+      >
+        Skip to main content
+      </a>
       <aside className="sticky top-0 hidden h-svh flex-col border-r border-sidebar-border bg-sidebar px-3 py-6 text-sidebar-foreground lg:flex">
         <div className="flex items-center gap-3 px-3">
           <div className="flex size-10 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm shadow-black/10">
@@ -117,7 +123,7 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="px-4 py-6 md:px-6 lg:px-8 lg:py-8">{children}</main>
+        <main className="px-4 py-6 md:px-6 lg:px-8 lg:py-8" id="main-content" tabIndex={-1}>{children}</main>
       </div>
       <TutorialSpotlight />
     </div>

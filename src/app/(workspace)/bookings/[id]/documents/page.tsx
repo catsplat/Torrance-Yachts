@@ -8,6 +8,7 @@ import {
   ContractApprovalForm,
   ContractReviewForm,
   DocumentReviewForm,
+  DocumentRecoveryForm,
   DocumentUploadForm,
   PaymentPaidForm,
   RequirementWaiverForm,
@@ -151,7 +152,7 @@ export default async function BookingDocumentsPage({ params }: Props) {
           <div className="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_10rem_minmax(18rem,.8fr)]" key={document.id}>
             <div><p className="font-medium">{document.title} <span className="text-xs text-muted-foreground">v{document.version_number}</span></p><p className="mt-1 text-sm text-muted-foreground">{document.original_filename} · {document.retention_class.replace("_", " ")}</p>{document.signedUrl ? <a className="mt-2 inline-flex items-center gap-1 text-sm text-primary underline" href={document.signedUrl} rel="noreferrer" target="_blank">Open protected file <ExternalLink className="size-3" /></a> : <p className="mt-2 text-xs text-destructive">File unavailable until it is scanned clean and released.</p>}</div>
             <div className="space-y-2"><Badge variant={document.scan_status === "released" && document.verification_status === "verified" ? "default" : "outline"}>{document.scan_status === "released" ? document.verification_status.replace("_", " ") : `scan ${document.scan_status}`}</Badge>{document.scanner_detail ? <p className="text-xs text-muted-foreground">{document.scanner_detail}</p> : null}</div>
-            <div>{document.scan_status === "released" && document.verification_status === "pending_review" ? <DocumentReviewForm bookingId={id} documentId={document.id} /> : document.scan_status === "released" ? <><p className="text-sm text-muted-foreground">{document.verification_notes}</p>{document.verification_status === "verified" ? <DriveSyncForm bookingId={id} documentId={document.id} /> : null}</> : <p className="text-sm text-muted-foreground">Quarantine controls prevent review and external sync until scanning is complete.</p>}</div>
+            <div>{document.scan_status === "released" && document.verification_status === "pending_review" ? <DocumentReviewForm bookingId={id} documentId={document.id} /> : document.scan_status === "released" ? <><p className="text-sm text-muted-foreground">{document.verification_notes}</p>{document.verification_status === "verified" ? <DriveSyncForm bookingId={id} documentId={document.id} /> : null}</> : user?.role === "administrator" && !document.quarantine_removed_at && ["pending", "error"].includes(document.scan_status) ? <DocumentRecoveryForm bookingId={id} documentId={document.id} /> : <p className="text-sm text-muted-foreground">Quarantine controls prevent review and external sync until scanning is complete.</p>}</div>
           </div>
         )) : <p className="p-5 text-sm text-muted-foreground">No files uploaded.</p>}</CardContent>
       </Card>

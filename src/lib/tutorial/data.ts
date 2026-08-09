@@ -55,7 +55,6 @@ export function getProductionConfigurationStatus() {
     ["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY],
     ["SUPABASE_SECRET_KEY", process.env.SUPABASE_SECRET_KEY],
     ["AUTOMATION_SHARED_SECRET", process.env.AUTOMATION_SHARED_SECRET],
-    ["EMAIL_INGESTION_TOKEN", process.env.EMAIL_INGESTION_TOKEN],
     ["MONITORING_SHARED_SECRET", process.env.MONITORING_SHARED_SECRET],
     ["APP_BASE_URL", process.env.APP_BASE_URL],
   ] as const

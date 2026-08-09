@@ -1,5 +1,5 @@
 import { AppShell } from "@/components/layout/app-shell";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser, requiresMfa } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -14,6 +14,7 @@ export default async function WorkspaceLayout({
   if (!currentUser) {
     redirect("/login");
   }
+  if (requiresMfa(currentUser)) redirect("/account/mfa");
   const [themeCookie, supabase] = await Promise.all([cookies(), createClient()]);
   const { count: unreadNotificationCount, error } = await supabase
     .from("notifications")

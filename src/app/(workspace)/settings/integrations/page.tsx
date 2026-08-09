@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getCurrentUser } from "@/lib/auth/current-user"
 import { getGoogleMailboxCandidates, getGoogleWorkspaceDispatchCandidates, getIntegrationWorkspace } from "@/lib/integrations/data"
+import { redirect } from "next/navigation"
 
 function formatDateTime(value: string | null) {
   if (!value) return "Never"
@@ -22,8 +23,9 @@ const connectionNames: Record<string, string> = {
 }
 
 export default async function CompanyConnectionsPage() {
-  const [workspace, user] = await Promise.all([getIntegrationWorkspace(), getCurrentUser()])
-  if (user?.role !== "administrator") return null
+  const user = await getCurrentUser()
+  if (user?.role !== "administrator") redirect("/settings")
+  const workspace = await getIntegrationWorkspace()
   const [gmailMailboxes, googleWorkspaceAccounts] = await Promise.all([
     getGoogleMailboxCandidates(),
     getGoogleWorkspaceDispatchCandidates(),

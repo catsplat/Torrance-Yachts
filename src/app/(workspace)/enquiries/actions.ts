@@ -19,6 +19,32 @@ export type EnquiryActionState = {
   success?: boolean
 }
 
+const bulkArchiveSchema = z.object({
+  enquiryIds: z.array(z.uuid()).min(1).max(50),
+  reason: z.string().trim().min(10).max(1000),
+})
+
+export async function archiveStaleEnquiriesAction(
+  _previousState: EnquiryActionState,
+  formData: FormData,
+): Promise<EnquiryActionState> {
+  const parsed = bulkArchiveSchema.safeParse({
+    enquiryIds: formData.getAll("enquiryId"),
+    reason: formData.get("reason"),
+  })
+  if (!parsed.success) return { message: "Select at least one stale enquiry and add a clear reason." }
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return { message: expiredMessage }
+  const { data, error } = await context.supabase.rpc("archive_stale_enquiries", {
+    p_enquiry_ids: parsed.data.enquiryIds,
+    p_reason: parsed.data.reason,
+  })
+  if (error) return { message: "The selected enquiries could not be archived." }
+  revalidatePath("/")
+  revalidatePath("/enquiries")
+  return { message: `${data ?? 0} stale enquir${data === 1 ? "y" : "ies"} archived.`, success: true }
+}
+
 const idSchema = z.uuid()
 const expiredMessage = "Your session has expired. Sign in again."
 

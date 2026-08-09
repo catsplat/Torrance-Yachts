@@ -1,128 +1,39 @@
-# Launch gap register and offline assurance plan
+# Launch gap register
 
-**Status:** Local code-and-database assurance complete; external activation pending
-**Last reviewed:** 8 August 2026
-**Scope:** Finish and prove the product locally before any hosting, live client
-data, or external provider credential is introduced.
+**Status:** v0.19.0 pre-deployment verification in progress
+**Last reviewed:** 9 August 2026
 
-## Purpose
-
-The twelve delivery phases established the application, database boundaries,
-workflow model, and release-candidate deployment material. They do not prove
-that a real staff member can safely operate the full workflow with their own
-mailbox, credentials, documents, and production infrastructure.
-
-This register separates three materially different states:
+## Evidence states
 
 | State | Meaning |
 | --- | --- |
-| Implemented | The application and database behaviour exist and have automated coverage. |
-| Locally rehearsable | The exact internal boundary can be exercised with fictional data and simulated providers. |
-| Live accepted | A client-owned provider/infrastructure path has passed controlled acceptance with evidence. |
+| Implemented | Code and migrations exist. |
+| Automatically verified | Repeatable unit, database, browser or contract proof passes. |
+| Locally accepted | A person completed the fictional workflow on the intended local build. |
+| Client accepted | Torrance approved the policy, values and operating method. |
+| Live accepted | The client-owned provider path passed staged synthetic acceptance. |
 
-No item moves directly from implemented to live accepted without a local
-rehearsal, a staged external test, and recorded human acceptance.
+## Pre-deployment position
 
-## Confirmed implementation and activation gaps
+| Area | Current evidence | Remaining non-code gate |
+| --- | --- | --- |
+| Operational registers | Cursor contracts, exact counts, URL state and 10,000-record tests | Client UAT with approved imported configuration |
+| Access and MFA | Approved-user guard, AAL2, role separation, reset audit and unapproved isolation | Approve real identities and recovery owner |
+| Gmail and AI | One application-owned OAuth path, history reconciliation, leased queue and fictional five-route proof | Client OAuth consent, provider/data-policy approval |
+| Booking workflow | Full fictional enquiry-to-follow-up UI path and database edge cases | Staff macOS walkthrough |
+| Documents | Private quarantine/release, ClamAV boundary, retry/reject/reconcile and blocked access | Retention policy and production scanner acceptance |
+| Alerts and mirrors | Fake-provider contracts, retry/back-off and reconciliation | Recipient and destination ownership acceptance |
+| Recovery | Disposable database restore drill and runbooks | Encrypted off-site schedule and production restore drill |
+| Deployment | Compose/preflight material only | Provisioning, private ingress, monitoring and provider acceptance |
 
-| Area | Current state | Local completion work | Live acceptance work |
-| --- | --- | --- | --- |
-| Enquiries, offers, bookings, buffered availability, tasks, payments | Implemented and database-tested | A resettable, run-isolated fictional enquiry-to-post-charter rehearsal exercises live offer, booking, buffer, checklist, contract, instalment, commission, invoice, Yachtfolio-evidence and lifecycle commands. Normal/conflict/cancelled/amended/dependency tests remain available locally. | Import approved business data and complete staff UAT. |
-| Email intake | Gmail payload validation, durable ingestion, raw n8n compatibility normalisation and user-authorised history reconciliation exist. | Completed: five fictional routes use the same ingestion command; provider-fake tests cover cursor initialisation, new mail and expired-cursor recovery; replay/idempotency, mailbox selection and credential secrecy are database-tested. | The client connects Google, an administrator selects the inbox, then staff send a fictional acceptance enquiry. n8n needs only the application scheduler secret. |
-| AI | Deterministic provider and OpenAI adapter existed; local Ollama adapter is added for offline assurance. | Completed locally: valid response, malformed response, unavailable provider, timeout, evidence, correction/rejection, and human approval boundaries are covered. | Approve provider, data policy, model, spend limits, and service account. |
-| Notifications and provider deliveries | Outbox, retry, failure visibility, and development delivery simulator exist. | Completed: loopback success contract plus database coverage for leases, transient/permanent failure, retry/backoff, recovery, Telegram review-alert payloads, Gmail draft-only payloads, and OAuth configuration failures. The simulator worker is rejected at the app boundary outside `APP_ENVIRONMENT=development`. | Configure Telegram/Google/SMTP, verify recipient ownership and scopes. |
-| Documents and contract review | Private storage, document requirements, reviewed facts, payments, and invoice generation exist. | Use only fictional PDFs/text; exercise rejected type, verification, missing-document, and reviewed-contract cases. | Approve malware/quarantine treatment, retention policy, and production Storage access. |
-| Calendar, Drive, Sheets | The authoritative internal records and application-owned OAuth adapters exist. n8n schedules the bounded dispatcher but holds no Google credential. | Fake-provider acceptance covers stable Calendar events, immutable/formula-safe Sheet snapshots and replay-safe clean-document Drive copies. | Staff refresh Google consent, an administrator selects the shared account and destinations, then each mirror is accepted independently with fictional records. |
-| Yachtfolio | Audited manual boundary is implemented. | Confirm the task/evidence/reopen flow in the rehearsal. | Train the named user; do not claim an unsupported API integration. |
-| Deployment, backup, monitoring | Release-candidate Compose/runbooks and a no-secret-value production preflight exist. | Completed: clean build, 691 database assertions, database lint, local restore drill, loopback health, and production dependency audit. | Provision staging/production, off-site backup, monitoring, private ingress, restore drill. |
+## Deliberate pre-deployment exclusions
 
-## Local completion sequence
+- no hosting, domain, Cloudflare activation or internet-facing service;
+- no live mailbox, Telegram recipient, cloud AI request or provider credential;
+- no client identity document, private contact, bank detail or current commercial term;
+- no claim of provider success based on a fake response;
+- no Windows/macOS desktop packaging or signing.
 
-### L1 — Offline email and AI rehearsal
-
-**Outcome:** A fictional email enters the actual Inbox through the production
-validation and database-ingestion boundary. A locally installed Ollama model
-creates a schema-validated proposal; a human reviews it before any authoritative
-record changes.
-
-**Acceptance checks:**
-
-1. New enquiry, follow-up, internal, circular, and unknown fixtures appear in
-   the Inbox with the intended deterministic classification/review state.
-2. Replaying an identical provider event creates no duplicate message or work.
-3. Invalid payloads are rejected before persistence.
-4. Local Ollama output is validated, source evidence is checked, and malformed
-   output is retained as a visible failure rather than applied.
-5. A reviewer can correct/reject output and manually create/associate an
-   enquiry.
-
-### L2 — Synthetic charter rehearsal
-
-**Outcome:** A fictional enquiry can be progressed through a reviewable offer,
-confirmed booking, task generation, availability buffer, compliance-document
-quarantine/verification, signed-contract review, two instalments, commission,
-local invoice evidence, manual Yachtfolio evidence, charter completion and
-broker follow-up using the live commands, then safely reset. Provider delivery
-remains simulated and no real recipient is contacted.
-
-**Acceptance checks:**
-
-1. No unapproved AI output can create a booking, send a message, or reserve a
-   yacht.
-2. One confirmed booking creates the supplied dependency-aware task workflow
-   once only.
-3. Booking conflict, cancellation, date amendment, missing-document, and
-   overdue-payment paths remain understandable and auditable.
-4. The simulated charter start/end and broker follow-up occur only at the
-   configured dates/offsets.
-
-### L3 — Offline provider simulation
-
-**Outcome:** n8n's local development simulator consumes only synthetic outbox
-deliveries and records success/failure using the same claim/complete/fail
-contract as live providers.
-
-**Acceptance checks:**
-
-1. Worker leases prevent duplicate delivery.
-2. Transient failures back off and retry; permanent failures remain visible.
-3. A staff member can identify the record, recipient class, failure reason, and
-   safe recovery action without reading logs.
-4. No development simulator can run in a production environment.
-
-### L4 — Local operational acceptance
-
-**Outcome:** The primary user completes the full fictional workflow on their
-normal browser without developer intervention.
-
-**Acceptance checks:**
-
-1. The dashboard guides the day’s work without relying on a separate sheet.
-2. The guided tutorial and rehearsal instructions agree with the live interface.
-3. A backup/restore drill and incident walkthrough can be followed from the
-   runbooks.
-4. All tests, database tests, production build, linting, and dependency audit
-   pass from a clean local start.
-
-## Later live activation gates
-
-These are deliberately not local tasks and should not be attempted until L1–L4
-are accepted:
-
-1. Client confirms hosted topology, owner accounts, ongoing budget, and private
-   access approach.
-2. Staging Supabase, VPS, n8n, secret storage, encrypted off-site backups, and
-   monitoring are commissioned.
-3. Provider-by-provider synthetic acceptance is recorded: Gmail, Telegram,
-   Calendar, Drive, Sheets, SMTP, then optional AI.
-4. Retention, document scanning/quarantine, incident response, account recovery,
-   and data-entry policy are approved in writing.
-5. A named employee completes UAT and signs the launch gate.
-
-## Deliberate non-goals for local assurance
-
-- no real mailbox, Telegram chat, cloud AI request, client contact, passport,
-  KYC file, commercial term, or payment instruction;
-- no hosted domain or internet-facing service;
-- no claim of live provider success based on a simulated response;
-- no direct Yachtfolio automation without a supported, approved API.
+When `npm run release:verify` passes from the clean v0.19.0 commit, the shared
+application is ready to bake. All remaining work is client-owned configuration,
+provider acceptance, training/UAT, infrastructure and packaging.

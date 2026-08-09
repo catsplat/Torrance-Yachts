@@ -1,96 +1,52 @@
-# Phase 11 adapter contract
+# Integration adapter contract
 
-All endpoints require `Authorization: Bearer <AUTOMATION_SHARED_SECRET>`.
+All automation endpoints require `Authorization: Bearer
+<AUTOMATION_SHARED_SECRET>`. n8n receives this application scheduler secret only;
+it receives no Google, Telegram, AI, document, or business credentials.
 
-The Gmail intake endpoint instead uses the independent
-`EMAIL_INGESTION_TOKEN`, so compromise of one adapter secret does not grant the
-other adapter boundary.
-
-## Gmail intake compatibility boundary
-
-`POST /api/integrations/gmail/n8n-message`
-
-Accepts one unsimplified item from an optional n8n Gmail Trigger node. The
-application normalises address objects, header signals, full text, Gmail IDs,
-thread ID, labels, and received time into its bounded ingestion contract. The
-stable Gmail message ID becomes the replay key, and PostgreSQL remains the
-idempotency authority.
-
-## Materialise
+## Automation tick
 
 `POST /api/integrations/automation/tick`
 
-Reconciles the administrator-selected, user-authorised Gmail inbox before
-creating due notifications, Gmail provider actions and internal calendar
-records. It also processes at most one pending email AI summary per tick before
-notifications are materialised. All boundaries are idempotent; n8n needs only
-the application automation secret, not a Gmail credential.
+The tick reconciles the administrator-selected Gmail inbox, claims a bounded AI
+batch, creates due internal notifications and refreshes authoritative calendar
+records. Gmail history is the only production inbox ingestion path. The first
+reconciliation records the current cursor rather than importing old mail; an
+expired cursor uses one bounded recovery query.
 
-## Personal staff delivery
+AI jobs use database leases, retry caps, provider and overall deadlines, and an
+approved staff owner. Output remains evidence-backed review work. It cannot
+create an offer, booking, reservation, or sent message.
+
+## Staff delivery
 
 `POST /api/integrations/automation/dispatch-alerts`
 
-Claims and delivers only:
+The application claims and delivers a bounded batch of internal Telegram
+alerts, employee email alerts, and approved external Gmail drafts. It refreshes
+the appropriate Vault-held Google token internally. External email is created as
+a Gmail draft only.
 
-- internal Telegram alerts through the server-side company bot;
-- internal email alerts through the recipient staff member's encrypted Gmail
-  OAuth credentials;
-- approved Gmail drafts for external contacts.
-
-The route never sends an external email. Gmail drafts still require a person to
-review and send them from Gmail.
-
-## Shared Google Workspace delivery
+## Google Workspace mirrors
 
 `POST /api/integrations/automation/dispatch-google-workspace`
 
-Claims only `calendar_upsert`, `drive_upload` and `sheets_snapshot`. The
-application refreshes the administrator-selected staff OAuth connection behind
-the Vault boundary, calls Google with bounded timeouts, and verifies database
-completion or failure. n8n supplies only the scheduler request and application
-automation secret.
+The application claims `calendar_upsert`, `drive_upload`, and `sheets_snapshot`
+deliveries. It refreshes the selected Vault-held Google connection, uses bounded
+timeouts, and records verified completion or redacted failure.
 
-- Calendar uses stable internal event IDs, private visibility and no attendees.
-- Drive searches by the delivery idempotency key before upload and accepts only
-  clean, verified private source documents.
-- Sheets replaces three controlled tabs using immutable PostgreSQL identifiers,
-  raw values and spreadsheet-formula neutralisation.
+- Calendar uses stable internal identifiers, private visibility, and no attendees.
+- Drive accepts only released clean documents and checks idempotency before copy.
+- Sheets replaces controlled reporting tabs with immutable row identifiers and
+  formula-safe raw values.
 
-## Claim
+## Delivery leases
 
-`POST /api/integrations/deliveries/claim`
+The database claim, completion, and failure commands remain the authority. A
+claim includes a worker ID and bounded limit. Completion records the provider
+identifier. Failure records a redacted code/message and whether retry is safe.
+Lease expiry, exponential back-off, retry caps, and permanent-failure visibility
+are enforced by the database contract.
 
-```json
-{ "workerId": "n8n-production-1", "limit": 20 }
-```
-
-Returns leased delivery records. Drive deliveries include a leased private file
-URL requiring the same bearer token.
-
-## Complete
-
-`POST /api/integrations/deliveries/{id}/complete`
-
-```json
-{
-  "workerId": "n8n-production-1",
-  "externalId": "provider-record-id",
-  "externalUrl": "https://provider.example/record"
-}
-```
-
-## Fail
-
-`POST /api/integrations/deliveries/{id}/fail`
-
-```json
-{
-  "workerId": "n8n-production-1",
-  "errorCode": "provider_timeout",
-  "errorMessage": "Bounded redacted provider error",
-  "retryable": true
-}
-```
-
-The database calculates retry timing. Workflows must never include secrets or
-unredacted document/message contents in error text.
+No endpoint accepts a provider token from n8n, and no error payload may include
+message bodies, private contacts, invoice details, identity data, or secrets.

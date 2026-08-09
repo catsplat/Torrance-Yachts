@@ -38,11 +38,16 @@ Visible success or failure in the application
 - Delivery attempts, external identifiers, timestamps, errors, and retry state are persisted.
 - Failed integrations do not roll back or corrupt the authoritative enquiry, offer, or booking.
 - Operators can see and retry failed deliveries.
-- Small workflows handle one responsibility each; there is no single giant scenario.
+- The three retained workflows handle scheduling, development simulation, and
+  readiness monitoring; n8n contains no provider credential or business logic.
 
 ## Human approval
 
-n8n may prepare a Telegram approval request or place an approved email into Gmail, but the underlying application command decides whether the action is allowed. AI output remains a proposal with source evidence and confidence. Material actions—including approving/sending offers, confirming bookings, blocking dates, issuing invoices, or contacting external parties—require an authenticated human decision.
+n8n may schedule the application adapter that prepares an alert or approved Gmail
+draft, but the application command decides whether the action is allowed. AI
+output remains a proposal with source evidence and confidence. Material actions,
+including offers, bookings, date reservations, invoices, and external contact,
+require an authenticated human decision.
 
 ## Phase 11 implementation
 

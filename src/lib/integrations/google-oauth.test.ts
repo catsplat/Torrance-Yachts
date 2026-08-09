@@ -11,6 +11,7 @@ import {
 describe("Google OAuth setup helpers", () => {
   const connection = {
     codeVerifier: "verifier",
+    issuedAt: 1_000_000,
     state: "state-value",
     userId: "a9a7e0e6-9173-4f5e-bf70-e491b5127178",
   }
@@ -34,8 +35,19 @@ describe("Google OAuth setup helpers", () => {
   })
 
   it("round-trips only a well-formed pending connection", () => {
-    expect(parsePendingGoogleOAuthConnection(serialisePendingGoogleOAuthConnection(connection))).toEqual(connection)
+    expect(parsePendingGoogleOAuthConnection(serialisePendingGoogleOAuthConnection(connection), connection.issuedAt)).toEqual(connection)
     expect(parsePendingGoogleOAuthConnection("not-a-pending-connection")).toBeNull()
+  })
+
+  it("rejects expired, implausibly future, and legacy pending states", () => {
+    const serialised = serialisePendingGoogleOAuthConnection(connection)
+    expect(parsePendingGoogleOAuthConnection(serialised, connection.issuedAt + 10 * 60 * 1000 + 1)).toBeNull()
+    expect(parsePendingGoogleOAuthConnection(serialised, connection.issuedAt - 30_001)).toBeNull()
+    expect(parsePendingGoogleOAuthConnection(Buffer.from(JSON.stringify({
+      codeVerifier: "verifier",
+      state: "state-value",
+      userId: connection.userId,
+    })).toString("base64url"), connection.issuedAt)).toBeNull()
   })
 
   it("allows HTTPS and local development origins only", () => {

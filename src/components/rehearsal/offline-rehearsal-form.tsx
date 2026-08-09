@@ -93,9 +93,9 @@ export function OfflineRehearsalForm({ activeRuns, enabled }: { activeRuns: Acti
             {resetPending ? "Removing fictional run…" : "Remove this fictional run"}
           </Button>
           </form>)}
-          <ActionFeedback state={resetState} />
         </div>
       ) : null}
+      <ActionFeedback state={resetState} />
 
       <div className="border-t pt-5">
         <form action={fullAction} className="space-y-3">
@@ -126,7 +126,7 @@ export function OfflineRehearsalForm({ activeRuns, enabled }: { activeRuns: Acti
         {fullRunId ? <form action={completeAction} className="mt-4 border-t pt-4">
             <input name="runId" type="hidden" value={fullRunId} />
             <p className="mb-3 text-xs leading-5 text-muted-foreground">Finally, rehearse fictional invoice evidence, Yachtfolio confirmation, captain and broker hand-offs, payment settlement, charter start/end, and post-charter follow-up. The action is blocked until contract review is approved and never contacts a provider or recipient.</p>
-            <Button disabled={completePending} type="submit" variant="outline">{completePending ? "Completing fictional charter lifecycleâ€¦" : "Rehearse post-contract charter lifecycle"}</Button>
+            <Button disabled={completePending} type="submit" variant="outline">{completePending ? "Completing fictional charter lifecycle…" : "Rehearse post-contract charter lifecycle"}</Button>
             <ActionFeedback state={completeState} />
             {completeState.bookingId ? <Link className="mt-3 inline-flex text-sm font-medium text-primary underline" href={`/bookings/${completeState.bookingId}`}>Open completed fictional booking</Link> : null}
         </form> : null}

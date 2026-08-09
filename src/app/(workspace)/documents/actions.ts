@@ -7,7 +7,9 @@ import { z } from "zod"
 
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 import { scanDocumentBuffer } from "@/lib/documents/scanner"
+import { claimUploadCapacity, releaseUploadCapacity } from "@/lib/documents/upload-capacity"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { consumeRateLimit } from "@/lib/security/rate-limit"
 import {
   contractApprovalSchema,
   contractReviewSchema,
@@ -45,10 +47,28 @@ function refreshBookingDocuments(bookingId: string) {
   revalidatePath("/tasks")
 }
 
+async function removeQuarantineObject(
+  admin: ReturnType<typeof createAdminClient>,
+  documentId: string,
+  storagePath: string,
+  reason: string,
+) {
+  const removed = await admin.storage.from("booking-quarantine").remove([storagePath])
+  if (removed.error) return false
+  const recorded = await admin.rpc("mark_document_quarantine_removed", {
+    p_document_id: documentId,
+    p_reason: reason,
+  })
+  return !recorded.error
+}
+
 export async function uploadBookingDocumentAction(
   _state: DocumentActionState,
   formData: FormData,
 ): Promise<DocumentActionState> {
+  if (!await consumeRateLimit("document_upload", 10, 600)) {
+    return { message: "Upload limit reached. Wait before trying again." }
+  }
   const parsed = documentMetadataSchema.safeParse({
     bookingId: formData.get("bookingId"),
     documentType: formData.get("documentType"),
@@ -60,6 +80,12 @@ export async function uploadBookingDocumentAction(
   if ("error" in fileResult) return { message: fileResult.error }
   const context = await contextOrMessage()
   if ("message" in context) return context
+  const uploadLeaseId = await claimUploadCapacity(context.userId, fileResult.file.size)
+  if (!uploadLeaseId) return { message: "Upload capacity is busy or your hourly upload allowance has been reached." }
+  const finish = async (state: DocumentActionState) => {
+    await releaseUploadCapacity(uploadLeaseId)
+    return state
+  }
 
   const extension = fileResult.file.type === "application/pdf"
     ? "pdf"
@@ -75,7 +101,7 @@ export async function uploadBookingDocumentAction(
       upsert: false,
     })
   if (uploadError) {
-    return { message: "The private file upload failed. Nothing was recorded." }
+    return finish({ message: "The private file upload failed. Nothing was recorded." })
   }
 
   const checksum = createHash("sha256").update(fileResult.buffer).digest("hex")
@@ -92,13 +118,22 @@ export async function uploadBookingDocumentAction(
   })
   if (error) {
     await context.supabase.storage.from("booking-quarantine").remove([storagePath])
-    return { message: "The document record was rejected; the uploaded file was removed." }
+    return finish({ message: "The document record was rejected; the uploaded file was removed." })
   }
-  const scanResult = await scanDocumentBuffer(fileResult.buffer)
+  let scanResult: Awaited<ReturnType<typeof scanDocumentBuffer>> = {
+    detail: "Document scanner did not start.", status: "error",
+  }
   let admin: ReturnType<typeof createAdminClient> | null = null
   let scanRecorded = false
   try {
     admin = createAdminClient()
+    const { error: startError } = await admin.rpc("record_document_scan_result", {
+      p_document_id: registeredDocumentId,
+      p_status: "scanning",
+      p_reason: "ClamAV scan started for quarantined upload.",
+    })
+    if (startError) throw new Error("Scan start could not be recorded.")
+    scanResult = await scanDocumentBuffer(fileResult.buffer)
     const { error: scanError } = await admin.rpc("record_document_scan_result", {
       p_document_id: registeredDocumentId,
       p_status: scanResult.status,
@@ -110,14 +145,15 @@ export async function uploadBookingDocumentAction(
   }
   if (!scanRecorded || scanResult.status !== "clean") {
     if (scanRecorded && scanResult.status === "infected") {
-      await context.supabase.storage.from("booking-quarantine").remove([storagePath])
+      await removeQuarantineObject(admin!, registeredDocumentId, storagePath,
+        "Infected quarantine object removed after ClamAV rejection.")
     }
     refreshBookingDocuments(parsed.data.bookingId)
-    return {
+    return finish({
       message: scanResult.status === "infected"
         ? "The file was blocked by malware scanning, removed from quarantine, and retained only as audit metadata."
         : "The file is quarantined because the document scanner needs attention.",
-    }
+    })
   }
   const privatePath = `${parsed.data.bookingId}/${documentId}/${documentId}.${extension}`
   const { error: privateUploadError } = await context.supabase.storage
@@ -134,7 +170,7 @@ export async function uploadBookingDocumentAction(
       p_reason: "Clean file could not be moved from quarantine to protected storage.",
     })
     refreshBookingDocuments(parsed.data.bookingId)
-    return { message: "The clean file remains quarantined because protected release failed." }
+    return finish({ message: "The clean file remains quarantined because protected release failed." })
   }
   const { error: releaseError } = await admin!.rpc("release_clean_booking_document", {
     p_document_id: registeredDocumentId,
@@ -144,11 +180,109 @@ export async function uploadBookingDocumentAction(
   if (releaseError) {
     await context.supabase.storage.from("booking-private").remove([privatePath])
     refreshBookingDocuments(parsed.data.bookingId)
-    return { message: "The clean file remains quarantined because release validation failed." }
+    return finish({ message: "The clean file remains quarantined because release validation failed." })
   }
-  await context.supabase.storage.from("booking-quarantine").remove([storagePath])
+  await removeQuarantineObject(admin!, registeredDocumentId, storagePath,
+    "Released quarantine copy removed after protected storage was confirmed.")
   refreshBookingDocuments(parsed.data.bookingId)
-  return { message: "File scanned clean and released for human verification.", success: true }
+  return finish({ message: "File scanned clean and released for human verification.", success: true })
+}
+
+const recoverySchema = z.object({
+  documentId: z.uuid(),
+  reason: z.string().trim().min(10).max(1000),
+})
+const retryRecoverySchema = z.object({
+  documentId: z.uuid(),
+  reason: z.string().trim().max(1000).default(""),
+})
+
+export async function retryDocumentScanAction(
+  bookingId: string,
+  _state: DocumentActionState,
+  formData: FormData,
+): Promise<DocumentActionState> {
+  const parsed = retryRecoverySchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return validationState(parsed.error)
+  const context = await contextOrMessage()
+  if ("message" in context) return context
+  if (context.role !== "administrator") return { message: "Administrator access is required." }
+  const admin = createAdminClient()
+  const { data: document, error } = await admin.from("documents")
+    .select("id, booking_id, storage_bucket, storage_path, mime_type, scan_status")
+    .eq("id", parsed.data.documentId).eq("booking_id", bookingId).single()
+  if (error || !document || document.storage_bucket !== "booking-quarantine" ||
+      !["pending", "error"].includes(document.scan_status)) {
+    return { message: "This document is not available for scan recovery." }
+  }
+  const downloaded = await admin.storage.from("booking-quarantine").download(document.storage_path)
+  if (downloaded.error) return { message: "The quarantined file is missing. Reject the orphaned record." }
+  const buffer = Buffer.from(await downloaded.data.arrayBuffer())
+  const started = await admin.rpc("record_document_scan_result", {
+    p_document_id: document.id,
+    p_reason: parsed.data.reason || "Administrator retried the quarantined document scan.",
+    p_status: "scanning",
+  })
+  if (started.error) return { message: "The scan lease could not be started." }
+  const scan = await scanDocumentBuffer(buffer)
+  const recorded = await admin.rpc("record_document_scan_result", {
+    p_document_id: document.id, p_reason: scan.detail, p_status: scan.status,
+  })
+  if (recorded.error) return { message: "The scanner result could not be recorded." }
+  if (scan.status === "infected") {
+    await removeQuarantineObject(admin, document.id, document.storage_path,
+      "Infected quarantine object removed during scan recovery.")
+    refreshBookingDocuments(bookingId)
+    return { message: "The infected file was removed and retained only as audit metadata." }
+  }
+  if (scan.status !== "clean") {
+    refreshBookingDocuments(bookingId)
+    return { message: "The file remains quarantined because scanning did not complete." }
+  }
+  const privateUpload = await admin.storage.from("booking-private").upload(document.storage_path, buffer, {
+    cacheControl: "private, max-age=0", contentType: document.mime_type, upsert: false,
+  })
+  if (privateUpload.error) {
+    await admin.rpc("record_document_scan_result", { p_document_id: document.id,
+      p_reason: "Clean file could not be copied to protected storage.", p_status: "error" })
+    return { message: "The clean file remains quarantined because release failed." }
+  }
+  const released = await admin.rpc("release_clean_booking_document", {
+    p_document_id: document.id, p_private_path: document.storage_path,
+    p_reason: "Recovered scan released the clean file to protected storage.",
+  })
+  if (released.error) {
+    await admin.storage.from("booking-private").remove([document.storage_path])
+    return { message: "Release validation failed; the file remains quarantined." }
+  }
+  await removeQuarantineObject(admin, document.id, document.storage_path,
+    "Recovered quarantine copy removed after protected release.")
+  refreshBookingDocuments(bookingId)
+  return { message: "Scan recovered and file released.", success: true }
+}
+
+export async function rejectQuarantinedDocumentAction(
+  bookingId: string,
+  _state: DocumentActionState,
+  formData: FormData,
+): Promise<DocumentActionState> {
+  const parsed = recoverySchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { message: "Give a reason of at least 10 characters." }
+  const context = await contextOrMessage()
+  if ("message" in context) return context
+  if (context.role !== "administrator") return { message: "Administrator access is required." }
+  const { data: document } = await context.supabase.from("documents").select("storage_path")
+    .eq("id", parsed.data.documentId).eq("booking_id", bookingId).single()
+  const rejected = await context.supabase.rpc("reject_quarantined_document", {
+    p_document_id: parsed.data.documentId, p_reason: parsed.data.reason,
+  })
+  if (rejected.error) return { message: "The quarantined document could not be rejected." }
+  if (document) {
+    await removeQuarantineObject(createAdminClient(), parsed.data.documentId, document.storage_path,
+      "Rejected quarantine object removed by an administrator.")
+  }
+  refreshBookingDocuments(bookingId)
+  return { message: "Quarantined file rejected and removed.", success: true }
 }
 
 export async function reviewBookingDocumentAction(
@@ -163,7 +297,7 @@ export async function reviewBookingDocumentAction(
   const { error } = await context.supabase.rpc("review_booking_document", {
     p_document_id: parsed.data.documentId,
     p_approved: parsed.data.approved,
-    p_reason: parsed.data.reason,
+    p_reason: parsed.data.reason || "Document reviewed and verified.",
   })
   if (error) return { message: "Only a clean file released from quarantine can be reviewed." }
   refreshBookingDocuments(bookingId)
@@ -262,7 +396,7 @@ export async function markPaymentPaidAction(
   if ("message" in context) return context
   const { error } = await context.supabase.rpc("mark_payment_paid", {
     p_payment_id: parsed.data.paymentId,
-    p_reason: parsed.data.reason,
+    p_reason: parsed.data.reason || "Payment receipt recorded by staff.",
   })
   if (error) return { message: "Only a scheduled payment can be recorded paid." }
   refreshBookingDocuments(bookingId)

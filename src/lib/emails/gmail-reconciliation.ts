@@ -4,6 +4,7 @@ import { reconcileGoogleGmail } from "@/lib/emails/google-gmail"
 import { ingestGmailMessage } from "@/lib/emails/ingestion"
 import type { GoogleWorkspaceCredentials } from "@/lib/integrations/google-workspace"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { GoogleOAuthError } from "@/lib/integrations/google-workspace"
 
 export async function reconcileConfiguredGmailMailbox() {
   const supabase = createAdminClient()
@@ -32,6 +33,11 @@ export async function reconcileConfiguredGmailMailbox() {
       p_user_id: selected.user_id,
     })
     if (completion.error) throw new Error("Gmail sync progress could not be recorded.")
+    await supabase.rpc("record_google_oauth_health", {
+      p_requires_reauthentication: false,
+      p_succeeded: true,
+      p_user_id: selected.user_id,
+    })
     return { configured: true, ...result }
   } catch (error) {
     const message = error instanceof Error ? error.message.slice(0, 500) : "Gmail reconciliation failed."
@@ -40,7 +46,14 @@ export async function reconcileConfiguredGmailMailbox() {
       p_failed_at: now,
       p_user_id: selected.user_id,
     })
+    if (error instanceof GoogleOAuthError && error.requiresReauthentication) {
+      await supabase.rpc("record_google_oauth_health", {
+        p_error: "Google access expired or was revoked.",
+        p_requires_reauthentication: true,
+        p_succeeded: false,
+        p_user_id: selected.user_id,
+      })
+    }
     throw error
   }
 }
-

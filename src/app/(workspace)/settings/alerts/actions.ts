@@ -11,6 +11,7 @@ import {
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 import {
   listGoogleSpreadsheets,
+  safeGoogleConnectionMessage,
 } from "@/lib/integrations/google-workspace"
 import { getActiveGoogleWorkspaceDispatchCredentials } from "@/lib/integrations/google-workspace-server"
 import {
@@ -174,7 +175,7 @@ export async function selectGoogleSpreadsheetAction(
     })
     if (error) return { message: "The reporting spreadsheet could not be saved." }
   } catch (error) {
-    return { message: error instanceof Error ? error.message : "Google Sheets could not be loaded." }
+    return { message: safeGoogleConnectionMessage(error, "Google Sheets could not be loaded.") }
   }
 
   revalidatePath("/settings/alerts")

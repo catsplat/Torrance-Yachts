@@ -41,12 +41,9 @@ const byName = (name) => workflows.find(({ workflow }) => workflow.name === name
 const core = byName("Torrance Yachts - Core scheduler")
 const simulator = byName("Torrance Yachts - DEVELOPMENT delivery simulator")
 const readiness = byName("Torrance Yachts - Readiness monitor")
-const gmail = byName("Torrance Yachts - Gmail ingestion")
-const gmailMarkRead = byName("Torrance Yachts - Gmail mark-read worker")
-const gmailArchive = byName("Torrance Yachts - Gmail archive worker")
 
-if (!core || !simulator || !readiness || !gmail || !gmailMarkRead || !gmailArchive) {
-  throw new Error("The required scheduler, simulator, readiness, Gmail intake, and Gmail action workflows must all be present.")
+if (!core || !simulator || !readiness || workflows.length !== 3) {
+  throw new Error("Only the scheduler, development simulator, and readiness monitor may be stored as n8n workflows.")
 }
 
 const serialisedCore = JSON.stringify(core)
@@ -65,32 +62,10 @@ if (!JSON.stringify(readiness).includes("/api/health/ready")) {
   throw new Error("The readiness monitor must call the authenticated readiness endpoint.")
 }
 
-const gmailTrigger = gmail.nodes.find((node) => node.type === "n8n-nodes-base.gmailTrigger")
-const gmailSubmit = gmail.nodes.find((node) => node.name === "Store through application boundary")
-if (!gmailTrigger || gmailTrigger.parameters?.simple !== false ||
-    gmailTrigger.parameters?.options?.downloadAttachments !== false) {
-  throw new Error("Gmail intake must read full text without downloading attachments.")
-}
-const serialisedGmailSubmit = JSON.stringify(gmailSubmit ?? {})
-if (!serialisedGmailSubmit.includes("/api/integrations/gmail/n8n-message") ||
-    !serialisedGmailSubmit.includes("EMAIL_INGESTION_TOKEN") ||
-    gmailSubmit?.retryOnFail !== true) {
-  throw new Error("Gmail intake must use the authenticated, retryable application boundary.")
-}
-
-for (const [workflow, operation] of [
-  [gmailMarkRead, "gmail_mark_read"],
-  [gmailArchive, "gmail_archive"],
-]) {
-  const serialised = JSON.stringify(workflow)
-  const claimNode = workflow.nodes.find((node) => node.name.startsWith("Claim "))
-  const claimBody = JSON.parse(claimNode?.parameters?.jsonBody?.replace(/^=/, "") ?? "{}")
-  if (JSON.stringify(claimBody.operations) !== JSON.stringify([operation]) ||
-      !serialised.includes("/api/integrations/deliveries/claim") ||
-      !serialised.includes("/complete") ||
-      !serialised.includes("/fail")) {
-    throw new Error(`${operation} must use scoped leasing and record both outcomes.`)
-  }
+if (workflows.some(({ workflow }) =>
+  JSON.stringify(workflow).toLowerCase().includes("gmail") ||
+  workflow.nodes.some((node) => node.type?.toLowerCase().includes("gmail")))) {
+  throw new Error("Gmail credentials and operations belong to the application OAuth adapter, not n8n.")
 }
 
 console.log(`Validated ${workflows.length} inactive, credential-free automation workflows.`)

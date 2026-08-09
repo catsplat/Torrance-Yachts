@@ -8,6 +8,7 @@ import {
   Mail,
   Inbox,
   LayoutDashboard,
+  ListTodo,
   Settings,
   Ship,
   TicketsPlane,
@@ -25,6 +26,7 @@ export type ModuleKey =
   | "emails"
   | "calendar"
   | "integrations"
+  | "work"
   | "settings";
 
 export type NavigationItem = {
@@ -48,7 +50,12 @@ const dashboardNavigation: NavigationItem = {
 
 export const navigationGroups: NavigationGroup[] = [
   {
-    items: [dashboardNavigation],
+    items: [dashboardNavigation, {
+      label: "Work queue",
+      href: "/work",
+      icon: ListTodo,
+      description: "Daily operational views in workflow order.",
+    }],
   },
   {
     label: "Work",

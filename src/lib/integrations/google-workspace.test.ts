@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
+  GoogleOAuthError,
   listGoogleDriveFolders,
   listGoogleSpreadsheets,
   refreshGoogleAccessToken,
+  safeGoogleConnectionMessage,
   type GoogleWorkspaceCredentials,
 } from "./google-workspace"
 
@@ -61,7 +63,7 @@ describe("Google Workspace resource selection", () => {
       void args
       return new Response(JSON.stringify({ access_token: "" }), { status: 200 })
     })
-    await expect(refreshGoogleAccessToken(credentials, request)).rejects.toThrow("Reconnect Google Workspace")
+    await expect(refreshGoogleAccessToken(credentials, request)).rejects.toThrow("Google sign-in could not be refreshed")
   })
 
   it("lists only Drive folder metadata for administrator selection", async () => {
@@ -81,5 +83,16 @@ describe("Google Workspace resource selection", () => {
     }])
     const url = new URL(String(request.mock.calls[1]?.[0]))
     expect(url.searchParams.get("q")).toContain("application/vnd.google-apps.folder")
+  })
+
+  it("exposes only an actionable OAuth state and never an arbitrary provider error", () => {
+    expect(safeGoogleConnectionMessage(
+      new GoogleOAuthError("Reconnect Google Workspace.", true),
+      "Google folders could not be loaded.",
+    )).toBe("Reconnect Google Workspace.")
+    expect(safeGoogleConnectionMessage(
+      new Error("request included a private address and token"),
+      "Google folders could not be loaded.",
+    )).toBe("Google folders could not be loaded.")
   })
 })

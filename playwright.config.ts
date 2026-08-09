@@ -10,6 +10,7 @@ for (const filename of [".env.e2e.local", ".env.local"]) {
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000"
 const authenticationState = resolve("playwright/.auth/administrator.json")
+const staffAuthenticationState = resolve("playwright/.auth/staff.json")
 
 export default defineConfig({
   expect: { timeout: 10_000 },
@@ -30,7 +31,7 @@ export default defineConfig({
   },
   webServer: {
     command: "npm run dev -- --hostname 127.0.0.1 --port 3000",
-    env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
+    env: { ...process.env, MFA_ENFORCEMENT_ENABLED: "true", NEXT_TELEMETRY_DISABLED: "1" },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     url: `${baseURL}/login`,
@@ -39,12 +40,29 @@ export default defineConfig({
   projects: [
     {
       name: "access-chromium",
-      testMatch: /access\.spec\.ts/,
+      testMatch: /(^|[\\/])access\.spec\.ts$/,
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "authenticate",
       testMatch: /auth\.setup\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "authenticate-staff",
+      testMatch: /staff\.setup\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      dependencies: ["authenticate-staff"],
+      name: "staff-chromium",
+      testMatch: /staff-access\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"], storageState: staffAuthenticationState },
+    },
+    {
+      dependencies: ["authenticate"],
+      name: "mfa-challenge",
+      testMatch: /mfa-challenge\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
     {
@@ -70,6 +88,12 @@ export default defineConfig({
       name: "workflow-chromium",
       testMatch: /workflow\.spec\.ts/,
       use: { ...devices["Desktop Chrome"], storageState: authenticationState },
+    },
+    {
+      dependencies: ["authenticate"],
+      name: "mobile-review",
+      testMatch: /mobile-review\.spec\.ts/,
+      use: { ...devices["iPhone 13"], storageState: authenticationState },
     },
   ],
 })

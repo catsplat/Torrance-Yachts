@@ -84,7 +84,7 @@ export async function getBookingDocumentWorkspace(bookingId: string) {
       id, booking_id, requirement_id, document_type, title, original_filename,
       storage_bucket, storage_path, mime_type, size_bytes, version_number,
       verification_status, verification_notes, scan_status, scanner_detail,
-      scan_attempts, retention_class, created_at,
+      scan_attempts, retention_class, quarantine_removed_at, retention_review_due_at, created_at,
       uploader:profiles!documents_created_by_fkey(display_name)
     `).eq("booking_id", bookingId).order("created_at", { ascending: false }),
     supabase.from("contract_reviews").select("*").eq("booking_id", bookingId)

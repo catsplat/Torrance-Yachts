@@ -18,7 +18,7 @@ type FetchImplementation = typeof fetch
 
 export async function getGoogleDispatchCredentials(
   admin: AdminClient,
-): Promise<GoogleWorkspaceCredentials> {
+): Promise<GoogleWorkspaceCredentials & { user_id: string }> {
   const { data, error } = await admin.rpc("get_active_google_workspace_dispatch_credentials")
   const credentials = data?.[0]
   if (error || !credentials) throw new Error("Connect and select a Google Workspace account.")

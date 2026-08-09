@@ -2,6 +2,20 @@ import { z } from "zod"
 
 type FetchImplementation = typeof fetch
 
+export class GoogleOAuthError extends Error {
+  readonly requiresReauthentication: boolean
+
+  constructor(message: string, requiresReauthentication: boolean) {
+    super(message)
+    this.name = "GoogleOAuthError"
+    this.requiresReauthentication = requiresReauthentication
+  }
+}
+
+export function safeGoogleConnectionMessage(error: unknown, fallback: string) {
+  return error instanceof GoogleOAuthError ? error.message : fallback
+}
+
 export type GoogleWorkspaceCredentials = {
   account_email: string
   client_id: string
@@ -62,8 +76,15 @@ export async function refreshGoogleAccessToken(
     method: "POST",
     signal,
   })
-  const parsed = accessTokenSchema.safeParse(await response.json().catch(() => null))
-  if (!response.ok || !parsed.success) throw new Error("Reconnect Google Workspace.")
+  const body = await response.json().catch(() => null) as { error?: string } | null
+  const parsed = accessTokenSchema.safeParse(body)
+  if (!response.ok || !parsed.success) {
+    const requiresReauthentication = response.status === 400 && body?.error === "invalid_grant"
+    throw new GoogleOAuthError(
+      requiresReauthentication ? "Reconnect Google Workspace." : "Google sign-in could not be refreshed.",
+      requiresReauthentication,
+    )
+  }
   return parsed.data.access_token
 }
 

@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server"
 
-import { generateNextPendingEmailSuggestion } from "@/lib/ai/service"
+import { generatePendingEmailSuggestionBatch } from "@/lib/ai/service"
 import { reconcileConfiguredGmailMailbox } from "@/lib/emails/gmail-reconciliation"
 import { hasValidAutomationToken } from "@/lib/integrations/auth"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { consumeRateLimit } from "@/lib/security/rate-limit"
 
 export async function POST(request: Request) {
   if (!hasValidAutomationToken(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+  if (!await consumeRateLimit("automation_tick", 120, 60)) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 })
   }
   try {
     let gmailResult: Awaited<ReturnType<typeof reconcileConfiguredGmailMailbox>> | null = null
@@ -17,10 +21,10 @@ export async function POST(request: Request) {
     } catch {
       gmailError = true
     }
-    let aiResult: Awaited<ReturnType<typeof generateNextPendingEmailSuggestion>> | null = null
+    let aiResult: Awaited<ReturnType<typeof generatePendingEmailSuggestionBatch>> | null = null
     let aiError = false
     try {
-      aiResult = await generateNextPendingEmailSuggestion()
+      aiResult = await generatePendingEmailSuggestionBatch()
     } catch {
       aiError = true
     }
@@ -32,7 +36,9 @@ export async function POST(request: Request) {
     const summary = data && typeof data === "object" && !Array.isArray(data) ? data : {}
     return NextResponse.json({
       ...summary,
-      ai_email_processed: aiResult?.processed ?? false,
+      ai_email_processed: aiResult?.completed ?? 0,
+      ai_email_failed: aiResult?.failed ?? 0,
+      ai_processing_timed_out: aiResult?.timedOut ?? false,
       ai_processing_failed: aiError,
       gmail_configured: gmailResult?.configured ?? gmailError,
       gmail_cursor_initialized: gmailResult?.initialized ?? false,

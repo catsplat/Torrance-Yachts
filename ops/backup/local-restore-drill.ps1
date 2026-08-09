@@ -37,6 +37,7 @@ try {
 drop schema public cascade;
 create schema if not exists extensions;
 create extension if not exists btree_gist with schema extensions;
+create extension if not exists pg_trgm with schema extensions;
 alter database $restoreDatabase set search_path to public, extensions;
 "@
   docker exec $databaseContainer psql `

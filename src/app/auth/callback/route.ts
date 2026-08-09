@@ -6,8 +6,12 @@ import {
   safeAuthNextPath,
 } from "@/lib/auth/callback-routing"
 import { createClient } from "@/lib/supabase/server"
+import { consumeRateLimit } from "@/lib/security/rate-limit"
 
 export async function GET(request: Request) {
+  if (!await consumeRateLimit("oauth_callback", 20, 600)) {
+    return NextResponse.redirect(new URL("/login?oauth=rate-limited", request.url))
+  }
   const url = new URL(request.url)
   const code = url.searchParams.get("code")
   const next = safeAuthNextPath(url.searchParams.get("next"))
@@ -26,8 +30,7 @@ export async function GET(request: Request) {
       if (hasApprovedInternalAccess(profile)) {
         return NextResponse.redirect(new URL(next, url.origin))
       }
-      await supabase.auth.signOut()
-      return NextResponse.redirect(new URL("/login?oauth=inactive", url.origin))
+      return NextResponse.redirect(new URL("/access-pending", url.origin))
     }
   }
   return NextResponse.redirect(new URL(failedAuthCallbackPath(next), url.origin))

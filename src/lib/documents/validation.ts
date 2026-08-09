@@ -79,7 +79,11 @@ export async function validateDocumentFile(value: FormDataEntryValue | null) {
 export const documentReviewSchema = z.object({
   approved: z.enum(["true", "false"]).transform((value) => value === "true"),
   documentId: uuid,
-  reason: requiredText(2000),
+  reason: z.string().trim().max(2000).default(""),
+}).superRefine((value, context) => {
+  if (!value.approved && value.reason.length < 2) {
+    context.addIssue({ code: "custom", message: "Add a reason when rejecting a document.", path: ["reason"] })
+  }
 })
 
 export const requirementWaiverSchema = z.object({
@@ -126,5 +130,5 @@ export const contractApprovalSchema = z.object({
 
 export const paymentPaidSchema = z.object({
   paymentId: uuid,
-  reason: requiredText(1000),
+  reason: z.string().trim().max(1000).default(""),
 })

@@ -569,6 +569,12 @@ async function createFictionalGeneratedCommissionInvoice(
     throw new Error("Fictional invoice document registration failed.")
   }
   await registerRehearsalRecord(context, runId, "document", documentId)
+  const { error: reviewError } = await context.supabase.rpc("review_booking_document", {
+    p_approved: true,
+    p_document_id: documentId,
+    p_reason: "Reviewed and accepted as a fictional generated commission invoice.",
+  })
+  if (reviewError) throw new Error("Fictional invoice document review failed.")
   const { data: invoiceId, error: invoiceError } = await context.supabase.rpc("register_rehearsal_generated_invoice", {
     p_booking_id: bookingId,
     p_commission_calculation_id: commission.id,

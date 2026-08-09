@@ -4,6 +4,8 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getIntegrationActivationChecks } from "@/lib/integrations/readiness"
+import { getCurrentUser } from "@/lib/auth/current-user"
+import { redirect } from "next/navigation"
 
 const presentation = {
   attention: { icon: AlertTriangle, label: "Verify", variant: "outline" as const },
@@ -13,6 +15,8 @@ const presentation = {
 }
 
 export default async function ActivationReadinessPage() {
+  const user = await getCurrentUser()
+  if (user?.role !== "administrator") redirect("/settings")
   const checks = await getIntegrationActivationChecks()
   return <div className="mx-auto max-w-6xl space-y-5">
     <div><h1 className="text-3xl font-semibold">Connection status</h1></div>

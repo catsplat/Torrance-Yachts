@@ -15,6 +15,10 @@ export const taskReasonSchema = z.object({
   reason: z.string().trim().min(2).max(2000),
 })
 
+export const optionalTaskNoteSchema = z.object({
+  reason: z.string().trim().max(2000).default(""),
+})
+
 export const taskScheduleSchema = z.object({
   due_date: optionalDate,
   assigned_user_id: optionalUuid,

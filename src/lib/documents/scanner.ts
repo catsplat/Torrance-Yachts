@@ -17,6 +17,31 @@ function scannerAddress() {
   }
 }
 
+export async function getDocumentScannerHealth() {
+  const { host, port } = scannerAddress()
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    return { detail: "Scanner configuration is invalid.", ready: false }
+  }
+  return new Promise<{ detail: string; ready: boolean }>((resolve) => {
+    const socket = new Socket()
+    let settled = false
+    const finish = (ready: boolean, detail: string) => {
+      if (settled) return
+      settled = true
+      socket.destroy()
+      resolve({ detail, ready })
+    }
+    socket.setTimeout(2_000)
+    socket.once("error", () => finish(false, "ClamAV is unavailable."))
+    socket.once("timeout", () => finish(false, "ClamAV health check timed out."))
+    socket.on("data", (chunk: Buffer) => {
+      finish(chunk.toString("utf8").includes("PONG"),
+        chunk.toString("utf8").includes("PONG") ? "ClamAV is ready." : "ClamAV returned an invalid health response.")
+    })
+    socket.connect(port, host, () => socket.write(Buffer.from("zPING\0")))
+  })
+}
+
 /**
  * Send one untrusted file to ClamAV using its documented INSTREAM protocol.
  * The scanner is intentionally isolated behind this small contract so a

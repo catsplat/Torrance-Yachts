@@ -24,8 +24,10 @@ export class LocalAiProvider implements AiProvider {
   async analyzeEmail(
     input: EmailAiInput,
     _safetyIdentifier: string,
+    _signal?: AbortSignal,
   ): Promise<ProviderResult<EmailAiSuggestion>> {
     void _safetyIdentifier
+    void _signal
     return {
       inputTokens: null,
       model: this.model,
@@ -39,8 +41,10 @@ export class LocalAiProvider implements AiProvider {
   async analyzeContract(
     input: ContractAiInput,
     _safetyIdentifier: string,
+    _signal?: AbortSignal,
   ): Promise<ProviderResult<ContractAiSuggestion>> {
     void _safetyIdentifier
+    void _signal
     return {
       inputTokens: null,
       model: this.model,

@@ -52,6 +52,7 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
   }
   const gmail = oauthResult.data?.find((connection) => connection.provider === "gmail")
   const gmailConnected = gmail?.status === "connected"
+  const gmailNeedsReconnect = gmail?.status === "needs_reauthentication"
   const googleConfigured = getGoogleOAuthConfiguration().configured
   const telegramPairingConfigured = getTelegramPairingConfiguration().configured
   const contactReady = Boolean(profileResult.data.phone || preferenceResult.data.notification_email)
@@ -97,13 +98,13 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-5 pt-5">
-            {gmailConnected ? (
+            {gmailConnected || gmailNeedsReconnect ? (
               <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/25 p-3 text-sm">
-                <Badge>Connected</Badge><span>{gmail.account_email}</span>
+                <Badge variant={gmailNeedsReconnect ? "destructive" : "default"}>{gmailNeedsReconnect ? "Reconnect required" : "Connected"}</Badge><span>{gmail?.account_email}</span>
               </div>
             ) : null}
-            {googleConfigured ? <Link className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50" href="/api/integrations/google/connect">{gmailConnected ? "Update Google access" : "Connect Google Workspace"}</Link> : <p className="text-sm text-muted-foreground">Google Workspace is not available yet.</p>}
-            {gmailConnected ? (
+            {googleConfigured ? <Link className="inline-flex h-8 items-center justify-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50" href="/api/integrations/google/connect">{gmailNeedsReconnect ? "Reconnect Google Workspace" : gmailConnected ? "Update Google access" : "Connect Google Workspace"}</Link> : <p className="text-sm text-muted-foreground">Google Workspace is not available yet.</p>}
+            {gmailConnected || gmailNeedsReconnect ? (
               <div className="border-t pt-5">
                 <GmailOauthDisconnectForm />
               </div>

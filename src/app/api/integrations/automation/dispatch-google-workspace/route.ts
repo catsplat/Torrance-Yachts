@@ -10,6 +10,7 @@ import {
 } from "@/lib/integrations/google-provider-server"
 import { hasValidAutomationToken } from "@/lib/integrations/auth"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { consumeRateLimit } from "@/lib/security/rate-limit"
 
 const workerId = "application-google-workspace-dispatcher"
 const operations = ["calendar_upsert", "drive_upload", "sheets_snapshot"] as const
@@ -22,6 +23,9 @@ type DispatchResult = { delivered: boolean; failureRecorded: boolean }
 export async function POST(request: Request) {
   if (!hasValidAutomationToken(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+  if (!await consumeRateLimit("automation_google", 120, 60)) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 })
   }
   const admin = createAdminClient()
   const { data, error } = await admin.rpc("claim_integration_deliveries_for_operations", {
@@ -80,9 +84,22 @@ export async function POST(request: Request) {
           p_worker_id: workerId,
         })
         if (completion.error) throw new Error("Google delivery completion could not be recorded.")
+        await admin.rpc("record_google_oauth_health", {
+          p_requires_reauthentication: false,
+          p_succeeded: true,
+          p_user_id: credentials.user_id,
+        })
         return { delivered: true, failureRecorded: false }
       } catch (deliveryError) {
         const failure = safeGoogleProviderFailure(deliveryError)
+        if (failure.requiresReauthentication) {
+          await admin.rpc("record_google_oauth_health", {
+            p_error: "Google access expired or was revoked.",
+            p_requires_reauthentication: true,
+            p_succeeded: false,
+            p_user_id: credentials.user_id,
+          })
+        }
         const recorded = await admin.rpc("fail_integration_delivery", {
           p_delivery_id: delivery.id,
           p_error_code: failure.errorCode,

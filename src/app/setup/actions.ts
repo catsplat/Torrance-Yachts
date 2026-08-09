@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 
 import { setupTokenMatches } from "@/lib/auth/initial-setup-token"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { consumeRateLimit } from "@/lib/security/rate-limit"
 import { initialAdministratorSetupSchema } from "@/lib/users/validation"
 
 export type InitialAdministratorSetupState = {
@@ -22,6 +23,9 @@ export async function createInitialAdministratorAction(
   _state: InitialAdministratorSetupState,
   formData: FormData,
 ): Promise<InitialAdministratorSetupState> {
+  if (!await consumeRateLimit("initial_setup", 5, 3600)) {
+    return { message: "Setup attempt limit reached. Wait before trying again." }
+  }
   const parsed = initialAdministratorSetupSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     return { message: parsed.error.issues[0]?.message ?? "Review the setup details." }

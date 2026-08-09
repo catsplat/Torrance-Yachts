@@ -168,7 +168,6 @@ export default async function EmailDetailPage({ params }: Props) {
             <CardContent className="pt-5">
               <EmailClassificationForm
                 contacts={record.contacts}
-                enquiries={record.enquiries}
                 message={message}
                 reviewedSuggestion={reviewedSuggestion}
                 yachts={record.yachts}

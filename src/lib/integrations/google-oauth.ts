@@ -14,18 +14,22 @@ export const googleWorkspaceScopes = [
 
 export type PendingGoogleOAuthConnection = {
   codeVerifier: string
+  issuedAt: number
   state: string
   userId: string
 }
+
+export const googleOAuthStateLifetimeMs = 10 * 60 * 1000
 
 export function getGoogleOAuthRedirectUri(applicationOrigin: string) {
   const origin = new URL(applicationOrigin).origin
   return new URL("/api/integrations/google/callback", origin).toString()
 }
 
-export function createGooglePkceConnection(userId: string): PendingGoogleOAuthConnection {
+export function createGooglePkceConnection(userId: string, now = Date.now()): PendingGoogleOAuthConnection {
   return {
     codeVerifier: randomBytes(48).toString("base64url"),
+    issuedAt: now,
     state: randomBytes(32).toString("base64url"),
     userId,
   }
@@ -63,7 +67,7 @@ export function serialisePendingGoogleOAuthConnection(
   return Buffer.from(JSON.stringify(connection)).toString("base64url")
 }
 
-export function parsePendingGoogleOAuthConnection(value: string | undefined) {
+export function parsePendingGoogleOAuthConnection(value: string | undefined, now = Date.now()) {
   if (!value) return null
   try {
     const parsed: unknown = JSON.parse(Buffer.from(value, "base64url").toString("utf8"))
@@ -72,8 +76,11 @@ export function parsePendingGoogleOAuthConnection(value: string | undefined) {
       typeof parsed !== "object" ||
       typeof (parsed as PendingGoogleOAuthConnection).state !== "string" ||
       typeof (parsed as PendingGoogleOAuthConnection).codeVerifier !== "string" ||
+      typeof (parsed as PendingGoogleOAuthConnection).issuedAt !== "number" ||
       typeof (parsed as PendingGoogleOAuthConnection).userId !== "string"
     ) return null
+    const issuedAt = (parsed as PendingGoogleOAuthConnection).issuedAt
+    if (issuedAt > now + 30_000 || now - issuedAt > googleOAuthStateLifetimeMs) return null
     return parsed as PendingGoogleOAuthConnection
   } catch {
     return null

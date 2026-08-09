@@ -1,6 +1,6 @@
 import { Beaker, BrainCircuit, CalendarDays, FileCheck2, Mail, ShieldCheck } from "lucide-react"
 import Link from "next/link"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 import { OfflineRehearsalForm } from "@/components/rehearsal/offline-rehearsal-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,13 +11,12 @@ import { createClient } from "@/lib/supabase/server"
 
 export default async function OfflineRehearsalPage() {
   if (!offlineRehearsalEnabled()) notFound()
+  const user = await getCurrentUser()
+  if (user?.role !== "administrator") redirect("/settings")
   const supabase = await createClient()
-  const [user, ai] = await Promise.all([getCurrentUser(), Promise.resolve(getAiConfigurationSummary())])
+  const ai = getAiConfigurationSummary()
   const enabled = true
-  const administrator = user?.role === "administrator"
-  const { data: activeRuns } = administrator
-    ? await supabase.from("rehearsal_runs").select("id,label,created_at").eq("status", "active").order("created_at", { ascending: false })
-    : { data: [] }
+  const { data: activeRuns } = await supabase.from("rehearsal_runs").select("id,label,created_at").eq("status", "active").order("created_at", { ascending: false })
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -35,7 +34,7 @@ export default async function OfflineRehearsalPage() {
           <CardDescription>Development-only. The test stops at the same human-review boundaries used in production.</CardDescription>
         </CardHeader>
         <CardContent className="pt-5">
-          {administrator ? <OfflineRehearsalForm activeRuns={activeRuns ?? []} enabled={enabled} /> : <p className="text-sm text-muted-foreground">Only an administrator may create development rehearsal records.</p>}
+          <OfflineRehearsalForm activeRuns={activeRuns ?? []} enabled={enabled} />
         </CardContent>
       </Card>
 

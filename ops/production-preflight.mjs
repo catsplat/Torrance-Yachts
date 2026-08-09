@@ -6,7 +6,6 @@ const required = [
   ["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "Supabase publishable key"],
   ["SUPABASE_SECRET_KEY", "Supabase server secret"],
   ["AUTOMATION_SHARED_SECRET", "application-to-n8n delivery secret"],
-  ["EMAIL_INGESTION_TOKEN", "Gmail ingestion secret"],
   ["MONITORING_SHARED_SECRET", "readiness-monitor secret"],
   ["N8N_ENCRYPTION_KEY", "n8n credential encryption key"],
   ["GOOGLE_OAUTH_CLIENT_ID", "staff Google inbox OAuth application"],

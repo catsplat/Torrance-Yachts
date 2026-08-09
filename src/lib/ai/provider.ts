@@ -43,8 +43,8 @@ export type ProviderResult<T> = {
 }
 
 export interface AiProvider {
-  analyzeContract(input: ContractAiInput, safetyIdentifier: string): Promise<ProviderResult<ContractAiSuggestion>>
-  analyzeEmail(input: EmailAiInput, safetyIdentifier: string): Promise<ProviderResult<EmailAiSuggestion>>
+  analyzeContract(input: ContractAiInput, safetyIdentifier: string, signal?: AbortSignal): Promise<ProviderResult<ContractAiSuggestion>>
+  analyzeEmail(input: EmailAiInput, safetyIdentifier: string, signal?: AbortSignal): Promise<ProviderResult<EmailAiSuggestion>>
   model: string
   name: string
 }

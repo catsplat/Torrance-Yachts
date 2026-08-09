@@ -4,6 +4,40 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-08-09
+
+### Added
+
+- Cursor-based operational registers, exact dashboard/search aggregates, URL
+  state, bulk stale-enquiry archival, supporting indexes, and 10,000-record
+  discoverability proof.
+- Central approved-user and AAL2 guards, mandatory TOTP enrolment/challenge,
+  administrator-audited factor reset, throttling and sensitive-action rechecks.
+- A leased AI work queue with bounded concurrency/deadlines, retry caps, expired
+  lease recovery and observable backlog health.
+- Private document scan-attempt history, duplicate detection, quarantine recovery,
+  retention alerts, upload capacity limits and administrator recovery controls.
+- Administrator Audit Log, Operations and Business Setup screens plus six saved
+  workflow views and mobile/keyboard accessibility coverage.
+- A clean `release:verify` gate covering install, code, database, automation,
+  build, dependency, backup/restore and cross-browser acceptance.
+
+### Changed
+
+- Gmail history, read/archive reconciliation and drafts now use the single
+  application-owned encrypted Google OAuth connection.
+- n8n is reduced to scheduler, development simulator and readiness monitor; the
+  three credential-dependent Gmail workflows and compatibility endpoints are
+  removed.
+- Settings and workflow copy are reduced to concise operational language, while
+  business setup reports configuration gaps without exposing private values.
+
+### Fixed
+
+- Staff accounts can no longer reach administrator registers or settings pages.
+- Google OAuth state expiry, provider-error redaction, route input validation,
+  rehearsal reset feedback, focus restoration and generated-artifact linting.
+
 ## [0.18.0] - 2026-08-09
 
 ### Added

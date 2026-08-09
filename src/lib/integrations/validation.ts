@@ -32,6 +32,11 @@ export const connectionSettingsSchema = z.object({
 export const notificationReviewSchema = z.object({
   approved: z.enum(["true", "false"]).transform((value) => value === "true"),
   notificationId: uuid,
+  reason: z.string().trim().max(2000).default(""),
+}).superRefine((value, context) => {
+  if (!value.approved && value.reason.length < 2) {
+    context.addIssue({ code: "custom", message: "Add a cancellation reason.", path: ["reason"] })
+  }
 })
 
 export const notificationDraftSchema = z.object({

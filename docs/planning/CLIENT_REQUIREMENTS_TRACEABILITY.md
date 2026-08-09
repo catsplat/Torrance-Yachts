@@ -12,7 +12,7 @@ consequential actions remain subject to human approval.
 | Read and categorise emails into enquiries, internal mail, circulars, and unknowns | Phase 9 stores messages/threads and deterministically routes safe cases; Phase 10 adds evidence-backed AI suggestions; the administrator-selected staff Google connection now reconciles Gmail history through the same validated/idempotent boundary; uncertain mail remains human-reviewed |
 | Track enquiry data in a presentable Sheet/website | Phase 4 enquiry database and UI are authoritative; Phase 11 provides a controlled one-way workbook snapshot |
 | Telegram notification for enquiries, internal mail, unknown mail, and non-circular mail | Phase 11/`v0.13` materialises per-user notifications with optional AI summary/draft content and queues idempotent Telegram delivery through the local n8n scheduler |
-| Ignore, mark read, and archive circulars | Phase 9 creates idempotent actions; dedicated inactive Phase 11 n8n workers claim only `gmail_mark_read` or `gmail_archive`, retry provider failures and report outcomes |
+| Ignore, mark read, and archive circulars | Phase 9 creates idempotent actions; the application-owned Google adapter reconciles mark-read/archive failures without placing Google credentials in n8n |
 | Distinguish new enquiries from follow-ups | Phase 9 links Gmail threads, automatically recognises known threads, and lets staff create/reuse sender contacts and enquiries |
 | Draft the yacht-specific new-enquiry response | Phase 5/10 prepare the reviewed content; `v0.13` automatically analyses one pending email per tick and includes the clearly labelled draft in the staff alert without sending it |
 | Notify sender and summary for other relevant emails | Phase 9 stores and classifies them; Phase 10 supplies a reviewable summary; Phase 11 sends notifications |
@@ -24,7 +24,7 @@ consequential actions remain subject to human approval.
 | Captain contact source per yacht | Phase 3 canonical contacts and yacht responsibilities; optional Phase 11 Sheet view |
 | Remove irrelevant dead-end enquiries from normal pages | Phase 9 configurable inactivity settings archive rather than delete them |
 | Help the client learn the complete service through the real workflow | Phase 12 Settings tutorial plus an isolated synthetic email-to-follow-up practice scenario after all operational interfaces are stable |
-| Keep the internal service private and resistant to attack | Individual accounts, server-verified sessions, RLS, private signed document access, audit history, nonce CSP, HSTS, least-privilege adapters, and an evidence-based Phase 12 production gate |
+| Keep the internal service private and resistant to attack | Approved individual accounts, mandatory TOTP AAL2, server-verified sessions, RLS, quarantined private documents, audit history, throttling, nonce CSP, HSTS, least-privilege adapters, and an evidence-based production gate |
 | Retain phone/notification ownership per yacht | Phase 3 yacht responsibilities and notification phone; Phase 11 central recipient/channel routing |
 | Let each staff member receive their own alerts | `v0.13` self-service alert email, phone, Telegram chat ID, channel/topic preferences, AI-summary preference, and encrypted Gmail OAuth connection |
 | Operate n8n without a paid n8n Cloud subscription | Pinned self-hosted n8n Community Edition in both local development and the Phase 12 Linux deployment package |

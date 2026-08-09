@@ -1,34 +1,57 @@
 # Document quarantine and scanning boundary
 
-## Current local rule
+## Implemented boundary
 
-Local development accepts only clearly fictional PDF, JPEG, and PNG files up
-to 20 MB. The app validates the supplied MIME type and size, stores accepted
-files in the private `booking-private` bucket, records a pending-review
-document row, and removes the stored object if registration is rejected.
+Uploads enter the private `booking-quarantine` bucket. They are not visible,
+verifiable, usable for task completion, or eligible for Drive mirroring while
+quarantined. The application records each file as `pending`, obtains upload
+capacity for the authenticated user, and validates:
 
-Private downloads use short-lived signed URLs. A document cannot be used for
-contract review until a human verifies it. A rejected document remains visible
-with its recorded reason; it does not become an approved source.
+- the 20 MB per-file limit and the per-user hourly/concurrent limits;
+- the allow-listed PDF, JPEG, or PNG extension and declared MIME type;
+- PDF, JPEG, or PNG file signatures;
+- PDF encryption and common active-content markers;
+- SHA-256 duplication within the same booking requirement.
 
-This is an upload-validation boundary, **not malware scanning**. Do not upload
-real passports, KYC, CDD reports, signed client agreements, or financial files
-to the local rehearsal environment.
+The same legitimate file may exist in a different booking. The interface never
+reveals cross-booking hash matches.
 
-## Production gate
+## Scan and release lifecycle
 
-Before real files are accepted, the client must approve all of the following:
+```text
+pending -> scanning -> clean -> released
+                    -> infected -> removed from quarantine
+                    -> error -> quarantined for retry or rejection
+```
 
-1. A managed antivirus or content-scanning service that runs before a file can
-   be made available to staff or copied to Drive.
-2. A quarantine location with no user-download permission until scan verdict
-   and metadata validation succeed.
-3. A documented allow-list based on detected content type, not only the browser
-   supplied MIME type or filename extension.
-4. Explicit retention/deletion schedules by document class, legal basis,
-   access role, and incident response process.
-5. An operator procedure for failed scans, false positives, replacements,
-   access review, and evidence preservation.
+ClamAV is reached only through the small INSTREAM scanner adapter. Every attempt
+records timestamps, result and a safe failure summary. A clean result is copied
+to the separate private `booking-private` bucket and the quarantined object is
+removed. The database does not mark the document released until that sequence
+completes.
 
-Until this gate is signed off, the application remains suitable only for
-fictional local files and implementation rehearsal.
+An infected file can never be overridden to clean or released. Its object is
+removed while safe metadata and audit evidence remain. A scan error stays in
+quarantine. Administrators can retry it, reject/remove it with a reason, or
+inspect safe metadata. The reconciliation command repairs interrupted
+copy/delete operations and reports orphan candidates.
+
+Private downloads use short-lived signed URLs issued only for released files.
+Document verification remains a separate human decision after malware release.
+Contract extraction, task completion and Drive mirroring require both the
+appropriate released/verified state and the normal booking permission.
+
+## Retention
+
+Document classes receive a retention-review date. The operations screen reports
+reviews due but never deletes business or identity records automatically.
+Deletion requires an authorised human decision and audit reason. Torrance must
+approve the final retention schedule before real identity documents are used.
+
+## Local acceptance
+
+Development uses the pinned ClamAV container in
+`automation/docker-compose.yml`. Automated provider tests cover clean,
+infected, unavailable and timeout responses; PostgreSQL tests cover state,
+permissions, duplicate detection, recovery and release gates. Use fictional
+files only until Torrance accepts the scanner and retention policy.

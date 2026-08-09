@@ -1,5 +1,6 @@
 import "server-only"
 
+import { assuranceLevelFromVerifiedClaims } from "@/lib/auth/assurance"
 import { createClient } from "@/lib/supabase/server"
 
 export async function getAuthenticatedRequestContext() {
@@ -16,6 +17,9 @@ export async function getAuthenticatedRequestContext() {
     .single()
 
   if (!profile?.active || !profile.access_approved_at) return null
+  if (process.env.MFA_ENFORCEMENT_ENABLED !== "false") {
+    if (assuranceLevelFromVerifiedClaims(verifiedToken.claims) !== "aal2") return null
+  }
 
   return {
     role: profile.role,

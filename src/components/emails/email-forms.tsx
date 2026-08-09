@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useEffect, useState } from "react"
 
 import {
   classifyEmailAction,
@@ -23,13 +23,11 @@ function Feedback({ state }: { state: EmailActionState }) {
 
 export function EmailClassificationForm({
   contacts,
-  enquiries,
   message,
   reviewedSuggestion,
   yachts,
 }: {
   contacts: Array<Pick<Tables<"contacts">, "id" | "full_name" | "email" | "roles">>
-  enquiries: Array<Pick<Tables<"enquiries">, "id" | "reference" | "summary" | "status">>
   message: Pick<Tables<"email_messages">, "id" | "classification" | "subject" | "snippet">
   reviewedSuggestion?: EmailAiSuggestion | null
   yachts: Array<Pick<Tables<"yachts">, "id" | "name">>
@@ -79,15 +77,82 @@ export function EmailClassificationForm({
         <label className="grid gap-1 text-sm">Budget<Input defaultValue={reviewedSuggestion?.extracted.budget_amount ?? ""} min="0" name="budgetAmount" step="0.01" type="number" /></label>
         <label className="grid gap-1 text-sm">Currency<Input defaultValue={reviewedSuggestion?.extracted.currency ?? ""} maxLength={3} name="currency" /></label>
       </div>
-      <label className="grid gap-1 text-sm">Existing enquiry for a follow-up
-        <select className="h-9 rounded-md border bg-background px-3 text-sm" defaultValue="" name="enquiryId">
-          <option value="">Not linking as a follow-up</option>
-          {enquiries.map((enquiry) => <option key={enquiry.id} value={enquiry.id}>{enquiry.reference} · {enquiry.summary}</option>)}
-        </select>
-      </label>
+      <EnquiryLookup />
       <Button disabled={pending} type="submit">{pending ? "Saving…" : "Save classification"}</Button>
       <Feedback state={state} />
     </form>
+  )
+}
+
+type EnquiryChoice = Pick<Tables<"enquiries">, "id" | "reference" | "summary" | "status">
+
+function EnquiryLookup() {
+  const [query, setQuery] = useState("")
+  const [selected, setSelected] = useState<EnquiryChoice | null>(null)
+  const [results, setResults] = useState<EnquiryChoice[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (query.trim().length < 2 || selected) {
+      return
+    }
+    const controller = new AbortController()
+    const timer = window.setTimeout(async () => {
+      setLoading(true)
+      try {
+        const response = await fetch(`/api/enquiries/options?q=${encodeURIComponent(query)}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        })
+        const payload = await response.json() as { enquiries?: EnquiryChoice[] }
+        setResults(response.ok ? payload.enquiries ?? [] : [])
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) setResults([])
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
+      }
+    }, 250)
+    return () => {
+      controller.abort()
+      window.clearTimeout(timer)
+    }
+  }, [query, selected])
+
+  return (
+    <div className="grid gap-2 text-sm">
+      <label className="grid gap-1" htmlFor="enquiry-lookup">Existing enquiry for a follow-up
+        <Input
+          autoComplete="off"
+          id="enquiry-lookup"
+          onChange={(event) => {
+            setSelected(null)
+            setQuery(event.target.value)
+            if (event.target.value.trim().length < 2) setResults([])
+          }}
+          placeholder="Search by reference or summary"
+          value={selected ? `${selected.reference} · ${selected.summary}` : query}
+        />
+      </label>
+      <input name="enquiryId" type="hidden" value={selected?.id ?? ""} />
+      {loading ? <p aria-live="polite" className="text-xs text-muted-foreground">Searching…</p> : null}
+      {!selected && results.length > 0 ? (
+        <div aria-label="Enquiry search results" className="max-h-48 overflow-auto rounded-md border bg-background p-1" role="listbox">
+          {results.map((enquiry) => (
+            <button
+              className="block w-full rounded-sm px-3 py-2 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              key={enquiry.id}
+              onClick={() => { setSelected(enquiry); setResults([]) }}
+              aria-selected="false"
+              role="option"
+              type="button"
+            >
+              <span className="font-medium">{enquiry.reference}</span>
+              <span className="ml-2 text-muted-foreground">{enquiry.summary}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   )
 }
 

@@ -8,6 +8,7 @@ import {
   internalUserInviteSchema,
   internalUserUpdateSchema,
   recoveryEmailSchema,
+  resetMfaSchema,
 } from "@/lib/users/validation"
 
 export type UserAdminActionState = {
@@ -26,6 +27,38 @@ async function administratorContext() {
 
 function applicationBaseUrl() {
   return (process.env.APP_BASE_URL || "http://localhost:3000").replace(/\/+$/, "")
+}
+
+export async function resetUserMfaAction(
+  _state: UserAdminActionState,
+  formData: FormData,
+): Promise<UserAdminActionState> {
+  const parsed = resetMfaSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { message: "Give a reason of at least 10 characters." }
+  const context = await administratorContext()
+  if ("message" in context) return context
+  if (parsed.data.userId === context.userId) {
+    return { message: "Another administrator must reset your authenticator." }
+  }
+  try {
+    const admin = createAdminClient()
+    const factors = await admin.auth.admin.mfa.listFactors({ userId: parsed.data.userId })
+    if (factors.error) return { message: "Authenticator factors could not be loaded." }
+    for (const factor of factors.data.factors) {
+      const removal = await admin.auth.admin.mfa.deleteFactor({ id: factor.id, userId: parsed.data.userId })
+      if (removal.error) return { message: "Authenticator reset did not complete safely." }
+    }
+    const audit = await admin.from("audit_events").insert({
+      action: "update", actor_user_id: context.userId, entity_id: parsed.data.userId,
+      entity_type: "profile_mfa", new_values: { factor_count: 0, reason: parsed.data.reason },
+      old_values: { factor_count: factors.data.factors.length }, source: "application.mfa_reset",
+    })
+    if (audit.error) return { message: "Authenticator factors were reset, but audit recording failed. Review the audit log immediately." }
+    revalidatePath("/settings/users")
+    return { message: "Authenticator reset. The user must enrol again.", success: true }
+  } catch {
+    return { message: "The trusted Auth administrator is not configured." }
+  }
 }
 
 export async function updateInternalUserAction(

@@ -39,10 +39,10 @@ web interface. Test both a staff invitation and password recovery, then set
 1. Create the client-owned Google Cloud project and OAuth consent configuration.
 2. Grant the reviewed application only the Gmail read/modify and compose scopes
    used by the connection screen. Do not grant automatic send authority.
-3. An invited staff member connects the operational account under **Settings →
-   Account and alerts → Google Workspace**.
-4. An administrator opens **Settings → Connections**, chooses that account under
-   **Gmail → Incoming mail**, and enables monitoring. The first automation tick
+3. An invited staff member connects the operational account under **Settings >
+   Account and alerts > Google Workspace**.
+4. An administrator opens **Settings > Connections**, chooses that account under
+   **Gmail > Incoming mail**, and enables monitoring. The first automation tick
    records the current Gmail history cursor without importing older mail.
 5. Import the n8n scheduler workflow but leave it inactive. It needs the
    application automation secret, not a Gmail credential.
@@ -50,8 +50,8 @@ web interface. Test both a staff invitation and password recovery, then set
    unrecognised message.
 7. Verify classification, human review, Telegram/in-app alert materialisation,
    draft behaviour, idempotency, and failure visibility.
-8. Activate the scheduler and separately accepted provider-action workers. Keep
-   all unrelated optional workflows inactive.
+8. Activate the core scheduler. Google and Telegram work remains inside the
+   application-owned adapters; n8n needs no provider credentials.
 
 The app cannot create a Google Cloud project or consent screen on the operator's
 behalf. That boundary is intentional.
@@ -64,7 +64,7 @@ behalf. That boundary is intentional.
    `http://localhost:3000/...` equivalent) to Google&apos;s authorised redirect URIs.
 3. Store `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` only in
    deployment secret storage, then restart the application.
-4. Each employee opens **Settings → Account and alerts** and selects
+4. Each employee opens **Settings > Account and alerts** and selects
    **Connect Google Workspace**. Google, not Torrance Yachts, presents the consent
    screen.
 5. Confirm the connected account appears in Settings and complete a synthetic
@@ -97,12 +97,11 @@ even when Telegram is connected.
 ## 6. n8n
 
 Set `N8N_HEALTH_URL` to the private `http://n8n:5678/healthz` endpoint in the
-production Compose network. Import the pinned workflow definitions, run the n8n
-security audit and activate workflows one at a time only after their synthetic
-acceptance tests pass. The core scheduler needs no provider credential. Gmail
-mark-read/archive and other provider workers are activated only when their
-separate scope and failure behaviour are accepted. PostgreSQL and application
-commands remain authoritative; n8n is a scheduler and adapter worker.
+production Compose network. Import the three pinned workflow definitions, run
+the n8n security audit, and activate only the core scheduler and readiness
+monitor after synthetic acceptance. The simulator remains development-only.
+n8n stores no Google or Telegram credentials. PostgreSQL and application
+commands remain authoritative; n8n only schedules bounded application workers.
 
 ## 7. AI
 

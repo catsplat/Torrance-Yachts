@@ -2,7 +2,7 @@
 
 ## Project brief and source of truth
 
-**Status:** Hosted release locally code-complete; production activation pending client acceptance
+**Status:** v0.19.0 pre-deployment candidate; clean local acceptance and production activation pending
 
 **Owner/developer:** Thom, working with Codex
 
