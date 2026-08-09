@@ -5,13 +5,14 @@ import { DirectoryTabs } from "@/components/contacts/directory-tabs"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CursorPagination } from "@/components/ui/cursor-pagination"
 import { Input } from "@/components/ui/input"
+import { getCompanyRegisterPage } from "@/lib/contacts/data"
 import { normaliseDirectorySearch } from "@/lib/contacts/validation"
-import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
 
 type CompaniesPageProps = {
-  searchParams: Promise<{ q?: string; status?: string }>
+  searchParams: Promise<{ cursor?: string; q?: string; status?: string }>
 }
 
 export default async function CompaniesPage({ searchParams }: CompaniesPageProps) {
@@ -21,35 +22,20 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
     ? filters.status
     : "active"
 
-  const supabase = await createClient()
-  let query = supabase
-    .from("companies")
-    .select("id, name, email, phone, website, active, updated_at")
-    .order("name")
-    .limit(500)
-
-  if (status !== "all") query = query.eq("active", status === "active")
-
-  const { data: companies, error } = await query
-  if (error) throw new Error("Unable to load company records.")
-
-  const visibleCompanies = search
-    ? companies.filter((company) =>
-        [company.name, company.email, company.phone, company.website]
-          .filter(Boolean)
-          .some((value) => value!.toLocaleLowerCase("en-GB").includes(search)),
-      )
-    : companies
+  const register = await getCompanyRegisterPage({
+    active: status === "all" ? undefined : status === "active",
+    cursor: filters.cursor,
+    query: search,
+  })
+  const visibleCompanies = register.companies
 
   return (
     <div className="space-y-7">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-medium text-primary">Master directory</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">Companies</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Companies</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Brokerages, suppliers, and yacht-management organisations linked to their
-            individual contacts.
+            Brokerages, suppliers and yacht-management companies.
           </p>
         </div>
         <Link
@@ -97,7 +83,7 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
 
       <Card>
         <CardHeader className="border-b">
-          <CardTitle>{visibleCompanies.length} matching companies</CardTitle>
+          <CardTitle>{register.totalCount} matching companies</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {visibleCompanies.length === 0 ? (
@@ -133,6 +119,13 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
               ))}
             </div>
           )}
+          <CursorPagination
+            currentCount={visibleCompanies.length}
+            nextCursor={register.nextCursor}
+            pathname="/contacts/companies"
+            searchParams={{ cursor: filters.cursor, q: search, status }}
+            totalCount={register.totalCount}
+          />
         </CardContent>
       </Card>
     </div>

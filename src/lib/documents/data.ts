@@ -1,22 +1,66 @@
 import "server-only"
 
-import { cache } from "react"
+import { z } from "zod"
 
 import { createClient } from "@/lib/supabase/server"
+import type { Enums } from "@/types/database"
 
-export const getDocumentRegister = cache(async () => {
-  const supabase = await createClient()
-  const { data, error } = await supabase.from("documents").select(`
-    id, booking_id, document_type, title, original_filename, mime_type,
-    size_bytes, version_number, verification_status, scan_status, retention_class, created_at,
-    booking:bookings!documents_booking_id_fkey(
-      reference,
-      yacht:yachts!bookings_yacht_id_fkey(name)
-    )
-  `).order("created_at", { ascending: false }).limit(1000)
-  if (error) throw new Error("Unable to load the document register.")
-  return data
+export const documentRegisterPageSize = 50
+
+const documentCursorSchema = z.object({
+  createdAt: z.iso.datetime(),
+  id: z.uuid(),
 })
+
+function decodeDocumentCursor(value: string | undefined) {
+  if (!value || value.length > 256) return null
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8"))
+    return documentCursorSchema.safeParse(parsed).data ?? null
+  } catch {
+    return null
+  }
+}
+
+export async function getDocumentRegisterPage(filters: {
+  cursor?: string
+  documentType?: Enums<"document_type">
+  query?: string
+  scanStatus?: Enums<"document_scan_status">
+  verificationStatus?: Enums<"document_verification_status">
+}) {
+  const cursor = decodeDocumentCursor(filters.cursor)
+  const supabase = await createClient()
+  const [{ data, error }, { data: totalCount, error: countError }] = await Promise.all([
+    supabase.rpc("list_document_register_page", {
+      p_cursor_created_at: cursor?.createdAt,
+      p_cursor_id: cursor?.id,
+      p_document_type: filters.documentType,
+      p_limit: documentRegisterPageSize + 1,
+      p_query: filters.query,
+      p_scan_status: filters.scanStatus,
+      p_verification_status: filters.verificationStatus,
+    }),
+    supabase.rpc("count_document_register", {
+      p_document_type: filters.documentType,
+      p_query: filters.query,
+      p_scan_status: filters.scanStatus,
+      p_verification_status: filters.verificationStatus,
+    }),
+  ])
+  if (error || countError) throw new Error("Unable to load the document register.")
+
+  const hasNextPage = data.length > documentRegisterPageSize
+  const documents = data.slice(0, documentRegisterPageSize)
+  const last = documents.at(-1)
+  return {
+    documents,
+    nextCursor: hasNextPage && last
+      ? Buffer.from(JSON.stringify({ createdAt: last.created_at, id: last.id })).toString("base64url")
+      : null,
+    totalCount: totalCount ?? 0,
+  }
+}
 
 export async function getBookingDocumentWorkspace(bookingId: string) {
   const supabase = await createClient()

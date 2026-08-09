@@ -5,13 +5,14 @@ import { DirectoryTabs } from "@/components/contacts/directory-tabs"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CursorPagination } from "@/components/ui/cursor-pagination"
 import { Input } from "@/components/ui/input"
+import { getContactRegisterPage } from "@/lib/contacts/data"
 import { contactRoleLabels } from "@/lib/contacts/options"
 import {
   contactRoleValues,
   normaliseDirectorySearch,
 } from "@/lib/contacts/validation"
-import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
 import type { Enums } from "@/types/database"
 
@@ -20,6 +21,7 @@ type ContactsPageProps = {
     q?: string
     role?: string
     status?: string
+    cursor?: string
   }>
 }
 
@@ -33,26 +35,13 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
     ? filters.status
     : "active"
 
-  const supabase = await createClient()
-  let query = supabase
-    .from("contacts")
-    .select("id, full_name, email, phone, roles, active, updated_at")
-    .order("full_name")
-    .limit(500)
-
-  if (status !== "all") query = query.eq("active", status === "active")
-  if (role) query = query.contains("roles", [role])
-
-  const { data: contacts, error } = await query
-  if (error) throw new Error("Unable to load contact records.")
-
-  const visibleContacts = search
-    ? contacts.filter((contact) =>
-        [contact.full_name, contact.email, contact.phone, ...contact.roles]
-          .filter(Boolean)
-          .some((value) => value!.toLocaleLowerCase("en-GB").includes(search)),
-      )
-    : contacts
+  const register = await getContactRegisterPage({
+    active: status === "all" ? undefined : status === "active",
+    cursor: filters.cursor,
+    query: search,
+    role,
+  })
+  const visibleContacts = register.contacts
 
   const roleCount = new Set(visibleContacts.flatMap((contact) => contact.roles)).size
 
@@ -60,11 +49,9 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
     <div className="space-y-7">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-medium text-primary">Master directory</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">Contacts</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Contacts</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            People are stored once and can hold several operational roles across
-            enquiries, companies, and yachts.
+            Brokers, clients, captains and operational contacts.
           </p>
         </div>
         <Link className={cn(buttonVariants({ size: "lg" }))} href="/contacts/new">
@@ -125,7 +112,7 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
           <CardContent className="flex items-center gap-3 p-5">
             <UsersRound aria-hidden="true" className="size-5 text-primary" />
             <div>
-              <p className="text-2xl font-semibold">{visibleContacts.length}</p>
+              <p className="text-2xl font-semibold">{register.totalCount}</p>
               <p className="text-xs text-muted-foreground">Matching contacts</p>
             </div>
           </CardContent>
@@ -135,7 +122,7 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
             <UserRound aria-hidden="true" className="size-5 text-emerald-700" />
             <div>
               <p className="text-2xl font-semibold">{roleCount}</p>
-              <p className="text-xs text-muted-foreground">Roles represented</p>
+              <p className="text-xs text-muted-foreground">Roles on page</p>
             </div>
           </CardContent>
         </Card>
@@ -186,6 +173,13 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
               ))}
             </div>
           )}
+          <CursorPagination
+            currentCount={visibleContacts.length}
+            nextCursor={register.nextCursor}
+            pathname="/contacts"
+            searchParams={{ cursor: filters.cursor, q: search, role, status }}
+            totalCount={register.totalCount}
+          />
         </CardContent>
       </Card>
     </div>

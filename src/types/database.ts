@@ -4759,6 +4759,27 @@ export type Database = {
         }
         Returns: number
       }
+      count_company_register: {
+        Args: { p_active?: boolean; p_query?: string }
+        Returns: number
+      }
+      count_contact_register: {
+        Args: {
+          p_active?: boolean
+          p_query?: string
+          p_role?: Database["public"]["Enums"]["contact_role"]
+        }
+        Returns: number
+      }
+      count_document_register: {
+        Args: {
+          p_document_type?: Database["public"]["Enums"]["document_type"]
+          p_query?: string
+          p_scan_status?: Database["public"]["Enums"]["document_scan_status"]
+          p_verification_status?: Database["public"]["Enums"]["document_verification_status"]
+        }
+        Returns: number
+      }
       count_email_inbox: {
         Args: {
           p_classification?: Database["public"]["Enums"]["email_classification"]
@@ -4777,6 +4798,7 @@ export type Database = {
         }
         Returns: number
       }
+      count_my_notifications: { Args: { p_read?: boolean }; Returns: number }
       count_offer_register: {
         Args: {
           p_query?: string
@@ -5032,6 +5054,72 @@ export type Database = {
           yachtfolio_status: Database["public"]["Enums"]["yachtfolio_action_status"]
         }[]
       }
+      list_company_register_page: {
+        Args: {
+          p_active?: boolean
+          p_cursor_id?: string
+          p_cursor_name?: string
+          p_limit?: number
+          p_query?: string
+        }
+        Returns: {
+          active: boolean
+          email: string
+          id: string
+          name: string
+          phone: string
+          sort_name: string
+          updated_at: string
+          website: string
+        }[]
+      }
+      list_contact_register_page: {
+        Args: {
+          p_active?: boolean
+          p_cursor_id?: string
+          p_cursor_name?: string
+          p_limit?: number
+          p_query?: string
+          p_role?: Database["public"]["Enums"]["contact_role"]
+        }
+        Returns: {
+          active: boolean
+          email: string
+          full_name: string
+          id: string
+          phone: string
+          roles: Database["public"]["Enums"]["contact_role"][]
+          sort_name: string
+          updated_at: string
+        }[]
+      }
+      list_document_register_page: {
+        Args: {
+          p_cursor_created_at?: string
+          p_cursor_id?: string
+          p_document_type?: Database["public"]["Enums"]["document_type"]
+          p_limit?: number
+          p_query?: string
+          p_scan_status?: Database["public"]["Enums"]["document_scan_status"]
+          p_verification_status?: Database["public"]["Enums"]["document_verification_status"]
+        }
+        Returns: {
+          booking_id: string
+          booking_reference: string
+          created_at: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          id: string
+          mime_type: string
+          original_filename: string
+          retention_class: string
+          scan_status: Database["public"]["Enums"]["document_scan_status"]
+          size_bytes: number
+          title: string
+          verification_status: Database["public"]["Enums"]["document_verification_status"]
+          version_number: number
+          yacht_name: string
+        }[]
+      }
       list_email_inbox_page: {
         Args: {
           p_classification?: Database["public"]["Enums"]["email_classification"]
@@ -5082,6 +5170,25 @@ export type Database = {
           summary: string
           updated_at: string
           yacht_name: string
+        }[]
+      }
+      list_my_notification_page: {
+        Args: {
+          p_cursor_created_at?: string
+          p_cursor_id?: string
+          p_limit?: number
+          p_read?: boolean
+        }
+        Returns: {
+          action_url: string
+          body: string
+          channel: Database["public"]["Enums"]["notification_channel"]
+          created_at: string
+          id: string
+          priority: Database["public"]["Enums"]["notification_priority"]
+          read_at: string
+          status: Database["public"]["Enums"]["notification_status"]
+          title: string
         }[]
       }
       list_offer_register_page: {
@@ -6132,6 +6239,7 @@ export type Database = {
     }
   }
 }
+
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]

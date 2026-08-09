@@ -25,6 +25,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
 - Replaced the fixed Offers, Bookings and Tasks register windows with stable
   server-side cursor pagination, PostgreSQL search/filtering and exact result
   counts so historical operational records remain discoverable.
+- Completed the same server-side pagination and exact-count treatment for
+  Contacts, Companies, Documents and personal Notifications, adding useful
+  document and read-state filters to the normal workflow.
 - Expired or invalid Supabase browser sessions now clear only their own auth
   cookies and return to sign-in instead of leaving a protected page empty.
 - Reworked the application around the daily Inbox → Enquiries → Offers →
