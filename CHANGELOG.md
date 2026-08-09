@@ -14,6 +14,11 @@ All notable project changes are recorded here. The format follows Keep a Changel
   Linux runners rather than relying on prior local state.
 - Added production Compose/preflight validation to the same fail-fast local
   release command used before tagging.
+- Pinned npm inside the production image so its locked dependency install is
+  identical on local and Linux builders.
+- Restored private Storage to the disposable browser stack so document
+  quarantine and release are exercised in CI.
+- Increased destructive-status contrast to meet WCAG AA for small text.
 
 ## [0.19.0] - 2026-08-09
 
