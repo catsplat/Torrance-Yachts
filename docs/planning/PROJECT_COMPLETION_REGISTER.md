@@ -1,7 +1,7 @@
 # Project completion register
 
 **Reviewed:** 9 August 2026
-**Candidate:** v0.19.0 pre-deployment release
+**Candidate:** v0.19.1 pre-deployment release
 
 This register distinguishes code, automated proof, local human acceptance,
 client acceptance, and live provider acceptance. A phase number or successful
@@ -31,7 +31,7 @@ contains no business rules.
 The resettable fictional workflow has been exercised through enquiry, offer,
 booking, availability, documents, payments, invoice, Yachtfolio evidence,
 charter completion and broker follow-up. The clean `npm run release:verify`
-result is the release evidence for v0.19.0; its sanitized report is generated at
+result is the release evidence for v0.19.1; its sanitized report is generated at
 `.artifacts/release-verification.json`.
 
 ## Intentionally separate from the hosted first release

@@ -1,6 +1,6 @@
 # Launch gap register
 
-**Status:** v0.19.0 pre-deployment verification in progress
+**Status:** v0.19.1 pre-deployment verification in progress
 **Last reviewed:** 9 August 2026
 
 ## Evidence states
@@ -34,6 +34,6 @@
 - no claim of provider success based on a fake response;
 - no Windows/macOS desktop packaging or signing.
 
-When `npm run release:verify` passes from the clean v0.19.0 commit, the shared
+When `npm run release:verify` passes from the clean v0.19.1 commit, the shared
 application is ready to bake. All remaining work is client-owned configuration,
 provider acceptance, training/UAT, infrastructure and packaging.

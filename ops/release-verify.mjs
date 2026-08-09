@@ -74,6 +74,7 @@ if (process.platform === "win32") {
   ])
 }
 runNpm("Automation contracts", ["run", "automation:validate"])
+runNpm("Production package contracts", ["run", "production:validate"])
 runNpm("Production build", ["run", "build"])
 runNpm("Production dependency audit", ["audit", "--omit=dev", "--audit-level=high"])
 run("Prepare synthetic browser identities", "node", ["ops/e2e/prepare-local-environment.mjs"])

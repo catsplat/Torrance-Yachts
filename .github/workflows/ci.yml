@@ -134,29 +134,7 @@ jobs:
           node --check ops/backup/export-storage.mjs
 
       - name: Validate production Compose package
-        env:
-          ACME_EMAIL: operations@example.test
-          APP_DOMAIN: operations.example.test
-          N8N_DOMAIN: automation.example.test
-          DEPLOYMENT_VERSION: ci
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: synthetic-publishable-key
-          SUPABASE_SECRET_KEY: synthetic-secret-key
-          AUTOMATION_SHARED_SECRET: synthetic-automation-secret
-          MONITORING_SHARED_SECRET: synthetic-monitoring-secret
-          N8N_ENCRYPTION_KEY: synthetic-n8n-encryption-key
-          AUTH_SMTP_CONFIGURED: "true"
-          AI_PROVIDER: openai
-          OPENAI_API_KEY: synthetic-openai-key
-          GOOGLE_OAUTH_CLIENT_ID: synthetic-google-client
-          GOOGLE_OAUTH_CLIENT_SECRET: synthetic-google-secret
-          CLOUDFLARE_TUNNEL_TOKEN: synthetic-cloudflare-tunnel-token
-          TELEGRAM_BOT_TOKEN: synthetic-telegram-token
-          TELEGRAM_BOT_USERNAME: synthetic_bot
-          TELEGRAM_WEBHOOK_SECRET: synthetic-telegram-webhook-secret
-        run: |
-          node ops/production-preflight.mjs
-          docker compose -f deploy/production/docker-compose.yml config --quiet
+        run: npm run production:validate
 
       - name: Build production application image
         run: |

@@ -1,6 +1,6 @@
 {
   "name": "torrance-yachts-platform",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "private": true,
   "packageManager": "npm@11.6.2",
   "engines": {
@@ -31,6 +31,7 @@
     "automation:import": "docker compose --env-file automation/.env -f automation/docker-compose.yml exec n8n n8n import:workflow --separate --input=/workflows",
     "automation:validate": "node ops/validate-automation-workflows.mjs",
     "production:preflight": "node --env-file=deploy/production/.env ops/production-preflight.mjs",
+    "production:validate": "node ops/validate-production-package.mjs",
     "release:verify": "node ops/release-verify.mjs"
   },
   "dependencies": {

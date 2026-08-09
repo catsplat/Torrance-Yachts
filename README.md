@@ -2,7 +2,7 @@
 
 A private internal platform for managing Torrance Yachts' charter workflow, from the first enquiry email through booking operations and post-charter follow-up.
 
-> **Development status:** `v0.19.0` is the pre-deployment release candidate.
+> **Development status:** `v0.19.1` is the pre-deployment release candidate.
 > The shared application is being verified locally before hosting or packaging.
 > Production activation still requires client-owned infrastructure, credentials,
 > policies, staff acceptance, training, and launch sign-off. Do not enter real

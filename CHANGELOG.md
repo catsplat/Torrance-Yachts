@@ -4,6 +4,17 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+## [0.19.1] - 2026-08-09
+
+### Fixed
+
+- Removed the retired Gmail ingestion token from the production Compose and
+  environment contracts.
+- Made MFA browser setup create its ignored authentication directory on clean
+  Linux runners rather than relying on prior local state.
+- Added production Compose/preflight validation to the same fail-fast local
+  release command used before tagging.
+
 ## [0.19.0] - 2026-08-09
 
 ### Added

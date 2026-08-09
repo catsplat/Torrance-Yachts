@@ -68,11 +68,14 @@ setup("authenticate an approved internal administrator", async ({ page }) => {
     .waitFor()
   if (new URL(page.url()).pathname === "/account/mfa") {
     const finishSetup = page.getByRole("button", { name: "Finish setup" })
+    const continueChallenge = page.getByRole("button", { name: "Continue" })
+    await finishSetup.or(continueChallenge).waitFor()
     const secret = await finishSetup.isVisible()
       ? (await page.locator("code").textContent())?.trim()
       : (await readFile(mfaSecretPath, "utf8")).trim()
     if (!secret) throw new Error("MFA setup secret is unavailable for acceptance testing.")
     if (await finishSetup.isVisible()) {
+      await mkdir(dirname(mfaSecretPath), { recursive: true })
       await writeFile(mfaSecretPath, `${secret}\n`, { encoding: "utf8", mode: 0o600 })
     }
     await page.getByLabel("Authenticator code").fill(totp(secret))

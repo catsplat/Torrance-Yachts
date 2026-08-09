@@ -64,26 +64,28 @@ This enables the testing server. No other configuration needed for development.
 
 ---
 
-## 2. Gmail Inbox Email Ingestion (n8n + Gmail API)
+## 2. Gmail inbox ingestion
 
 ### What It Does
 
-**Real emails from Gmail** are imported into the app's inbox via:
-1. Gmail API watch/push notifications (Google pushes new email notifications to you)
-2. n8n workflow fetches the full email details
-3. n8n calls your app's `/api/integrations/gmail/messages` endpoint
-4. App stores it in PostgreSQL and displays in the inbox UI
+After client acceptance, Gmail messages are imported through:
+1. the administrator-selected, user-authorised Google connection;
+2. bounded Gmail history reconciliation in the application;
+3. idempotent PostgreSQL ingestion and visible review in the Inbox.
+
+n8n schedules the reconciliation tick only. It does not fetch Gmail messages or
+store a Google credential.
 
 ### Architecture
 
 ```
-Real Gmail Account
+Approved Gmail account and OAuth
   ↓
-Gmail API (watch/push) + OAuth
+n8n core scheduler (local automation engine at 127.0.0.1:5678)
   ↓
-n8n (local automation engine at 127.0.0.1:5678)
+POST /api/integrations/automation/tick (with the scheduler secret)
   ↓
-POST /api/integrations/gmail/messages (with Bearer token)
+Application-owned Gmail history adapter
   ↓
 PostgreSQL email_messages table
   ↓
@@ -94,7 +96,7 @@ Inbox UI (http://localhost:3000/emails)
 
 - **You haven't connected your Gmail account** in Settings → Alerts
 - **n8n is running but workflows are inactive by design** (development simulator is disabled)
-- **Gmail API watch is not configured** (requires Google Cloud credentials)
+- **The operational inbox is not enabled** until synthetic acceptance passes
 
 ### How to Enable It (Production Setup)
 
@@ -110,39 +112,23 @@ Inbox UI (http://localhost:3000/emails)
    - Authorize your Gmail account
    - Credentials are encrypted in Supabase Vault
 
-3. **Configure n8n workflow:**
-   - Start n8n: `npm run automation:start`
-   - Open http://127.0.0.1:5678
-   - Create a workflow that:
-     - Watches Gmail inbox via "Gmail" node
-     - Calls your app's `/api/integrations/gmail/messages` endpoint
-     - Includes Bearer token from `EMAIL_INGESTION_TOKEN` env var
+3. **Select the operational inbox:**
+   - Open Settings > Connections as an administrator.
+   - Choose the approved staff Google connection under Incoming mail.
+   - Run the five-route synthetic acceptance before monitoring is enabled.
 
-4. **Activate the workflow** in n8n
-
-### Bearer Token Security
-
-The endpoint validates:
-```typescript
-// src/app/api/integrations/gmail/messages/route.ts
-function validBearerToken(request: Request) {
-  const configured = process.env.EMAIL_INGESTION_TOKEN
-  const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "")
-  // Constant-time comparison to prevent timing attacks
-  return timingSafeEqual(expectedBuffer, suppliedBuffer)
-}
-```
-
-Set `EMAIL_INGESTION_TOKEN` in `.env.local` to a long random string. n8n workflows must include this token in every request.
+4. **Activate the core n8n scheduler** after acceptance. n8n holds no Gmail
+   credential; the application reconciles Gmail history and provider actions
+   through the encrypted user-authorised connection.
 
 ### Production vs. Development
 
 | Aspect | Development | Production |
 |--------|-------------|-----------|
 | **Gmail API** | Configured but not connected | Real Gmail account + OAuth |
-| **n8n workflows** | Disabled by design | Active and scheduled |
-| **Email watch** | Not running | Actively watching Gmail |
-| **Testing** | Manual POST requests only | Real emails flowing in |
+| **n8n workflows** | Inactive by design | Core scheduler and readiness monitor |
+| **Email watch** | Synthetic reconciliation | Gmail history reconciliation |
+| **Testing** | Five fictional routes | Staged fictional provider acceptance first |
 
 ---
 
@@ -270,11 +256,10 @@ AI provider: openai · gpt-4o · configured
 - [ ] Create Google Cloud project
 - [ ] Enable Gmail API
 - [ ] Create OAuth 2.0 credentials
-- [ ] Configure `EMAIL_INGESTION_TOKEN` in `.env.local` (random string)
 - [ ] Connect Gmail account in Settings → Alerts
 - [ ] Start n8n: `npm run automation:start`
-- [ ] Create n8n workflow to watch Gmail and POST to `/api/integrations/gmail/messages`
-- [ ] Activate workflow
+- [ ] Select the connected account as the operational inbox
+- [ ] Accept the five fictional routes, then activate the core scheduler
 
 ---
 
@@ -342,9 +327,10 @@ All ports except 3000 and 5678 bind to `127.0.0.1` only (not accessible from oth
 
 ### n8n Not Connecting to App
 
-1. **Verify Bearer token:**
-   - In n8n, workflow should include: `Authorization: Bearer $EMAIL_INGESTION_TOKEN`
-   - In `.env.local`, verify `EMAIL_INGESTION_TOKEN` is set to same value
+1. **Verify scheduler secret:**
+   - Confirm n8n and the application share `AUTOMATION_SHARED_SECRET` through
+     ignored/deployment secret storage.
+   - Do not add Gmail or Telegram credentials to n8n.
 
 2. **Verify n8n can reach app:**
    - From n8n container: `curl http://host.docker.internal:3000`
