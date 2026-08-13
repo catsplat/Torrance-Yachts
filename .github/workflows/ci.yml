@@ -94,7 +94,9 @@ jobs:
           version: 2.109.1
 
       - name: Start disposable local Supabase
-        run: supabase start -x edge-runtime,imgproxy,logflare,mailpit,postgres-meta,realtime,studio,supavisor,vector
+        # Invitation and recovery acceptance reads the isolated local Mailpit
+        # inbox. It must remain enabled; nothing is sent outside the runner.
+        run: supabase start -x edge-runtime,imgproxy,logflare,postgres-meta,realtime,studio,supavisor,vector
 
       - name: Prepare disposable browser environment
         run: node ops/e2e/prepare-local-environment.mjs
