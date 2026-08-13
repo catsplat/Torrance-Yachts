@@ -3617,6 +3617,47 @@ export type Database = {
           },
         ]
       }
+      user_ai_preferences: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          model: string | null
+          openai_api_key_secret_id: string | null
+          provider: string | null
+          summary_style: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          model?: string | null
+          openai_api_key_secret_id?: string | null
+          provider?: string | null
+          summary_style?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          model?: string | null
+          openai_api_key_secret_id?: string | null
+          provider?: string | null
+          summary_style?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_ai_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_notification_preferences: {
         Row: {
           ai_summary_enabled: boolean
@@ -3743,6 +3784,35 @@ export type Database = {
             foreignKeyName: "user_oauth_connections_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_ui_preferences: {
+        Row: {
+          created_at: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_ui_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4867,6 +4937,10 @@ export type Database = {
         }
         Returns: string
       }
+      clear_my_openai_api_key: {
+        Args: { p_reason: string }
+        Returns: undefined
+      }
       clone_communication_template: {
         Args: { p_name: string; p_source_template_id: string }
         Returns: string
@@ -5368,6 +5442,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_effective_user_ai_configuration: {
+        Args: { p_user_id: string }
+        Returns: {
+          enabled: boolean
+          has_personal_openai_api_key: boolean
+          model: string
+          openai_api_key: string
+          provider: string
+          summary_style: string
+        }[]
+      }
       get_initial_setup_profile_count: { Args: never; Returns: number }
       get_integration_queue_health: {
         Args: never
@@ -5450,6 +5535,22 @@ export type Database = {
           reference: string
           status: Database["public"]["Enums"]["enquiry_status"]
           summary: string
+        }[]
+      }
+      list_active_notification_recipient_directory: {
+        Args: never
+        Returns: {
+          display_name: string
+          email: string
+          id: string
+          telegram_chat_id: string
+        }[]
+      }
+      list_active_staff_directory: {
+        Args: never
+        Returns: {
+          display_name: string
+          id: string
         }[]
       }
       list_ai_review_page: {
@@ -5703,6 +5804,19 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      list_internal_user_administration_records: {
+        Args: never
+        Returns: {
+          access_approved_at: string
+          active: boolean
+          display_name: string
+          email: string
+          id: string
+          phone: string
+          role: Database["public"]["Enums"]["user_role"]
+          telegram_chat_id: string
+        }[]
       }
       list_my_notification_page: {
         Args: {
@@ -6215,6 +6329,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      save_my_openai_api_key: {
+        Args: { p_api_key: string; p_reason: string }
+        Returns: undefined
+      }
       search_workspace: {
         Args: { p_limit_per_type?: number; p_query: string }
         Returns: {
@@ -6454,6 +6572,30 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_my_ai_preferences: {
+        Args: {
+          p_enabled: boolean
+          p_model: string
+          p_provider: string
+          p_summary_style: string
+        }
+        Returns: {
+          created_at: string
+          enabled: boolean
+          model: string | null
+          openai_api_key_secret_id: string | null
+          provider: string | null
+          summary_style: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_ai_preferences"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_my_alert_preferences: {
         Args: {
           p_ai_summary_enabled: boolean
@@ -6495,6 +6637,21 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "user_notification_preferences"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_my_ui_theme: {
+        Args: { p_theme: string }
+        Returns: {
+          created_at: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_ui_preferences"
           isOneToOne: true
           isSetofReturn: false
         }

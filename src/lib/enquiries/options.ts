@@ -42,8 +42,8 @@ export const enquiryStatusTones: Record<Enums<"enquiry_status">, string> = {
 }
 
 export const enquiryPriorityTones: Record<Enums<"enquiry_priority">, string> = {
-  low: "text-slate-600",
-  normal: "text-slate-700",
-  high: "text-amber-700",
-  urgent: "text-rose-700",
+  low: "text-slate-600 dark:text-slate-300",
+  normal: "text-slate-700 dark:text-slate-200",
+  high: "text-amber-700 dark:text-amber-300",
+  urgent: "text-rose-700 dark:text-rose-300",
 }

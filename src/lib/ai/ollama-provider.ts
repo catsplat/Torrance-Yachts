@@ -5,7 +5,10 @@ import { randomUUID } from "node:crypto"
 import { z } from "zod"
 
 import type {
+  AiConnectionResult,
+  AiModel,
   AiProvider,
+  AiSummaryStyle,
   ContractAiInput,
   EmailAiInput,
   ProviderResult,
@@ -95,8 +98,12 @@ type OllamaResponse = {
   prompt_eval_count?: number
 }
 
-function resolveBaseUrl() {
-  const raw = process.env.OLLAMA_BASE_URL?.trim() || "http://127.0.0.1:11434"
+const ollamaTagsSchema = z.object({
+  models: z.array(z.object({ model: z.string().min(1) })),
+})
+
+function resolveBaseUrl(path: string, rawValue?: string) {
+  const raw = rawValue?.trim() || process.env.OLLAMA_BASE_URL?.trim() || "http://127.0.0.1:11434"
   let baseUrl: URL
   try {
     baseUrl = new URL(raw)
@@ -106,7 +113,7 @@ function resolveBaseUrl() {
   if (baseUrl.protocol !== "http:" && baseUrl.protocol !== "https:") {
     throw new Error("OLLAMA_BASE_URL must use HTTP or HTTPS.")
   }
-  return new URL("/api/chat", baseUrl)
+  return new URL(path, baseUrl)
 }
 
 function parseOutput<T>(content: string, schema: z.ZodType<T>) {
@@ -128,11 +135,63 @@ function structuredFormat() {
 }
 
 export class OllamaProvider implements AiProvider {
+  private apiKey?: string
+  private baseUrl?: string
+  private summaryStyle: AiSummaryStyle
   model: string
   name = "ollama"
 
-  constructor() {
-    this.model = process.env.OLLAMA_MODEL?.trim() || "qwen3.5:4b-q4_K_M"
+  constructor(configuration: { apiKey?: string; baseUrl?: string; model?: string; summaryStyle?: AiSummaryStyle } = {}) {
+    this.apiKey = configuration.apiKey
+    this.baseUrl = configuration.baseUrl
+    this.model = configuration.model?.trim() || process.env.OLLAMA_MODEL?.trim() || "qwen3.5:4b-q4_K_M"
+    this.summaryStyle = configuration.summaryStyle ?? "concise"
+  }
+
+  private requestHeaders() {
+    const apiKey = this.apiKey || process.env.OLLAMA_API_KEY?.trim()
+    return {
+      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+      "Content-Type": "application/json",
+    }
+  }
+
+  async listModels(signal?: AbortSignal): Promise<AiModel[]> {
+    const response = await fetch(resolveBaseUrl("/api/tags", this.baseUrl), {
+      cache: "no-store",
+      headers: this.requestHeaders(),
+      signal: signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(5_000)])
+        : AbortSignal.timeout(5_000),
+    })
+    if (!response.ok) throw new Error("Ollama did not return its installed models.")
+    const payload = ollamaTagsSchema.parse(await response.json())
+    return payload.models.map(({ model }) => ({ id: model, label: model }))
+  }
+
+  async testConnection(signal?: AbortSignal): Promise<AiConnectionResult> {
+    const startedAt = performance.now()
+    try {
+      const models = await this.listModels(signal)
+      const installed = models.some(({ id }) => id === this.model)
+      return {
+        detail: installed
+          ? "Ollama is reachable and the selected model is installed."
+          : "Ollama is reachable, but the selected model is not installed.",
+        latencyMs: Math.round(performance.now() - startedAt),
+        model: this.model,
+        ok: installed,
+        provider: this.name,
+      }
+    } catch {
+      return {
+        detail: "Ollama could not be reached through the configured private endpoint.",
+        latencyMs: Math.round(performance.now() - startedAt),
+        model: this.model,
+        ok: false,
+        provider: this.name,
+      }
+    }
   }
 
   private async chat<T>(values: {
@@ -143,8 +202,7 @@ export class OllamaProvider implements AiProvider {
     user: unknown
   }): Promise<ProviderResult<T>> {
     void values.safetyIdentifier
-    const apiKey = process.env.OLLAMA_API_KEY?.trim()
-    const response = await fetch(resolveBaseUrl(), {
+    const response = await fetch(resolveBaseUrl("/api/chat", this.baseUrl), {
       body: JSON.stringify({
         format: structuredFormat(),
         messages: [
@@ -158,10 +216,7 @@ export class OllamaProvider implements AiProvider {
         // neither persisted nor useful to the human-review boundary.
         think: false,
       }),
-      headers: {
-        "Content-Type": "application/json",
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      },
+      headers: this.requestHeaders(),
       method: "POST",
       signal: values.signal
         ? AbortSignal.any([values.signal, AbortSignal.timeout(20_000)])
@@ -188,7 +243,7 @@ export class OllamaProvider implements AiProvider {
       safetyIdentifier,
       signal,
       schema: emailAiSuggestionSchema,
-      system: emailInstructions,
+      system: `${emailInstructions}\nUse a ${this.summaryStyle} factual summary.`,
       user: {
         approved_yacht_context: input.yachts,
         untrusted_email: {
@@ -207,7 +262,7 @@ export class OllamaProvider implements AiProvider {
       safetyIdentifier,
       signal,
       schema: contractAiSuggestionSchema,
-      system: contractInstructions,
+      system: `${contractInstructions}\nUse a ${this.summaryStyle} factual summary.`,
       user: {
         booking_reference: input.bookingReference,
         untrusted_selected_contract_clauses: input.sourceText,

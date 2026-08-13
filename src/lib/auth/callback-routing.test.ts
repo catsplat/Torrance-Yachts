@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  emailAuthCallbackOrigin,
   failedAuthCallbackPath,
   hasApprovedInternalAccess,
   safeAuthNextPath,
@@ -11,6 +12,15 @@ describe("authentication callback routing", () => {
     expect(safeAuthNextPath("/settings/alerts")).toBe("/settings/alerts")
     expect(safeAuthNextPath("//example.test")).toBe("/")
     expect(safeAuthNextPath("https://example.test")).toBe("/")
+  })
+
+  it("keeps a local email confirmation on its permitted loopback host", () => {
+    expect(emailAuthCallbackOrigin(
+      "http://localhost:3000", "127.0.0.1:3000", "http://localhost:3000", false,
+    )).toBe("http://127.0.0.1:3000")
+    expect(emailAuthCallbackOrigin(
+      "https://app.example.test", "attacker.example.test", "https://app.example.test", true,
+    )).toBe("https://app.example.test")
   })
 
   it("separates failed recovery links from failed OAuth sign-in", () => {

@@ -75,7 +75,9 @@ if (process.platform === "win32") {
 }
 runNpm("Automation contracts", ["run", "automation:validate"])
 runNpm("Production package contracts", ["run", "production:validate"])
+runNpm("Client/server secret boundaries", ["run", "security:boundaries"])
 runNpm("Production build", ["run", "build"])
+runNpm("Production container smoke test", ["run", "production:smoke"])
 runNpm("Production dependency audit", ["audit", "--omit=dev", "--audit-level=high"])
 run("Prepare synthetic browser identities", "node", ["ops/e2e/prepare-local-environment.mjs"])
 runNpm("Cross-browser acceptance", ["run", "test:e2e"])

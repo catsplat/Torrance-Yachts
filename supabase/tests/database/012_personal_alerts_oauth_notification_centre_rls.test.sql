@@ -394,8 +394,8 @@ set local "request.jwt.claim.sub" = '21000000-0000-4000-8000-000000000001';
 select results_eq(
   $$ select count(*) from public.notifications
      where idempotency_key = 'personal:other:user:test' $$,
-  array[1::bigint],
-  'administrators retain cross-team notification oversight'
+  array[0::bigint],
+  'administrators cannot read another user private notification receipt'
 );
 
 set local "request.jwt.claim.sub" = '21000000-0000-4000-8000-000000000002';

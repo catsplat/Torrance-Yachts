@@ -30,11 +30,7 @@ function encodeTaskCursor(cursor: z.infer<typeof taskCursorSchema>) {
 
 export const getActiveTaskAssignees = cache(async () => {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, display_name")
-    .eq("active", true)
-    .order("display_name")
+  const { data, error } = await supabase.rpc("list_active_staff_directory")
   if (error) throw new Error("Unable to load task assignees.")
   return data
 })

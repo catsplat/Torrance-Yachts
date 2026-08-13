@@ -1,5 +1,7 @@
 import packageJson from "../../../../../package.json"
 
+import { getDocumentScannerHealth } from "@/lib/documents/scanner"
+import { checkN8nHealth } from "@/lib/integrations/readiness"
 import { hasValidMonitoringToken } from "@/lib/operations/auth"
 import { getProductionConfigurationStatus } from "@/lib/tutorial/data"
 import { createAdminClient } from "@/lib/supabase/admin"
@@ -13,9 +15,12 @@ export async function GET(request: Request) {
     const environment = process.env.APP_ENVIRONMENT === "production"
       ? "production"
       : process.env.APP_ENVIRONMENT === "staging" ? "staging" : "development"
-    const readiness = await supabase.rpc("get_operational_readiness", {
-      p_environment: environment,
-    })
+    const [readiness, storage, scanner, automation] = await Promise.all([
+      supabase.rpc("get_operational_readiness", { p_environment: environment }),
+      supabase.storage.listBuckets(),
+      getDocumentScannerHealth(),
+      checkN8nHealth(),
+    ])
     if (readiness.error) throw new Error("Readiness query failed")
     const operational = readiness.data as {
       active_users: number
@@ -27,16 +32,24 @@ export async function GET(request: Request) {
     const backupAgeDays = operational.latest_restore_tested_at
       ? Math.floor((Date.now() - new Date(operational.latest_restore_tested_at).getTime()) / 86400000)
       : null
-    const critical = missingSettings.length > 0 ||
+    const critical = missingSettings.length > 0 || storage.error !== null ||
       (environment === "production" && (backupAgeDays === null || backupAgeDays > 30))
+    const degraded = operational.failed_deliveries > 0 || !scanner.ready || automation.state !== "ready"
     return Response.json(
       {
         activeUsers: operational.active_users,
         backupRestoreAgeDays: backupAgeDays,
+        checks: {
+          automation: automation.state === "ready" ? "ready" : automation.state === "setup_required" ? "not_configured" : "failed",
+          database: "ready",
+          documentScanner: scanner.ready ? "ready" : "failed",
+          environmentConfiguration: missingSettings.length ? "not_configured" : "ready",
+          storage: storage.error ? "failed" : "ready",
+        },
         failedDeliveries: operational.failed_deliveries,
         missingSettings,
         service: "torrance-yachts-platform",
-        status: critical ? "not_ready" : operational.failed_deliveries > 0 ? "degraded" : "ready",
+        status: critical ? "not_ready" : degraded ? "degraded" : "ready",
         version: packageJson.version,
       },
       {

@@ -94,7 +94,9 @@ jobs:
           version: 2.109.1
 
       - name: Start disposable local Supabase
-        run: supabase start -x edge-runtime,imgproxy,logflare,mailpit,postgres-meta,realtime,storage-api,studio,supavisor,vector
+        # Invitation and recovery acceptance reads the isolated local Mailpit
+        # inbox. It must remain enabled; nothing is sent outside the runner.
+        run: supabase start -x edge-runtime,imgproxy,logflare,postgres-meta,realtime,studio,supavisor,vector
 
       - name: Prepare disposable browser environment
         run: node ops/e2e/prepare-local-environment.mjs
@@ -136,12 +138,8 @@ jobs:
       - name: Validate production Compose package
         run: npm run production:validate
 
-      - name: Build production application image
-        run: |
-          docker build \
-            --build-arg DEPLOYMENT_VERSION=ci \
-            --build-arg NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
-            --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=synthetic-publishable-key \
-            --tag torrance-yachts-platform:ci \
-            --file deploy/production/Dockerfile \
-            .
+      - name: Verify browser/server secret boundaries
+        run: npm run security:boundaries
+
+      - name: Build and smoke-test production application image
+        run: npm run production:smoke

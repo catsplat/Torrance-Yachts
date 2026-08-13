@@ -11,7 +11,6 @@ import {
 } from "@/app/(workspace)/settings/users/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import type { Tables } from "@/types/database"
 
 const initialState: UserAdminActionState = {}
 
@@ -29,7 +28,16 @@ export function InviteUserForm() {
   </form>
 }
 
-export function UserAdministrationForm({ profile }: { profile: Tables<"profiles"> }) {
+type InternalUserAdministrationRecord = {
+  active: boolean
+  display_name: string
+  id: string
+  phone: string | null
+  role: "administrator" | "staff"
+  telegram_chat_id: string | null
+}
+
+export function UserAdministrationForm({ profile }: { profile: InternalUserAdministrationRecord }) {
   const [state, action, pending] = useActionState(updateInternalUserAction, initialState)
   return <form action={action} className="grid gap-2">
     <input name="userId" type="hidden" value={profile.id} />

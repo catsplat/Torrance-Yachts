@@ -13,7 +13,7 @@ export default async function UserSettingsPage() {
   const user = await getCurrentUser()
   if (user?.role !== "administrator") redirect("/settings")
   const supabase = await createClient()
-  const profiles = await supabase.from("profiles").select("*").order("active", { ascending: false }).order("display_name")
+  const profiles = await supabase.rpc("list_internal_user_administration_records")
   if (profiles.error) throw new Error("Unable to load internal users.")
   return <div className="mx-auto max-w-6xl space-y-5">
     <div><h1 className="text-3xl font-semibold">Users</h1></div>

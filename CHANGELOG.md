@@ -4,6 +4,46 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Added
+
+- Added database-backed per-user theme and AI provider/model/summary preferences,
+  Vault-backed personal OpenAI credentials, stricter profile/notification privacy,
+  and two-user RLS isolation proofs.
+- Added AI provider connection/model discovery contracts and an authenticated
+  settings test for deterministic, Ollama, and OpenAI providers.
+- Added startup environment validation, privacy-safe request correlation/error
+  records, authenticated deep readiness checks, an installable web manifest, and
+  client/server secret-boundary validation.
+- Added immutable GHCR release publishing, protected staging/production deployment,
+  migration dry-runs, backup confirmation, health-based VPS rollback, and a real
+  production-container smoke test.
+- Added separately built and labelled staging/production release images from the
+  same reviewed source tag. Deployment now rejects mutable or cross-environment
+  images and records the verified content digest on the VPS.
+
+### Changed
+
+- Production Compose now pulls immutable application images and receives only the
+  deployment package and production n8n workflows; the VPS no longer builds from
+  or requires a source checkout.
+- A source tag is now staging-first evidence rather than an automatic promotion:
+  production builds only after the equivalent staging image has been accepted.
+- Personal summary style now affects provider output. Hosted production disables
+  local Ollama until the approved desktop/local bridge exists, preventing the VPS
+  from attempting to reach an employee's localhost.
+- Reconciled deployment, operations, user and desktop documentation with the
+  central hosted architecture and explicit external acceptance boundaries.
+
+### Fixed
+
+- Replaced the incompatible implicit Supabase invitation/recovery callback with
+  a server-side token-hash confirmation route that establishes SSR cookies
+  before password setup, while preserving approval and MFA controls.
+- Added local Mailpit browser acceptance for invitation, recovery, ordinary
+  password sign-in and invalid confirmation links.
+- Restored Mailpit to the disposable Linux browser stack so the invitation and
+  recovery acceptance path exercises real local Auth email delivery.
+
 ## [0.19.1] - 2026-08-09
 
 ### Fixed
@@ -14,6 +54,11 @@ All notable project changes are recorded here. The format follows Keep a Changel
   Linux runners rather than relying on prior local state.
 - Added production Compose/preflight validation to the same fail-fast local
   release command used before tagging.
+- Pinned npm inside the production image so its locked dependency install is
+  identical on local and Linux builders.
+- Restored private Storage to the disposable browser stack so document
+  quarantine and release are exercised in CI.
+- Increased destructive-status contrast to meet WCAG AA for small text.
 
 ## [0.19.0] - 2026-08-09
 

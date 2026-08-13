@@ -4,7 +4,10 @@ import OpenAI from "openai"
 import { zodTextFormat } from "openai/helpers/zod"
 
 import type {
+  AiConnectionResult,
+  AiModel,
   AiProvider,
+  AiSummaryStyle,
   ContractAiInput,
   EmailAiInput,
   ProviderResult,
@@ -35,14 +38,52 @@ The result is a suggestion for comparison with the signed agreement and cannot c
 
 export class OpenAiProvider implements AiProvider {
   private client: OpenAI
+  private summaryStyle: AiSummaryStyle
   model: string
   name = "openai"
 
-  constructor() {
-    const apiKey = process.env.OPENAI_API_KEY
+  constructor(configuration: { apiKey?: string; model?: string; summaryStyle?: AiSummaryStyle } = {}) {
+    const apiKey = configuration.apiKey || process.env.OPENAI_API_KEY
     if (!apiKey) throw new Error("OpenAI is selected but OPENAI_API_KEY is not configured.")
     this.client = new OpenAI({ apiKey })
-    this.model = process.env.OPENAI_MODEL?.trim() || "gpt-5.6-luna"
+    this.model = configuration.model?.trim() || process.env.OPENAI_MODEL?.trim() || "gpt-5.6-luna"
+    this.summaryStyle = configuration.summaryStyle ?? "concise"
+  }
+
+  async listModels(signal?: AbortSignal): Promise<AiModel[]> {
+    const page = await this.client.models.list({
+      signal: signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(5_000)])
+        : AbortSignal.timeout(5_000),
+    })
+    return page.data
+      .filter(({ id }) => id.startsWith("gpt-"))
+      .map(({ id }) => ({ id, label: id }))
+      .sort((left, right) => left.id.localeCompare(right.id))
+  }
+
+  async testConnection(signal?: AbortSignal): Promise<AiConnectionResult> {
+    const startedAt = performance.now()
+    try {
+      const models = await this.listModels(signal)
+      return {
+        detail: models.some(({ id }) => id === this.model)
+          ? "OpenAI is reachable and the selected model is available."
+          : "OpenAI is reachable. Confirm that the selected model is enabled for this project.",
+        latencyMs: Math.round(performance.now() - startedAt),
+        model: this.model,
+        ok: true,
+        provider: this.name,
+      }
+    } catch {
+      return {
+        detail: "OpenAI could not verify this credential and model.",
+        latencyMs: Math.round(performance.now() - startedAt),
+        model: this.model,
+        ok: false,
+        provider: this.name,
+      }
+    }
   }
 
   async analyzeEmail(
@@ -52,7 +93,7 @@ export class OpenAiProvider implements AiProvider {
   ): Promise<ProviderResult<EmailAiSuggestion>> {
     const response = await this.client.responses.parse({
       input: [
-        { content: emailInstructions, role: "system" },
+        { content: `${emailInstructions}\nUse a ${this.summaryStyle} factual summary.`, role: "system" },
         {
           content: JSON.stringify({
             approved_yacht_context: input.yachts,
@@ -91,7 +132,7 @@ export class OpenAiProvider implements AiProvider {
   ): Promise<ProviderResult<ContractAiSuggestion>> {
     const response = await this.client.responses.parse({
       input: [
-        { content: contractInstructions, role: "system" },
+        { content: `${contractInstructions}\nUse a ${this.summaryStyle} factual summary.`, role: "system" },
         {
           content: JSON.stringify({
             booking_reference: input.bookingReference,

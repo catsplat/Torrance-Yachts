@@ -16,6 +16,26 @@ afterEach(() => {
 })
 
 describe("Ollama provider", () => {
+  it("discovers installed models and reports selected-model health", async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => new Response(JSON.stringify({
+      models: [{ model: "qwen3.5:4b-q4_K_M" }, { model: "gemma3:4b" }],
+    }), { status: 200 }))
+    global.fetch = fetchMock
+    const provider = new OllamaProvider({ model: "qwen3.5:4b-q4_K_M" })
+
+    await expect(provider.listModels()).resolves.toEqual([
+      { id: "qwen3.5:4b-q4_K_M", label: "qwen3.5:4b-q4_K_M" },
+      { id: "gemma3:4b", label: "gemma3:4b" },
+    ])
+    await expect(provider.testConnection()).resolves.toMatchObject({
+      model: "qwen3.5:4b-q4_K_M",
+      ok: true,
+      provider: "ollama",
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect((fetchMock.mock.calls[0]?.[0] as URL).toString()).toBe("http://127.0.0.1:11434/api/tags")
+  })
+
   it("sends a non-streaming structured email request to local Ollama", async () => {
     process.env.OLLAMA_MODEL = "qwen3.5:4b-q4_K_M"
     const expected = createLocalEmailSuggestion({

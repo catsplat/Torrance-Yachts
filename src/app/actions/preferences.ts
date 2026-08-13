@@ -1,19 +1,16 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { cookies } from "next/headers"
+
+import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 
 export async function setThemeAction(formData: FormData) {
   const theme = formData.get("theme") === "dark" ? "dark" : "light"
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return
 
-  const cookieStore = await cookies()
-  cookieStore.set("ty-theme", theme, {
-    httpOnly: true,
-    maxAge: 60 * 60 * 24 * 365,
-    path: "/",
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  })
+  const { error } = await context.supabase.rpc("update_my_ui_theme", { p_theme: theme })
+  if (error) throw new Error("Your interface preference could not be saved.")
 
   revalidatePath("/", "layout")
 }

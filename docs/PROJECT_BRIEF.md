@@ -2,13 +2,13 @@
 
 ## Project brief and source of truth
 
-**Status:** v0.19.0 pre-deployment candidate; clean local acceptance and production activation pending
+**Status:** v0.19.1 pre-deployment candidate; clean local acceptance and production activation pending
 
 **Owner/developer:** Thom, working with Codex
 
 **Primary organisation:** Torrance Yachts
 
-**Last reviewed:** 27 July 2026
+**Last reviewed:** 13 August 2026
 
 This document translates the original project context into a stable, version-controlled brief. It defines what the project is intended to achieve and should be consulted before architecture, implementation, or scope decisions are made.
 

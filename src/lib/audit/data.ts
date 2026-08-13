@@ -35,7 +35,7 @@ export async function getAuditPage(filters: {
       p_entity_type: filters.entityType || undefined, p_from: validFrom,
       p_source: filters.source || undefined, p_to: validTo,
     }),
-    supabase.from("profiles").select("id, display_name").order("display_name"),
+    supabase.rpc("list_active_staff_directory"),
   ])
   if (error || countError || profiles.error) throw new Error("Audit history could not be loaded.")
   const events = data.slice(0, pageSize)

@@ -37,8 +37,7 @@ export async function getIntegrationWorkspace(filters: {
     `).eq("status", "pending_approval").order("created_at", { ascending: false }).limit(50),
     supabase.from("integration_snapshots").select("id, status, row_count, requested_at, delivered_at")
       .order("requested_at", { ascending: false }).limit(20),
-    supabase.from("profiles").select("id, display_name, email, telegram_chat_id")
-      .eq("active", true).order("display_name"),
+    supabase.rpc("list_active_notification_recipient_directory"),
     supabase.from("contacts").select("id, full_name, email")
       .eq("active", true).not("email", "is", null).order("full_name"),
   ])

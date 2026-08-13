@@ -1,10 +1,11 @@
 import { createHmac } from "node:crypto"
-import { mkdir, writeFile } from "node:fs/promises"
+import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, resolve } from "node:path"
 
 import { expect, test as setup } from "@playwright/test"
 
 const authenticationState = resolve("playwright/.auth/staff.json")
+const mfaSecretPath = resolve("playwright/.auth/staff-mfa-secret.txt")
 
 function decodeBase32(value: string) {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
@@ -35,10 +36,19 @@ setup("authenticate an approved staff member", async ({ page }) => {
   await page.getByLabel("Password").fill(process.env.E2E_STAFF_PASSWORD!)
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
   await expect(page).toHaveURL(/\/account\/mfa$/)
-  const secret = (await page.locator("code").textContent())?.trim()
+  const finishSetup = page.getByRole("button", { name: "Finish setup" })
+  const continueChallenge = page.getByRole("button", { name: "Continue" })
+  await finishSetup.or(continueChallenge).waitFor()
+  const secret = await finishSetup.isVisible()
+    ? (await page.locator("code").textContent())?.trim()
+    : (await readFile(mfaSecretPath, "utf8")).trim()
   if (!secret) throw new Error("Staff MFA setup secret is unavailable.")
+  if (await finishSetup.isVisible()) {
+    await mkdir(dirname(mfaSecretPath), { recursive: true })
+    await writeFile(mfaSecretPath, `${secret}\n`, { encoding: "utf8", mode: 0o600 })
+  }
   await page.getByLabel("Authenticator code").fill(totp(secret))
-  await page.getByRole("button", { name: "Finish setup" }).click()
+  await page.getByRole("button", { name: /Finish setup|Continue/ }).click()
   await expect(page).toHaveURL((url) => url.pathname === "/")
   await mkdir(dirname(authenticationState), { recursive: true })
   await writeFile(resolve("playwright/.auth/staff-mfa-enrolled.txt"), "synthetic factor enrolled\n", { encoding: "utf8", mode: 0o600 })

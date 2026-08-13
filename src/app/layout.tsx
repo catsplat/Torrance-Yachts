@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { cookies } from "next/headers";
 import { connection } from "next/server";
 
+import { getCurrentTheme } from "@/lib/preferences/data";
 import { cn } from "@/lib/utils";
 
 import "./globals.css";
@@ -13,6 +13,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
+  applicationName: "Torrance Yachts Operations",
   title: {
     default: "Operations | Torrance Yachts",
     template: "%s | Torrance Yachts",
@@ -31,7 +32,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   await connection();
-  const theme = (await cookies()).get("ty-theme")?.value === "dark" ? "dark" : "light";
+  const theme = await getCurrentTheme();
   return (
     <html
       lang="en"
