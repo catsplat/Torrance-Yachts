@@ -4,7 +4,7 @@ import { createHash } from "node:crypto"
 
 import type { SupabaseClient } from "@supabase/supabase-js"
 
-import { getAiProvider } from "@/lib/ai/config"
+import { getUserAiProvider } from "@/lib/ai/config"
 import { locateEvidence } from "@/lib/ai/evidence"
 import type { EmailAiInput, YachtAiContext } from "@/lib/ai/provider"
 import {
@@ -119,7 +119,7 @@ export async function generateEmailSuggestion(
     .eq("id", messageId)
     .single()
   if (error || !message) throw new Error("Email message not found.")
-  const provider = getAiProvider()
+  const provider = await getUserAiProvider(context.userId)
   const input: EmailAiInput = {
     body: (message.body_text || message.snippet).slice(0, 50000),
     receivedAt: message.received_at,
@@ -235,7 +235,7 @@ export async function generateContractSuggestion(
     error || !document || document.document_type !== "charter_agreement" ||
     document.verification_status !== "verified"
   ) throw new Error("A verified charter agreement is required.")
-  const provider = getAiProvider()
+  const provider = await getUserAiProvider(context.userId)
   const sourceText = values.contractText.slice(0, 30000)
   const booking = Array.isArray(document.booking) ? document.booking[0] : document.booking
   const input = {

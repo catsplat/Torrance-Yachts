@@ -139,6 +139,10 @@ dist
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
+# Local Supabase Studio query scratchpads can contain account identifiers or
+# operational data and are never release artefacts.
+supabase/snippets/
+
 # pnpm
 .pnpm-store
 

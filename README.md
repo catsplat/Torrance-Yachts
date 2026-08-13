@@ -35,7 +35,7 @@ The current candidate provides the secured operational master-data, enquiry, off
 - workflow-focused daily dashboard and grouped navigation following Inbox,
   Enquiry, Offer, Booking, Operations, and Follow-up;
 - functional authorised cross-module search, personal notification centre, unread
-  badge, and persistent dark mode;
+  badge, and per-user persistent dark mode;
 - local deterministic and optional OpenAI-assisted email triage, structured enquiry extraction, summaries, and draft replies;
 - selected contract-clause extraction with exact evidence, corrections, and a separate human application step;
 - a central AI review queue plus versioned KYC, captain-contact, and broker-follow-up templates;
@@ -163,6 +163,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Transactional integration outbox decision](docs/decisions/0012-transactional-integration-outbox.md)
 - [Production hosting topology decision](docs/decisions/0013-production-hosting-topology.md)
 - [Personal alerts and encrypted OAuth decision](docs/decisions/0014-personal-alerts-encrypted-oauth.md)
+- [User state isolation](docs/security/USER_STATE_ISOLATION.md)
 - [One-time administrator bootstrap decision](docs/decisions/0015-one-time-administrator-bootstrap.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)

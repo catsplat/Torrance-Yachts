@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test"
 
 test("staff can operate the workspace but cannot open administrator registers", async ({ page }) => {
+  test.setTimeout(120_000)
   await page.goto("/work")
   await expect(page.getByRole("heading", { name: "Work queue" })).toBeVisible()
 

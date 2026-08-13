@@ -1,6 +1,7 @@
 import {
   Beaker,
   BellRing,
+  BrainCircuit,
   CircleGauge,
   Clock3,
   FilePenLine,
@@ -77,6 +78,7 @@ export default async function SettingsPage() {
           <h2 className="text-lg font-semibold">System</h2>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <SettingsLink description="Gmail, Telegram and automation." href="/settings/integrations" icon={PlugZap} title="Connections" />
+            <SettingsLink description="Provider, model and processing preference." href="/settings/ai" icon={BrainCircuit} title="AI" />
             <SettingsLink description="Provider connection status." href="/settings/activation" icon={CircleGauge} title="Connection status" />
             <SettingsLink description="Queues, scanner and recovery." href="/settings/operations" icon={ServerCog} title="Operations" />
             <SettingsLink description="Practice the full workflow." href="/tutorial" icon={GraduationCap} title="Tutorial" />

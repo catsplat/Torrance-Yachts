@@ -1,7 +1,7 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { getCurrentUser, requiresMfa } from "@/lib/auth/current-user";
+import { getCurrentTheme } from "@/lib/preferences/data";
 import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function WorkspaceLayout({
@@ -15,7 +15,7 @@ export default async function WorkspaceLayout({
     redirect("/login");
   }
   if (requiresMfa(currentUser)) redirect("/account/mfa");
-  const [themeCookie, supabase] = await Promise.all([cookies(), createClient()]);
+  const [theme, supabase] = await Promise.all([getCurrentTheme(), createClient()]);
   const { count: unreadNotificationCount, error } = await supabase
     .from("notifications")
     .select("id", { count: "exact", head: true })
@@ -26,7 +26,7 @@ export default async function WorkspaceLayout({
   return (
     <AppShell
       currentUser={currentUser}
-      initialTheme={themeCookie.get("ty-theme")?.value === "dark" ? "dark" : "light"}
+      initialTheme={theme}
       unreadNotificationCount={unreadNotificationCount ?? 0}
       environmentLabel={
         process.env.APP_ENVIRONMENT === "production"

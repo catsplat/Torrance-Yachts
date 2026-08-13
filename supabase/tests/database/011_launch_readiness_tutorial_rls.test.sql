@@ -417,7 +417,7 @@ select lives_ok(
   'administrator can update another internal user'
 );
 select results_eq(
-  $$ select display_name from public.profiles
+  $$ select display_name from public.list_internal_user_administration_records()
      where id = '20000000-0000-4000-8000-000000000003' $$,
   array['Updated Launch Staff'],
   'reviewed display name is stored'

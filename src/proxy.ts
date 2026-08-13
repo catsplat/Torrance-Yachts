@@ -45,6 +45,9 @@ export async function proxy(request: NextRequest) {
     ? NextResponse.next({ request: { headers: requestHeaders } })
     : await updateSession(request, requestHeaders)
   response.headers.set("Content-Security-Policy", contentSecurityPolicy)
+  // Do not let a shared browser restore a prior user's workspace through its
+  // back/forward cache after logout.
+  response.headers.set("Cache-Control", "private, no-store, max-age=0")
   if (request.nextUrl.pathname.startsWith("/api/")) {
     response.headers.set("Cache-Control", "private, no-store")
   }

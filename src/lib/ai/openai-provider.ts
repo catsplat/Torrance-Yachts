@@ -38,11 +38,11 @@ export class OpenAiProvider implements AiProvider {
   model: string
   name = "openai"
 
-  constructor() {
-    const apiKey = process.env.OPENAI_API_KEY
+  constructor(configuration: { apiKey?: string; model?: string } = {}) {
+    const apiKey = configuration.apiKey || process.env.OPENAI_API_KEY
     if (!apiKey) throw new Error("OpenAI is selected but OPENAI_API_KEY is not configured.")
     this.client = new OpenAI({ apiKey })
-    this.model = process.env.OPENAI_MODEL?.trim() || "gpt-5.6-luna"
+    this.model = configuration.model?.trim() || process.env.OPENAI_MODEL?.trim() || "gpt-5.6-luna"
   }
 
   async analyzeEmail(

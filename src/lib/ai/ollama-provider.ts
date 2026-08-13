@@ -95,8 +95,8 @@ type OllamaResponse = {
   prompt_eval_count?: number
 }
 
-function resolveBaseUrl() {
-  const raw = process.env.OLLAMA_BASE_URL?.trim() || "http://127.0.0.1:11434"
+function resolveBaseUrl(rawValue?: string) {
+  const raw = rawValue?.trim() || process.env.OLLAMA_BASE_URL?.trim() || "http://127.0.0.1:11434"
   let baseUrl: URL
   try {
     baseUrl = new URL(raw)
@@ -128,11 +128,15 @@ function structuredFormat() {
 }
 
 export class OllamaProvider implements AiProvider {
+  private apiKey?: string
+  private baseUrl?: string
   model: string
   name = "ollama"
 
-  constructor() {
-    this.model = process.env.OLLAMA_MODEL?.trim() || "qwen3.5:4b-q4_K_M"
+  constructor(configuration: { apiKey?: string; baseUrl?: string; model?: string } = {}) {
+    this.apiKey = configuration.apiKey
+    this.baseUrl = configuration.baseUrl
+    this.model = configuration.model?.trim() || process.env.OLLAMA_MODEL?.trim() || "qwen3.5:4b-q4_K_M"
   }
 
   private async chat<T>(values: {
@@ -143,8 +147,8 @@ export class OllamaProvider implements AiProvider {
     user: unknown
   }): Promise<ProviderResult<T>> {
     void values.safetyIdentifier
-    const apiKey = process.env.OLLAMA_API_KEY?.trim()
-    const response = await fetch(resolveBaseUrl(), {
+    const apiKey = this.apiKey || process.env.OLLAMA_API_KEY?.trim()
+    const response = await fetch(resolveBaseUrl(this.baseUrl), {
       body: JSON.stringify({
         format: structuredFormat(),
         messages: [

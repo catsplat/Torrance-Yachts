@@ -12,11 +12,7 @@ export async function getEnquiryFormOptions() {
       .order("full_name"),
     supabase.from("companies").select("id, name").eq("active", true).order("name"),
     supabase.from("yachts").select("id, name").neq("status", "inactive").order("name"),
-    supabase
-      .from("profiles")
-      .select("id, display_name")
-      .eq("active", true)
-      .order("display_name"),
+    supabase.rpc("list_active_staff_directory"),
   ])
 
   if (
