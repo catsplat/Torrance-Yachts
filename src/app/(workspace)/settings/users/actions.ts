@@ -29,6 +29,10 @@ function applicationBaseUrl() {
   return (process.env.APP_BASE_URL || "http://localhost:3000").replace(/\/+$/, "")
 }
 
+function passwordSetupRedirectUrl() {
+  return `${applicationBaseUrl()}/auth/confirm?next=/account/update-password`
+}
+
 export async function resetUserMfaAction(
   _state: UserAdminActionState,
   formData: FormData,
@@ -95,7 +99,7 @@ export async function inviteInternalUserAction(
     const admin = createAdminClient()
     const invitation = await admin.auth.admin.inviteUserByEmail(parsed.data.email, {
       data: { display_name: parsed.data.displayName },
-      redirectTo: `${applicationBaseUrl()}/auth/callback?next=/account/update-password`,
+      redirectTo: passwordSetupRedirectUrl(),
     })
     if (invitation.error || !invitation.data.user) {
       return { message: "The invitation could not be sent. Check SMTP and whether the account already exists." }
@@ -126,7 +130,7 @@ export async function sendRecoveryEmailAction(
   try {
     const admin = createAdminClient()
     const { error } = await admin.auth.resetPasswordForEmail(parsed.data.email, {
-      redirectTo: `${applicationBaseUrl()}/auth/callback?next=/account/update-password`,
+      redirectTo: passwordSetupRedirectUrl(),
     })
     if (error) return { message: "The recovery email could not be requested. Check SMTP and rate limits." }
     return { message: "Recovery email requested without revealing account status.", success: true }

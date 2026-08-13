@@ -6,11 +6,13 @@ This app has **two completely independent email systems**. Understanding the dif
 
 ---
 
-## 1. Auth Email Testing (InbucketSMTP)
+## 1. Auth email testing (Mailpit)
 
 ### What It Does
 
-When you **invite a user** or **request a password recovery**, Supabase Auth sends an email. Locally, this is captured by **InbucketSMTP** instead of being sent externally.
+When an administrator invites a user or requests password recovery, Supabase
+Auth sends an email. Locally, Mailpit captures it instead of sending it
+externally.
 
 ### How to Test Invitations Locally
 
@@ -22,20 +24,19 @@ When you **invite a user** or **request a password recovery**, Supabase Auth sen
 
 2. **Sign in as administrator** at http://localhost:3000
 
-3. **Navigate to Settings → Internal Users → "Invite staff member"**
+3. **Navigate to Settings > Users > Invite staff member**
 
 4. **Enter an email and click "Send invitation"**
-   - You'll see: "Invitation email requested. Confirm delivery before granting operational work."
+   - The application confirms that the invitation was sent.
 
 5. **View the captured email:**
-   - Open: http://localhost:54324 (InbucketSMTP web UI)
-   - Find your invitation email in the inbox
-   - Copy the auth callback link (contains the signup token)
+   - Open: http://127.0.0.1:54324 (Mailpit)
+   - Find the invitation email and choose **Set up your account**
 
 6. **Complete the invitation flow:**
-   - Open the link in a new incognito window
+   - Open the link in a new browser session
    - Set a password (12+ chars, uppercase, lowercase, number, symbol)
-   - New user account is created
+   - Enrol the authenticator after signing in normally
 
 ### What's Being Captured
 
@@ -45,7 +46,7 @@ When you **invite a user** or **request a password recovery**, Supabase Auth sen
 
 ### Why It's Safe
 
-- InbucketSMTP is built into Supabase Local Development
+- Mailpit is built into the local Supabase development stack
 - Emails never leave your machine
 - No external APIs or credentials needed
 - Development-only; production uses real SMTP
@@ -60,7 +61,10 @@ enabled = true
 port = 54324
 ```
 
-This enables the testing server. No other configuration needed for development.
+The configured invitation and recovery templates send a one-time token hash to
+the application's server-side `/auth/confirm` route. It establishes the normal
+cookie-backed session before password setup; no session token is placed in the
+browser URL.
 
 ---
 

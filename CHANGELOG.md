@@ -4,6 +4,14 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Fixed
+
+- Replaced the incompatible implicit Supabase invitation/recovery callback with
+  a server-side token-hash confirmation route that establishes SSR cookies
+  before password setup, while preserving approval and MFA controls.
+- Added local Mailpit browser acceptance for invitation, recovery, ordinary
+  password sign-in and invalid confirmation links.
+
 ## [0.19.1] - 2026-08-09
 
 ### Fixed

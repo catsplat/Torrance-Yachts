@@ -77,6 +77,22 @@ This procedure creates an isolated development environment. It must contain synt
 
 10. Sign in at `http://localhost:3000/login`.
 
+## Local invitation and password recovery
+
+1. An administrator opens **Settings > Users**, enters a synthetic staff name
+   and email address, and chooses **Send invitation**.
+2. Open the local-only Mailpit inbox at `http://127.0.0.1:54324` and follow
+   the **Set up your account** link in a separate browser session.
+3. The link reaches `/auth/confirm`, establishes a server-side session, and
+   opens **Set a new password**. No session token is placed in the browser URL.
+4. Sign in with the new password and enrol the authenticator when prompted.
+
+Password recovery follows the same route. If an email scanner or an expired
+link consumes a one-time token, an administrator can send a new recovery email.
+For hosted deployment, configure equivalent invite and recovery templates in
+the approved Supabase Auth environment and allow the exact
+`<APP_BASE_URL>/auth/confirm` URL.
+
 ## Optional local Google connection
 
 Google sign-in remains private: an administrator must invite a staff email

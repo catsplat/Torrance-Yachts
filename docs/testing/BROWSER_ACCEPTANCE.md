@@ -6,8 +6,10 @@ credentials in Git.
 
 ## Covered boundaries
 
-- bootstrap closure, password login, approved Google callback behaviour and
-  unapproved-account isolation;
+- bootstrap closure, password login, approved Google callback behaviour,
+  unapproved-account isolation, and administrator invitation;
+- server-side email confirmation, password setup, recovery, normal password
+  login and invalid confirmation handling;
 - TOTP enrolment/challenge and AAL2 workspace enforcement;
 - staff/administrator separation across every administration route;
 - private navigation, saved work views, notifications, theme and search;

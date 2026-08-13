@@ -10,6 +10,7 @@ for (const filename of [".env.e2e.local", ".env.local"]) {
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000"
 const authenticationState = resolve("playwright/.auth/administrator.json")
+const invitationAuthenticationState = resolve("playwright/.auth/invitation-administrator.json")
 const staffAuthenticationState = resolve("playwright/.auth/staff.json")
 
 export default defineConfig({
@@ -49,6 +50,11 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
     {
+      name: "authenticate-invitation",
+      testMatch: /invitation\.setup\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
       name: "authenticate-staff",
       testMatch: /staff\.setup\.ts/,
       use: { ...devices["Desktop Chrome"] },
@@ -64,6 +70,12 @@ export default defineConfig({
       name: "mfa-challenge",
       testMatch: /mfa-challenge\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      dependencies: ["authenticate-invitation"],
+      name: "invitation-chromium",
+      testMatch: /invitation\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"], storageState: invitationAuthenticationState },
     },
     {
       dependencies: ["authenticate"],
