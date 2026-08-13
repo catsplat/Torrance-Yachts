@@ -5,7 +5,11 @@ import { dirname, resolve } from "node:path"
 import { expect, test as setup } from "@playwright/test"
 
 const authenticationState = resolve("playwright/.auth/invitation-administrator.json")
-const mfaSecretPath = resolve("playwright/.auth/invitation-mfa-secret.txt")
+// Invitation acceptance authenticates the same synthetic administrator as the
+// primary setup project, so both projects must use the secret for that account's
+// current factor. Keeping a second file can replay a stale factor after a clean
+// database reset.
+const mfaSecretPath = resolve("playwright/.auth/mfa-secret.txt")
 
 function decodeBase32(value: string) {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
