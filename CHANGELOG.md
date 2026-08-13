@@ -41,6 +41,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
   before password setup, while preserving approval and MFA controls.
 - Added local Mailpit browser acceptance for invitation, recovery, ordinary
   password sign-in and invalid confirmation links.
+- Gave the isolated local Mailpit Auth stack bounded capacity for the complete
+  invitation/recovery acceptance path and its browser-test retry; hosted rate
+  limits remain a separate client-owned security setting.
 
 ## [0.19.1] - 2026-08-09
 
