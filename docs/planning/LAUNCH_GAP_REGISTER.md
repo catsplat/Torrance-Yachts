@@ -24,7 +24,7 @@
 | Documents | Private quarantine/release, ClamAV boundary, retry/reject/reconcile and blocked access | Retention policy and production scanner acceptance |
 | Alerts and mirrors | Fake-provider contracts, retry/back-off and reconciliation | Recipient and destination ownership acceptance |
 | Recovery | Disposable database restore drill and runbooks | Encrypted off-site schedule and production restore drill |
-| Deployment | Standalone image, hardened Compose, startup validation, GHCR publishing, protected deployment/rollback workflow and local container smoke proof | Provisioning, private ingress, managed-Supabase migration rehearsal, monitoring and provider acceptance |
+| Deployment | Standalone image, hardened Compose, startup validation, separately labelled staging/production GHCR images, protected deployment/rollback workflow and local container smoke proof | Provisioning, private ingress, managed-Supabase migration rehearsal, monitoring and provider acceptance |
 
 ## Deliberate pre-deployment exclusions
 

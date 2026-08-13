@@ -8,6 +8,7 @@ const valid = {
   APP_BASE_URL: "https://operations.example.test",
   APP_ENVIRONMENT: "production",
   AUTOMATION_SHARED_SECRET: "a".repeat(32),
+  DEPLOYMENT_IMAGE_ENVIRONMENT: "production",
   MFA_ENFORCEMENT_ENABLED: "true",
   MONITORING_SHARED_SECRET: "m".repeat(32),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "publishable-key-value",
@@ -39,5 +40,11 @@ describe("deployed server environment", () => {
       NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
     })).toThrow(/production cannot use local Supabase/)
   })
-})
 
+  it("rejects an image declared for a different deployment environment", () => {
+    expect(() => validateDeployedServerEnvironment({
+      ...valid,
+      APP_ENVIRONMENT: "staging",
+    })).toThrow(/image environment does not match APP_ENVIRONMENT/)
+  })
+})

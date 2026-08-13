@@ -39,9 +39,11 @@ jobs:
       - name: Validate approval inputs
         env:
           BACKUP_CONFIRMED: ${{ inputs.backup_confirmed }}
+          DEPLOYMENT_ENVIRONMENT: ${{ inputs.environment }}
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
           [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$DEPLOYMENT_ENVIRONMENT" = "staging" || "$DEPLOYMENT_ENVIRONMENT" = "production" ]]
           test "$BACKUP_CONFIRMED" = "true"
 
       - name: Verify the immutable image exists
@@ -53,11 +55,13 @@ jobs:
 
       - name: Inspect requested image before migrating
         env:
+          DEPLOYMENT_ENVIRONMENT: ${{ inputs.environment }}
           IMAGE: ghcr.io/${{ github.repository }}
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
           IMAGE=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
-          docker manifest inspect "$IMAGE:$RELEASE_TAG" > requested-image-manifest.json
+          IMAGE_TAG="$DEPLOYMENT_ENVIRONMENT-$RELEASE_TAG"
+          docker manifest inspect "$IMAGE:$IMAGE_TAG" > requested-image-manifest.json
 
       - name: Install pinned Supabase CLI
         uses: supabase/setup-cli@v3
@@ -104,6 +108,7 @@ jobs:
       - name: Deploy and verify container health
         env:
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOYMENT_ENVIRONMENT: ${{ inputs.environment }}
           IMAGE: ghcr.io/${{ github.repository }}
           RELEASE_TAG: ${{ inputs.release_tag }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
@@ -111,7 +116,7 @@ jobs:
         run: |
           IMAGE=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
           ssh "$VPS_USER@$VPS_HOST" \
-            "cd '$DEPLOY_PATH' && chmod 700 deploy-release.sh && ./deploy-release.sh '$IMAGE:$RELEASE_TAG'"
+            "cd '$DEPLOY_PATH' && chmod 700 deploy-release.sh && ./deploy-release.sh '$IMAGE:$DEPLOYMENT_ENVIRONMENT-$RELEASE_TAG' '$DEPLOYMENT_ENVIRONMENT'"
 
       - name: Record deployment evidence
         uses: actions/upload-artifact@v6

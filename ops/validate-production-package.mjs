@@ -1,10 +1,12 @@
 import { spawnSync } from "node:child_process"
 
-const syntheticEnvironment = {
+function syntheticEnvironmentFor(environment) {
+  return {
   ...process.env,
-  APP_DOMAIN: "operations.example.test",
-  APP_ENVIRONMENT: "production",
-  APP_IMAGE: "ghcr.io/catsplat/torrance-yachts:v0.19.1",
+  APP_DOMAIN: `${environment}.operations.example.test`,
+  APP_ENVIRONMENT: environment,
+  APP_IMAGE: `ghcr.io/catsplat/torrance-yachts:${environment}-v0.19.1`,
+  DEPLOYMENT_IMAGE_ENVIRONMENT: environment,
   AUTH_SMTP_CONFIGURED: "true",
   AUTOMATION_SHARED_SECRET: "a".repeat(32),
   AI_PROVIDER: "local",
@@ -20,17 +22,32 @@ const syntheticEnvironment = {
   TELEGRAM_BOT_TOKEN: "synthetic-telegram-token",
   TELEGRAM_BOT_USERNAME: "synthetic_bot",
   TELEGRAM_WEBHOOK_SECRET: "t".repeat(32),
+  }
 }
 
-function run(command, args) {
+function run(command, args, environment) {
   const result = spawnSync(command, args, {
-    env: syntheticEnvironment,
+    env: environment,
     shell: false,
     stdio: "inherit",
   })
   if (result.status !== 0) process.exit(result.status ?? 1)
 }
 
-run(process.execPath, ["ops/production-preflight.mjs"])
-run("docker", ["compose", "-f", "deploy/production/docker-compose.yml", "config", "--quiet"])
+for (const environment of ["staging", "production"]) {
+  const syntheticEnvironment = syntheticEnvironmentFor(environment)
+  run(process.execPath, ["ops/production-preflight.mjs"], syntheticEnvironment)
+  run("docker", ["compose", "-f", "deploy/production/docker-compose.yml", "config", "--quiet"], syntheticEnvironment)
+}
+
+const mismatchedEnvironment = syntheticEnvironmentFor("production")
+mismatchedEnvironment.APP_IMAGE = "ghcr.io/catsplat/torrance-yachts:staging-v0.19.1"
+const mismatch = spawnSync(process.execPath, ["ops/production-preflight.mjs"], {
+  env: mismatchedEnvironment,
+  encoding: "utf8",
+  stdio: "pipe",
+})
+if (mismatch.status === 0) {
+  throw new Error("Production preflight accepted an image built for staging.")
+}
 console.log("Production package contract is internally consistent.")

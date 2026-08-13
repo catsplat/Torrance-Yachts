@@ -25,18 +25,25 @@ Storage and Vault.
 
 Copy `.env.example` to the approved secret manager or directly to the protected
 VPS as a starting contract. Populate it there; never commit or upload the filled
-file. `APP_IMAGE` must be an immutable `vX.Y.Z` GHCR tag or digest.
+file. Before first deploy, the workflow will replace `APP_IMAGE` with a verified
+immutable digest. Its requested image must be an environment-prefixed semantic
+GHCR tag, for example `staging-v0.19.1`; `DEPLOYMENT_IMAGE_ENVIRONMENT` must
+match `APP_ENVIRONMENT`.
 
 ## Release flow
 
-1. A GitHub Release builds and publishes the immutable image.
-2. An administrator starts **Deploy approved release**, selects staging or
-   production, enters the release tag, and confirms a current restorable backup.
-3. GitHub Actions dry-runs and applies pending Supabase migrations.
+1. A reviewed semantic source tag is built separately by **Build approved
+   environment image** for `staging` or `production`. Browser-safe Supabase
+   configuration is compiled for that environment only.
+2. An administrator starts **Deploy approved release**, selects the matching
+   environment, enters the source tag, and confirms a current restorable backup.
+3. GitHub Actions rejects an image that is unversioned or intended for the other
+   environment, then dry-runs and applies pending Supabase migrations.
 4. Only the Compose file, deployment script, and two production n8n workflows are
-   copied to the VPS.
+   copied to the VPS. The script verifies image labels and replaces the requested
+   tag with its immutable digest in the protected `.env` file.
 5. The VPS pulls images and waits for health checks. Failure restores the prior
-   `APP_IMAGE` and restarts it.
+   `.env`, digest and stack.
 
 The development simulator workflow is deliberately excluded from this package.
 Import and activate production n8n workflows only after review; workflow

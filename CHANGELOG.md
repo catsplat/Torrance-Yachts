@@ -17,12 +17,17 @@ All notable project changes are recorded here. The format follows Keep a Changel
 - Added immutable GHCR release publishing, protected staging/production deployment,
   migration dry-runs, backup confirmation, health-based VPS rollback, and a real
   production-container smoke test.
+- Added separately built and labelled staging/production release images from the
+  same reviewed source tag. Deployment now rejects mutable or cross-environment
+  images and records the verified content digest on the VPS.
 
 ### Changed
 
 - Production Compose now pulls immutable application images and receives only the
   deployment package and production n8n workflows; the VPS no longer builds from
   or requires a source checkout.
+- A source tag is now staging-first evidence rather than an automatic promotion:
+  production builds only after the equivalent staging image has been accepted.
 - Personal summary style now affects provider output. Hosted production disables
   local Ollama until the approved desktop/local bridge exists, preventing the VPS
   from attempting to reach an employee's localhost.

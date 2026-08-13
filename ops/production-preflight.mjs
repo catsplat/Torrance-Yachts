@@ -35,9 +35,17 @@ if (!new Set(["staging", "production"]).has(environment)) {
 }
 
 const image = value("APP_IMAGE")
-if (!/^ghcr\.io\/[a-z0-9_.-]+\/[a-z0-9_.-]+:(?:v)?\d+\.\d+\.\d+$/.test(image) &&
-    !/^ghcr\.io\/[a-z0-9_.-]+\/[a-z0-9_.-]+@sha256:[a-f0-9]{64}$/.test(image)) {
-  failures.push("APP_IMAGE - use an immutable lowercase GHCR semantic-version tag or sha256 digest")
+const imageTag = image.match(/^ghcr\.io\/[a-z0-9_.-]+\/[a-z0-9_.-]+:(staging|production)-(v\d+\.\d+\.\d+)$/)
+const imageDigest = /^ghcr\.io\/[a-z0-9_.-]+\/[a-z0-9_.-]+@sha256:[a-f0-9]{64}$/.test(image)
+const declaredImageEnvironment = value("DEPLOYMENT_IMAGE_ENVIRONMENT")
+if (!imageTag && !imageDigest) {
+  failures.push("APP_IMAGE - use a lowercase GHCR staging-vX.Y.Z/production-vX.Y.Z tag or a verified sha256 digest")
+} else if (imageTag && imageTag[1] !== environment) {
+  failures.push("APP_IMAGE - image environment must match APP_ENVIRONMENT")
+} else if (imageDigest && declaredImageEnvironment !== environment) {
+  failures.push("DEPLOYMENT_IMAGE_ENVIRONMENT - a digest deployment must declare the environment verified by deploy-release.sh")
+} else if (declaredImageEnvironment && declaredImageEnvironment !== environment) {
+  failures.push("DEPLOYMENT_IMAGE_ENVIRONMENT - must match APP_ENVIRONMENT when present")
 }
 
 if (!/^(?:v)?\d+\.\d+\.\d+$/.test(value("DEPLOYMENT_VERSION"))) {

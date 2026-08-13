@@ -7,7 +7,8 @@
 - Cloudflare Access identities and the outbound-only Tunnel are approved;
 - production SMTP, MFA and disabled public registration are verified;
 - a current database and private-Storage backup has passed restore rehearsal;
-- the release tag passed CI and has a published GHCR image;
+- the source tag passed CI; the target environment image will be built from that
+  exact tag;
 - no live data, credentials or private business values are present in Git.
 
 ## GitHub environments
@@ -18,11 +19,11 @@ production. Configure these secrets independently in each environment:
 - `SUPABASE_DB_URL`
 - `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_HOST_KEY`
 
-Configure `DEPLOY_PATH` as an environment variable. The separate `production`
-environment used by the image-publishing workflow also needs browser-safe
-`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` variables.
-They are compiled into the client bundle by Next.js; no privileged key is used
-while building.
+Configure `DEPLOY_PATH` as an environment variable. Both environments also
+need their own browser-safe `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` variables for the image-publishing
+workflow. They are compiled into the client bundle by Next.js; no privileged
+key is used while building. Never reuse the production values in `staging`.
 
 ## First server provisioning
 
@@ -56,25 +57,36 @@ while building.
 
 ## Deploy
 
-1. Publish a semantic GitHub Release such as `v0.20.0`. The release workflow builds
-   and publishes `ghcr.io/catsplat/torrance-yachts:v0.20.0` plus a source-SHA tag.
-2. Start **Deploy approved release** manually, choose the target environment,
-   enter the exact version, and confirm the backup.
-3. Review the migration dry-run in Actions. Environment approval gates production.
-4. The workflow applies migrations, copies the small runtime package, pulls the
-   immutable image and waits for container health.
-5. Verify Cloudflare Access, login/MFA, `/api/health/live`, authenticated readiness,
-   scanner, scheduler, a synthetic notification, and a synthetic workflow.
-6. Record the release, image digest, migration list, operator, checks and result.
+1. Create a semantic source tag and GitHub Release such as `v0.19.1` only after
+   its pull request CI is green. This identifies reviewed source; it does not
+   automatically make a deployable image.
+2. Run **Build approved environment image**, select `staging`, and enter the
+   source tag. It must publish
+   `ghcr.io/catsplat/torrance-yachts:staging-v0.19.1` and its recorded digest.
+3. Start **Deploy approved release** for `staging`, enter the same source tag,
+   and confirm the backup. The workflow rejects an unversioned, mutable, or
+   cross-environment image before copying any runtime package.
+4. Review the migration dry-run in Actions. The workflow applies migrations,
+   copies the small runtime package, resolves the verified image to a digest and
+   waits for container health.
+5. Verify Cloudflare Access, login/MFA, `/api/health/live`, authenticated
+   readiness, scanner, scheduler, a synthetic notification, and a synthetic
+   workflow. Record the image digest, migration list, operator, checks and
+   result as staging evidence.
+6. Only after staged provider checks and staff acceptance, repeat the image
+   build for `production` from the *same* source tag. Deploy
+   `production-v0.19.1` with the production approval gate and repeat the
+   documented checks.
 
 The VPS never runs `git pull`, `npm install`, `npm run build`, or a development
 server.
 
 ## Rollback
 
-`deploy-release.sh` automatically restores the previous image when the new stack
-fails container health checks. For a later operational rollback, rerun the
-deployment workflow with the previously accepted tag after reviewing schema
-compatibility. Database migrations use expand/migrate/contract sequencing; never
-assume a destructive reverse migration is safe. Restore a database only under the
-backup/incident runbook with explicit evidence and authorisation.
+`deploy-release.sh` automatically restores the previous immutable digest when
+the new stack fails container health checks. For a later operational rollback,
+rerun the deployment workflow with a previously accepted tag for the *same*
+environment after reviewing schema compatibility. Database migrations use
+expand/migrate/contract sequencing; never assume a destructive reverse migration
+is safe. Restore a database only under the backup/incident runbook with explicit
+evidence and authorisation.
