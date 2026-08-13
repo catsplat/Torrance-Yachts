@@ -31,7 +31,12 @@ function defaultModel(provider: AiProviderName) {
 export function getAiProvider(): AiProvider {
   const provider = organisationProvider()
   if (provider === "local") return new LocalAiProvider()
-  if (provider === "ollama") return new OllamaProvider()
+  if (provider === "ollama") {
+    if (process.env.APP_ENVIRONMENT === "production") {
+      throw new Error("Local Ollama requires the approved desktop companion in production.")
+    }
+    return new OllamaProvider()
+  }
   if (provider === "openai") return new OpenAiProvider()
   throw new Error(`Unsupported AI provider: ${provider}`)
 }
@@ -50,13 +55,18 @@ export async function getUserAiProvider(userId: string): Promise<AiProvider> {
   }
   const provider = (preference?.provider || organisationProvider()) as AiProviderName
   const model = preference?.model || defaultModel(provider)
-  if (provider === "local") return new LocalAiProvider()
+  const summaryStyle = preference?.summary_style === "detailed" ? "detailed" : "concise"
+  if (provider === "local") return new LocalAiProvider({ summaryStyle })
   if (provider === "ollama") {
-    return new OllamaProvider({ model })
+    if (process.env.APP_ENVIRONMENT === "production") {
+      throw new Error("Local Ollama requires the approved desktop companion in production.")
+    }
+    return new OllamaProvider({ model, summaryStyle })
   }
   return new OpenAiProvider({
     apiKey: preference?.openai_api_key || process.env.OPENAI_API_KEY,
     model,
+    summaryStyle,
   })
 }
 

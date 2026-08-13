@@ -1,0 +1,71 @@
+name: Publish release image
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: release-image-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Build and publish immutable application image
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check out the release tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Validate release configuration
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          SUPABASE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_KEY"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build immutable production image
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          SUPABASE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+        run: |
+          IMAGE=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
+          docker build \
+            --build-arg "DEPLOYMENT_VERSION=$RELEASE_TAG" \
+            --build-arg "NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL" \
+            --build-arg "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$SUPABASE_KEY" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --label "org.opencontainers.image.version=$RELEASE_TAG" \
+            --tag "$IMAGE:$RELEASE_TAG" \
+            --tag "$IMAGE:sha-$GITHUB_SHA" \
+            --file deploy/production/Dockerfile .
+          docker push "$IMAGE:$RELEASE_TAG"
+          docker push "$IMAGE:sha-$GITHUB_SHA"
+          docker image inspect "$IMAGE:$RELEASE_TAG" \
+            --format '{{json .RepoDigests}}' > release-image-digests.json
+
+      - name: Publish image evidence
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-image-${{ github.event.release.tag_name }}
+          path: release-image-digests.json
+          retention-days: 90
+

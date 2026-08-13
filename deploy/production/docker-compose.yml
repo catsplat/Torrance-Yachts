@@ -1,12 +1,6 @@
 services:
   app:
-    build:
-      context: ../..
-      dockerfile: deploy/production/Dockerfile
-      args:
-        DEPLOYMENT_VERSION: ${DEPLOYMENT_VERSION:?Set DEPLOYMENT_VERSION}
-        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:?Set NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
-        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?Set NEXT_PUBLIC_SUPABASE_URL}
+    image: ${APP_IMAGE:?Set APP_IMAGE to an immutable GHCR version tag or digest}
     restart: unless-stopped
     read_only: true
     cap_drop: ["ALL"]
@@ -16,11 +10,12 @@ services:
     cpus: 1.5
     environment:
       APP_BASE_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
-      APP_ENVIRONMENT: production
+      APP_ENVIRONMENT: ${APP_ENVIRONMENT:-production}
       AUTH_SMTP_CONFIGURED: ${AUTH_SMTP_CONFIGURED:-false}
       AUTOMATION_SHARED_SECRET: ${AUTOMATION_SHARED_SECRET:?Set AUTOMATION_SHARED_SECRET}
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
       GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
+      GOOGLE_SIGN_IN_ENABLED: ${GOOGLE_SIGN_IN_ENABLED:-false}
       INITIAL_ADMIN_SETUP_TOKEN: ${INITIAL_ADMIN_SETUP_TOKEN:-}
       MONITORING_SHARED_SECRET: ${MONITORING_SHARED_SECRET:?Set MONITORING_SHARED_SECRET}
       N8N_HEALTH_URL: ${N8N_HEALTH_URL:-http://n8n:5678/healthz}
@@ -30,11 +25,17 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:?Set NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?Set NEXT_PUBLIC_SUPABASE_URL}
+      DEPLOYMENT_VERSION: ${DEPLOYMENT_VERSION:?Set DEPLOYMENT_VERSION}
       SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY:?Set SUPABASE_SECRET_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
       TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
+      TRUST_PROXY_HEADERS: "true"
+      MFA_ENFORCEMENT_ENABLED: "true"
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:3000/api/health/live"]
       interval: 30s
@@ -105,9 +106,15 @@ services:
       TORRANCE_APP_URL: http://app:3000
       TZ: Europe/London
       WEBHOOK_URL: http://n8n:5678
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --spider http://127.0.0.1:5678/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
     volumes:
       - n8n_data:/home/node/.n8n
-      - ../../automation/workflows:/workflows:ro
+      - ./workflows:/workflows:ro
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m
     logging:

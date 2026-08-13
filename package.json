@@ -31,7 +31,9 @@
     "automation:import": "docker compose --env-file automation/.env -f automation/docker-compose.yml exec n8n n8n import:workflow --separate --input=/workflows",
     "automation:validate": "node ops/validate-automation-workflows.mjs",
     "production:preflight": "node --env-file=deploy/production/.env ops/production-preflight.mjs",
+    "production:smoke": "node ops/smoke-production-image.mjs",
     "production:validate": "node ops/validate-production-package.mjs",
+    "security:boundaries": "node ops/validate-secret-boundaries.mjs",
     "release:verify": "node ops/release-verify.mjs"
   },
   "dependencies": {

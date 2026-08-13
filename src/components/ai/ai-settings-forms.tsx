@@ -5,6 +5,7 @@ import { useActionState } from "react"
 import {
   clearMyOpenAiKeyAction,
   saveMyOpenAiKeyAction,
+  testMyAiConnectionAction,
   updateMyAiPreferencesAction,
   type AiSettingsActionState,
 } from "@/app/(workspace)/settings/ai/actions"
@@ -23,11 +24,13 @@ export function AiPreferencesForm({
   model,
   provider,
   summaryStyle,
+  ollamaAvailable,
 }: {
   enabled: boolean
   model: string | null
   provider: string | null
   summaryStyle: string
+  ollamaAvailable: boolean
 }) {
   const [state, action, pending] = useActionState(updateMyAiPreferencesAction, initialState)
   return <form action={action} className="space-y-5">
@@ -36,7 +39,7 @@ export function AiPreferencesForm({
         <select className="h-9 rounded-lg border bg-background px-3 text-sm" defaultValue={provider ?? "default"} name="provider">
           <option value="default">Workspace default</option>
           <option value="local">Deterministic test provider</option>
-          <option value="ollama">Local Ollama</option>
+          <option disabled={!ollamaAvailable} value="ollama">Local Ollama{ollamaAvailable ? "" : " (desktop companion required)"}</option>
           <option value="openai">OpenAI</option>
         </select>
       </label>
@@ -71,4 +74,22 @@ export function OpenAiCredentialForm({ configured }: { configured: boolean }) {
     </form>
     {configured ? <form action={clearAction} className="flex flex-wrap items-center gap-3"><Button disabled={clearing} type="submit" variant="outline">Remove key</Button><Feedback state={clearState} /></form> : null}
   </div>
+}
+
+export function AiConnectionTestForm() {
+  const [state, action, pending] = useActionState(testMyAiConnectionAction, initialState)
+  return <form action={action} className="space-y-3">
+    <Button disabled={pending} type="submit" variant="outline">
+      {pending ? "Testing connection..." : "Test connection"}
+    </Button>
+    <Feedback state={state} />
+    {state.models?.length ? (
+      <div className="space-y-1">
+        <p className="text-xs font-medium text-muted-foreground">Available models</p>
+        <p className="max-h-24 overflow-auto text-xs text-muted-foreground">
+          {state.models.join(", ")}
+        </p>
+      </div>
+    ) : null}
+  </form>
 }

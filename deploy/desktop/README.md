@@ -1,28 +1,27 @@
-# Secondary local desktop distribution
+# Optional thin desktop companion
 
 Phase 12 validates the direction but does not place desktop packaging on the
 hosted product's launch critical path.
 
-## Feasible architecture
+## Approved architecture boundary
 
-- signed Tauri or Electron shell displaying the existing local web UI;
-- managed local PostgreSQL/Supabase-compatible services;
-- managed local n8n worker;
-- application-owned data and document directory;
+- signed Tauri shell displaying the centrally hosted application;
+- narrowly scoped, loopback-only bridge for an optional installed Ollama model;
+- authenticated pairing and strict origin/request validation;
 - encrypted operating-system credential storage;
-- optional Ollama provider;
-- encrypted export and restore;
-- Windows installer and signed/notarised macOS application package.
+- no PostgreSQL, Supabase, n8n, ClamAV, operational documents, or server
+  credentials on the employee computer;
+- Windows installer and signed/notarised macOS package only after hosted
+  production is stable.
 
 ## Why it is deferred
 
 - the principal employee uses macOS, so a Windows-only executable is insufficient;
-- bundled mutable business data cannot safely live inside one portable executable;
-- Gmail, Telegram, Google Calendar, Drive, and Sheets still need internet and
-  OAuth even when the core application is local;
-- scheduled work stops when the computer is off;
-- signing, notarisation, auto-update, database upgrades, and backup recovery need
-  separate acceptance work.
+- the hosted application and managed database must be accepted first;
+- the local bridge needs explicit pairing, origin, request-size, and model
+  allow-list controls before it may process operational content;
+- Apple notarisation, Windows signing, updates, rollback, and clean-machine
+  installation require separate native acceptance.
 
 The hosted release remains the supported first production version. This document
 prevents the desktop option from being forgotten or misrepresented as a trivial

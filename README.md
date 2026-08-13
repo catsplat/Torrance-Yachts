@@ -37,6 +37,8 @@ The current candidate provides the secured operational master-data, enquiry, off
 - functional authorised cross-module search, personal notification centre, unread
   badge, and per-user persistent dark mode;
 - local deterministic and optional OpenAI-assisted email triage, structured enquiry extraction, summaries, and draft replies;
+- per-user AI provider, model and summary settings with Vault-backed optional
+  personal OpenAI credentials and an authenticated connection test;
 - selected contract-clause extraction with exact evidence, corrections, and a separate human application step;
 - a central AI review queue plus versioned KYC, captain-contact, and broker-follow-up templates;
 - per-user in-app, Telegram, and email alert routes, topic preferences, phone/chat
@@ -164,6 +166,8 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Production hosting topology decision](docs/decisions/0013-production-hosting-topology.md)
 - [Personal alerts and encrypted OAuth decision](docs/decisions/0014-personal-alerts-encrypted-oauth.md)
 - [User state isolation](docs/security/USER_STATE_ISOLATION.md)
+- [Deployment architecture](docs/deployment.md)
+- [Productionisation implementation register](docs/planning/PRODUCTIONISATION_IMPLEMENTATION.md)
 - [One-time administrator bootstrap decision](docs/decisions/0015-one-time-administrator-bootstrap.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
 - [Development diary](docs/development/2026-07-15-foundation-slice.md)

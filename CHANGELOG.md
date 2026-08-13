@@ -4,6 +4,31 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Added
+
+- Added database-backed per-user theme and AI provider/model/summary preferences,
+  Vault-backed personal OpenAI credentials, stricter profile/notification privacy,
+  and two-user RLS isolation proofs.
+- Added AI provider connection/model discovery contracts and an authenticated
+  settings test for deterministic, Ollama, and OpenAI providers.
+- Added startup environment validation, privacy-safe request correlation/error
+  records, authenticated deep readiness checks, an installable web manifest, and
+  client/server secret-boundary validation.
+- Added immutable GHCR release publishing, protected staging/production deployment,
+  migration dry-runs, backup confirmation, health-based VPS rollback, and a real
+  production-container smoke test.
+
+### Changed
+
+- Production Compose now pulls immutable application images and receives only the
+  deployment package and production n8n workflows; the VPS no longer builds from
+  or requires a source checkout.
+- Personal summary style now affects provider output. Hosted production disables
+  local Ollama until the approved desktop/local bridge exists, preventing the VPS
+  from attempting to reach an employee's localhost.
+- Reconciled deployment, operations, user and desktop documentation with the
+  central hosted architecture and explicit external acceptance boundaries.
+
 ### Fixed
 
 - Replaced the incompatible implicit Supabase invitation/recovery callback with

@@ -136,12 +136,8 @@ jobs:
       - name: Validate production Compose package
         run: npm run production:validate
 
-      - name: Build production application image
-        run: |
-          docker build \
-            --build-arg DEPLOYMENT_VERSION=ci \
-            --build-arg NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
-            --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=synthetic-publishable-key \
-            --tag torrance-yachts-platform:ci \
-            --file deploy/production/Dockerfile \
-            .
+      - name: Verify browser/server secret boundaries
+        run: npm run security:boundaries
+
+      - name: Build and smoke-test production application image
+        run: npm run production:smoke

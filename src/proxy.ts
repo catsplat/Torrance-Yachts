@@ -31,9 +31,14 @@ function buildContentSecurityPolicy(nonce: string) {
 
 export async function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64")
+  const suppliedRequestId = request.headers.get("x-request-id")
+  const requestId = suppliedRequestId && /^[a-f0-9-]{36}$/i.test(suppliedRequestId)
+    ? suppliedRequestId
+    : crypto.randomUUID()
   const contentSecurityPolicy = buildContentSecurityPolicy(nonce)
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set("x-nonce", nonce)
+  requestHeaders.set("x-request-id", requestId)
   requestHeaders.set("Content-Security-Policy", contentSecurityPolicy)
 
   const trustedApi =
@@ -45,6 +50,7 @@ export async function proxy(request: NextRequest) {
     ? NextResponse.next({ request: { headers: requestHeaders } })
     : await updateSession(request, requestHeaders)
   response.headers.set("Content-Security-Policy", contentSecurityPolicy)
+  response.headers.set("x-request-id", requestId)
   // Do not let a shared browser restore a prior user's workspace through its
   // back/forward cache after logout.
   response.headers.set("Cache-Control", "private, no-store, max-age=0")

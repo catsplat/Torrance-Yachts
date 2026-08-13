@@ -94,9 +94,13 @@ select results_eq(
   'user A cannot discover user B phone details'
 );
 select results_eq(
-  $$ select count(*) from public.list_active_staff_directory() $$,
+  $$ select count(*) from public.list_active_staff_directory()
+     where id in (
+       '39000000-0000-4000-8000-000000000001'::uuid,
+       '39000000-0000-4000-8000-000000000002'::uuid
+     ) $$,
   array[2::bigint],
-  'user A can still use the safe shared staff directory'
+  'user A can use the safe directory to find both active synthetic colleagues'
 );
 select lives_ok(
   $$ select public.update_my_alert_preferences(

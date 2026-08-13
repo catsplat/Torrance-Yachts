@@ -1,11 +1,41 @@
 import { describe, expect, it } from "vitest"
 
+import { vi } from "vitest"
+
+vi.mock("server-only", () => ({}))
+
 import {
   createLocalContractSuggestion,
   createLocalEmailSuggestion,
 } from "./local-analysis"
+import { LocalAiProvider } from "./local-provider"
 
 describe("local AI development provider", () => {
+  it("implements the shared connection and model discovery contract", async () => {
+    const provider = new LocalAiProvider()
+    await expect(provider.listModels()).resolves.toEqual([
+      { id: "deterministic-v1", label: "Deterministic charter rules" },
+    ])
+    await expect(provider.testConnection()).resolves.toMatchObject({
+      model: "deterministic-v1",
+      ok: true,
+      provider: "local",
+    })
+  })
+
+  it("applies the saved detailed summary preference", async () => {
+    const provider = new LocalAiProvider({ summaryStyle: "detailed" })
+    const result = await provider.analyzeEmail({
+      body: "Please advise M/Y Asteria for 10 guests from 14 August 2026 to 21 August 2026.",
+      receivedAt: "2026-07-16T08:30:00Z",
+      senderEmail: "alex@example.test",
+      senderName: "Alex",
+      subject: "Charter availability",
+      yachts: [],
+    }, "synthetic-user")
+    expect(result.output.summary).toContain(result.output.confidence_reason)
+  })
+
   it("extracts representative yacht enquiry facts without a paid service", async () => {
     const result = createLocalEmailSuggestion({
       body: "Please advise M/Y Asteria for 10 guests from 14 August 2026 to 21 August 2026, Athens to Athens, budget EUR 180,000.",

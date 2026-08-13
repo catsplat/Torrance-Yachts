@@ -3,9 +3,14 @@
 import { revalidatePath } from "next/cache"
 
 import { aiPreferencesSchema, openAiCredentialSchema } from "@/lib/ai/preferences-validation"
+import { getUserAiProvider } from "@/lib/ai/config"
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 
-export type AiSettingsActionState = { message?: string; success?: boolean }
+export type AiSettingsActionState = {
+  message?: string
+  models?: string[]
+  success?: boolean
+}
 
 const expired = { message: "Your session has expired. Sign in again." }
 
@@ -21,6 +26,9 @@ export async function updateMyAiPreferencesAction(
   })
   if (!parsed.success) {
     return { message: parsed.error.issues[0]?.message ?? "Review your AI settings." }
+  }
+  if (parsed.data.provider === "ollama" && process.env.APP_ENVIRONMENT === "production") {
+    return { message: "Local Ollama requires the desktop companion and is not available in the hosted application." }
   }
   const context = await getAuthenticatedRequestContext()
   if (!context) return expired
@@ -66,4 +74,26 @@ export async function clearMyOpenAiKeyAction(
   if (error) return { message: "The stored API key could not be removed." }
   revalidatePath("/settings/ai")
   return { message: "Stored API key removed.", success: true }
+}
+
+export async function testMyAiConnectionAction(
+  _state: AiSettingsActionState,
+  _formData: FormData,
+): Promise<AiSettingsActionState> {
+  void _state
+  void _formData
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return expired
+  try {
+    const provider = await getUserAiProvider(context.userId)
+    const result = await provider.testConnection()
+    const models = result.ok ? await provider.listModels() : []
+    return {
+      message: `${result.detail} (${result.latencyMs} ms)`,
+      models: models.slice(0, 50).map(({ id }) => id),
+      success: result.ok,
+    }
+  } catch {
+    return { message: "The selected provider could not be tested.", success: false }
+  }
 }

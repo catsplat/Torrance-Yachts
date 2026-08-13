@@ -13,6 +13,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
+  applicationName: "Torrance Yachts Operations",
   title: {
     default: "Operations | Torrance Yachts",
     template: "%s | Torrance Yachts",
