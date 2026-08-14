@@ -28,6 +28,18 @@ private age identity nor rclone credentials belong in Git or chat.
 Hetzner Backups protect the VPS disk as one layer; they do not replace the
 encrypted logical and Storage export in a different failure domain.
 
+## Hosted restore rehearsal
+
+`restore-to-temporal-staging.sh` accepts an encrypted artifact and its matching
+`age` private identity, but refuses any environment except a `staging.*`
+hostname with `APP_ENVIRONMENT=staging`. It verifies the external and internal
+checksums, stops the staging application, restores database schemas and the
+private Storage volume, then starts the services again. It requires the literal
+confirmation `RESTORE_SYNTHETIC_STAGING`.
+
+It is for the disposable staging acceptance host only. Production restoration
+remains an incident operation with explicit client authorisation.
+
 ## Local restore drill
 
 `local-restore-drill.ps1`:

@@ -20,6 +20,9 @@ All notable project changes are recorded here. The format follows Keep a Changel
   a production backup can succeed.
 - Reduced the CX23 container memory envelope to leave meaningful host headroom
   and documented its 1 GB low-swappiness emergency swap buffer.
+- Added an explicitly staging-only encrypted backup restore rehearsal, including
+  archive verification and private database/Storage recovery; it refuses a
+  production target.
 
 ### Documentation
 

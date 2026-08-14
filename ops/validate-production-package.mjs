@@ -104,6 +104,7 @@ for (const requiredWorkflowStep of [
   "Record reviewed source revision",
   "apply-selfhosted-migrations.sh",
   "backup-production.sh",
+  "restore-to-temporal-staging.sh",
   "deploy/self-hosted-cx23/docker-compose.yml",
   "verify-hosted-runtime.sh",
   "Verify protected host runtime",

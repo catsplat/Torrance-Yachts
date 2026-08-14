@@ -89,6 +89,7 @@ jobs:
           scp deploy/self-hosted-cx23/docker-compose.yml \
             deploy/self-hosted-cx23/supabase-core.compose.yml \
             ops/backup/backup-production.sh \
+            ops/backup/restore-to-temporal-staging.sh \
             ops/deploy-release.sh \
             ops/verify-hosted-runtime.sh \
             ops/apply-selfhosted-migrations.sh \
@@ -96,7 +97,7 @@ jobs:
           ssh "$VPS_USER@$VPS_HOST" "rm -rf '$DEPLOY_PATH/migrations.next' && mkdir -p '$DEPLOY_PATH/migrations.next'"
           scp supabase/migrations/*.sql "$VPS_USER@$VPS_HOST:$DEPLOY_PATH/migrations.next/"
           ssh "$VPS_USER@$VPS_HOST" \
-            "rm -rf '$DEPLOY_PATH/migrations.previous' && if test -d '$DEPLOY_PATH/migrations'; then mv '$DEPLOY_PATH/migrations' '$DEPLOY_PATH/migrations.previous'; fi && mv '$DEPLOY_PATH/migrations.next' '$DEPLOY_PATH/migrations' && chmod 700 '$DEPLOY_PATH/apply-selfhosted-migrations.sh' '$DEPLOY_PATH/backup-production.sh' '$DEPLOY_PATH/deploy-release.sh' '$DEPLOY_PATH/verify-hosted-runtime.sh'"
+            "rm -rf '$DEPLOY_PATH/migrations.previous' && if test -d '$DEPLOY_PATH/migrations'; then mv '$DEPLOY_PATH/migrations' '$DEPLOY_PATH/migrations.previous'; fi && mv '$DEPLOY_PATH/migrations.next' '$DEPLOY_PATH/migrations' && chmod 700 '$DEPLOY_PATH/apply-selfhosted-migrations.sh' '$DEPLOY_PATH/backup-production.sh' '$DEPLOY_PATH/restore-to-temporal-staging.sh' '$DEPLOY_PATH/deploy-release.sh' '$DEPLOY_PATH/verify-hosted-runtime.sh'"
 
       - name: Deploy and verify container health
         env:

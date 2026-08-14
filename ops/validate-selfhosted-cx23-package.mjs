@@ -47,6 +47,7 @@ const worker = readFileSync("ops/automation-worker.mjs", "utf8")
 const bootstrap = readFileSync("ops/bootstrap-selfhosted-supabase.sh", "utf8")
 const migrationRunner = readFileSync("ops/apply-selfhosted-migrations.sh", "utf8")
 const stagingReset = readFileSync("ops/reset-temporal-staging.sh", "utf8")
+const stagingRestore = readFileSync("ops/backup/restore-to-temporal-staging.sh", "utf8")
 for (const required of ["app:", "worker:", "clamav:", "cloudflared:", "SUPABASE_INTERNAL_URL: http://kong:8000", "external: true", "torrance-internal"]) {
   if (!compose.includes(required)) throw new Error(`CX23 Compose package is missing: ${required}`)
 }
@@ -81,5 +82,8 @@ for (const required of [
 }
 for (const required of ["DESTROY_SYNTHETIC_STAGING", "APP_ENVIRONMENT is not staging", "staging.*", "core_compose down --volumes"]) {
   if (!stagingReset.includes(required)) throw new Error(`Temporal staging reset is missing: ${required}`)
+}
+for (const required of ["RESTORE_SYNTHETIC_STAGING", "APP_ENVIRONMENT is not staging", "drop schema if exists public cascade", "Synthetic staging restore completed"]) {
+  if (!stagingRestore.includes(required)) throw new Error(`Temporal staging restore is missing: ${required}`)
 }
 console.log("Self-hosted CX23 package contract is internally consistent.")
