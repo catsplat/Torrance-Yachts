@@ -3,6 +3,7 @@
 **Repository:** `catsplat/Torrance-Yachts`
 
 **Recorded:** 15 July 2026
+**Last reconciled:** 14 August 2026
 **Intended visibility:** Private
 
 This record describes the repository controls required for the project. It contains no credentials or private operational data.
@@ -19,7 +20,7 @@ This record describes the repository controls required for the project. It conta
 
 ## Change controls
 
-- `.github/workflows/ci.yml` runs locked dependency installation, linting, type checking, a production build, and a production-dependency audit on pull requests and pushes to `main`.
+- `.github/workflows/ci.yml` always validates documentation links and repository JSON. Any non-documentation change then runs the full five-gate quality suite: application quality, database/RLS, browser acceptance, deployment/recovery, and Windows desktop validation.
 - `.github/CODEOWNERS` assigns repository-wide ownership to `@catsplat`.
 - Pull-request and structured issue templates include validation and privacy checks.
 - Dependabot checks npm packages weekly and GitHub Actions monthly.
@@ -28,12 +29,13 @@ This record describes the repository controls required for the project. It conta
 
 ### Current plan limitations
 
-An attempt to protect `main` through GitHub's branch-protection API returned `403`: private-repository branch protection requires GitHub Pro for this personal account. The repository was not made public and no paid upgrade was initiated.
+Attempts to protect `main` through both GitHub's branch-protection and repository-rulesets APIs returned `403`: private-repository enforcement requires GitHub Pro for this personal account. The repository was not made public and no paid upgrade was initiated.
 
 Until the plan supports enforcement:
 
 - all product work still uses short-lived branches and pull requests by project policy;
-- the quality workflow runs on pull requests and also on any push to `main`;
+- documentation-only pull requests receive a fast documentation gate; source, database, deployment, workflow and desktop changes receive all five release gates;
+- the owner must wait for every applicable check to complete successfully before merging; a queued, running or failed check is not merge approval;
 - squash-only merging and automatic head-branch deletion remain enabled;
 - force pushes and direct pushes cannot be technically blocked by GitHub, so the owner must avoid them;
 - branch protection and GitHub secret scanning should be enabled immediately if GitHub Pro is later approved.

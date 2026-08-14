@@ -13,6 +13,17 @@ All notable project changes are recorded here. The format follows Keep a Changel
 - Aligned the project brief, security policy, launch/completion registers and
   deployment documentation with the selected lean self-hosted CX23 topology and
   application-owned production scheduler.
+- Recorded the CI classification and merge-control policy, including the
+  current GitHub-plan limitation on enforced required status checks.
+
+### CI and developer experience
+
+- Added a dependency-free documentation link/JSON validator and a docs-only CI
+  path. Changes limited to Markdown/documentation files now avoid the expensive
+  browser, database, container and Windows desktop jobs.
+- Added cache restoration for Playwright browser binaries and Cargo/Tauri build
+  artefacts. Source, migration, deployment, workflow and desktop changes still
+  run the complete five-gate release suite.
 
 ### Changed
 

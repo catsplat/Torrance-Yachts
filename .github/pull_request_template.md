@@ -16,6 +16,7 @@ Describe what changed and why.
 - [ ] `npm audit`
 - [ ] Relevant automated tests
 - [ ] Relevant browser or integration verification
+- [ ] I will merge only after every CI check applicable to this change has completed successfully.
 
 ## Evidence
 
