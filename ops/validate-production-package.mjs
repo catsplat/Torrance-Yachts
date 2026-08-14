@@ -10,6 +10,9 @@ function syntheticEnvironmentFor(environment) {
     DEPLOYMENT_IMAGE_ENVIRONMENT: environment,
     AUTH_SMTP_CONFIGURED: "true",
     AUTOMATION_SHARED_SECRET: "a".repeat(32),
+    BACKUP_DIRECTORY: "/var/lib/torrance-yachts/backups",
+    BACKUP_ENCRYPTION_RECIPIENT: "age1syntheticrecipientforproductionvalidationonly000000000000000000000000",
+    BACKUP_RCLONE_REMOTE: "synthetic-remote:torrance-yachts",
     CLOUDFLARE_TUNNEL_TOKEN: "synthetic-cloudflare-tunnel-token",
     DEPLOYMENT_VERSION: "v0.19.1",
     GHCR_PULL_TOKEN: "synthetic-ghcr-read-token",
@@ -100,6 +103,7 @@ for (const forbidden of ["n8n:", "SUPABASE_DB_URL", "ports:"]) {
 for (const requiredWorkflowStep of [
   "Record reviewed source revision",
   "apply-selfhosted-migrations.sh",
+  "backup-production.sh",
   "deploy/self-hosted-cx23/docker-compose.yml",
   "verify-hosted-runtime.sh",
   "Verify protected host runtime",

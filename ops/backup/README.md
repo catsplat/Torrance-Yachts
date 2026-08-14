@@ -1,32 +1,32 @@
 # Backup and restore tooling
 
-## Production
+## Hosted CX23 backup
 
-`backup-production.sh` creates a PostgreSQL custom-format dump of the application,
-Auth, and Storage metadata schemas; exports every private Supabase Storage object
-with a SHA-256 manifest; packages both; encrypts the archive to an `age`
-recipient; and writes an external checksum. Provider-managed Vault secrets,
-Realtime internals, and analytics schemas are deliberately excluded from the
-portable logical export.
+`backup-production.sh` runs on the protected VPS from the deployment directory.
+It creates a PostgreSQL custom-format dump of the application, Auth, Storage and
+migration-history schemas; archives the private Storage volume directly through
+Docker; encrypts both with an `age` public recipient; and writes a SHA-256
+checksum beside the artifact.
 
-Run it from a protected Linux host using secrets supplied by the host secret
-store. The encryption identity must be held separately from the backup location.
-Copy the resulting `.tar.age` and `.sha256` files to an off-site destination in a
-different provider/account or failure domain.
+It deliberately does **not** call the public application hostname, Cloudflare,
+Kong, browser-safe keys or a managed Supabase database URL. The database and
+documents remain on the private Docker network while being exported.
 
-The script deliberately refuses to run without:
+The runtime `.env` must contain:
 
-- PostgreSQL `pg_dump`;
-- Node.js and the locked application dependencies;
-- `age`;
-- `tar` and `sha256sum`;
-- a production database URL, Supabase URL and server-only key, encryption
-  recipient, and backup destination.
+- `BACKUP_DIRECTORY` — a protected local staging directory;
+- `BACKUP_ENCRYPTION_RECIPIENT` — the public half of an `age` key whose private
+  identity is stored away from the VPS; and
+- `BACKUP_RCLONE_REMOTE` — a client-owned off-site destination. It is mandatory
+  when `APP_ENVIRONMENT=production`.
 
-Schedule daily exports and alert when no successful artifact is produced. Retain
-at least seven daily copies and monthly copies according to the client-approved
-retention policy. Managed Supabase Pro daily backups remain an additional layer,
-not a replacement for a tested off-site logical and document export.
+The server needs `age` and, for off-site replication, `rclone`. The first hosted
+activation must install these tools, configure the remote directly on the VPS,
+and complete an isolated restore before live records are entered. Neither the
+private age identity nor rclone credentials belong in Git or chat.
+
+Hetzner Backups protect the VPS disk as one layer; they do not replace the
+encrypted logical and Storage export in a different failure domain.
 
 ## Local restore drill
 
@@ -39,5 +39,5 @@ not a replacement for a tested off-site logical and document export.
 5. calculates SHA-256 evidence; and
 6. drops the disposable database.
 
-It never overwrites the active local database. Use synthetic data only. Record the
-non-secret checksum and result in `/settings/launch`.
+It never overwrites the active local database. Use synthetic data only. Record
+the non-secret checksum and result in `/settings/launch`.

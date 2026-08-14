@@ -14,6 +14,10 @@ All notable project changes are recorded here. The format follows Keep a Changel
 - Recorded the synthetic, temporal staging process for the initial single VPS:
   staging uses its own hostname and image, then is backed up and reset before a
   separate production image and empty operational database are introduced.
+- Reworked hosted backup export for self-hosted Supabase: it now dumps the
+  private Postgres container and archives the private Storage volume directly,
+  encrypts artifacts with `age`, and requires off-site rclone replication before
+  a production backup can succeed.
 
 ### Documentation
 

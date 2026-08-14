@@ -39,6 +39,9 @@ for (const name of [
 for (const requiredEnvironmentName of [
   "APP_DOMAIN",
   "APP_IMAGE",
+  "BACKUP_DIRECTORY",
+  "BACKUP_ENCRYPTION_RECIPIENT",
+  "BACKUP_RCLONE_REMOTE",
   "CLOUDFLARE_TUNNEL_TOKEN",
   "GHCR_USERNAME",
   "GHCR_PULL_TOKEN",

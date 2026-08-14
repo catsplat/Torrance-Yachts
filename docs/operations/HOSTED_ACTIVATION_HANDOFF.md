@@ -82,6 +82,8 @@ GOOGLE_SIGN_IN_ENABLED        TELEGRAM_BOT_TOKEN
 TELEGRAM_BOT_USERNAME         TELEGRAM_WEBHOOK_SECRET
 AI_PROVIDER                   OPENAI_API_KEY
 OPENAI_MODEL
+BACKUP_DIRECTORY              BACKUP_ENCRYPTION_RECIPIENT
+BACKUP_RCLONE_REMOTE
 ```
 
 `GHCR_PULL_TOKEN` is a client-owned, read-only package credential. The deployment
@@ -91,6 +93,11 @@ store. Use `npm run production:preflight` only against an operator-controlled
 local copy of the file. It reports missing names and unsafe configuration but
 never prints values. The deployment script rejects unversioned/cross-environment
 images, missing secrets, exposed service ports and unhealthy containers.
+
+Before live use, install `age` and `rclone` on the VPS, configure a client-owned
+off-site backup remote there, and retain the `age` private identity outside the
+VPS. The reviewed backup script refuses a production export without an encrypted
+off-site copy.
 
 ## Staging first
 
