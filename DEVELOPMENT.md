@@ -72,20 +72,20 @@ browser URL.
 
 ### What It Does
 
-After client acceptance, Gmail messages are imported through:
+After hosted activation, Gmail messages are imported through:
 1. the administrator-selected, user-authorised Google connection;
 2. bounded Gmail history reconciliation in the application;
 3. idempotent PostgreSQL ingestion and visible review in the Inbox.
 
-n8n schedules the reconciliation tick only. It does not fetch Gmail messages or
-store a Google credential.
+The application-owned scheduler invokes the reconciliation tick. It does not
+fetch Gmail messages directly or store a Google credential.
 
 ### Architecture
 
 ```
 Approved Gmail account and OAuth
   ↓
-n8n core scheduler (local automation engine at 127.0.0.1:5678)
+Application-owned scheduler (hosted) or local development trigger
   ↓
 POST /api/integrations/automation/tick (with the scheduler secret)
   ↓
@@ -96,11 +96,12 @@ PostgreSQL email_messages table
 Inbox UI (http://localhost:3000/emails)
 ```
 
-### Why It's Not Working Yet
+### Activation boundary
 
-- **You haven't connected your Gmail account** in Settings → Alerts
-- **n8n is running but workflows are inactive by design** (development simulator is disabled)
-- **The operational inbox is not enabled** until synthetic acceptance passes
+The operational inbox remains disabled until an administrator has selected an
+approved Google connection and recorded the required staged synthetic acceptance.
+Local n8n may exercise the development simulator, but it is not the hosted
+scheduler and never holds Google credentials.
 
 ### How to Enable It (Production Setup)
 
@@ -121,16 +122,16 @@ Inbox UI (http://localhost:3000/emails)
    - Choose the approved staff Google connection under Incoming mail.
    - Run the five-route synthetic acceptance before monitoring is enabled.
 
-4. **Activate the core n8n scheduler** after acceptance. n8n holds no Gmail
-   credential; the application reconciles Gmail history and provider actions
-   through the encrypted user-authorised connection.
+4. **Enable the application-owned scheduler** after acceptance. Gmail history
+   and provider actions remain within the application boundary and use the
+   encrypted user-authorised connection.
 
 ### Production vs. Development
 
 | Aspect | Development | Production |
 |--------|-------------|-----------|
 | **Gmail API** | Configured but not connected | Real Gmail account + OAuth |
-| **n8n workflows** | Inactive by design | Core scheduler and readiness monitor |
+| **Scheduler** | Local rehearsal only | Application-owned worker and readiness monitor |
 | **Email watch** | Synthetic reconciliation | Gmail history reconciliation |
 | **Testing** | Five fictional routes | Staged fictional provider acceptance first |
 
@@ -261,9 +262,8 @@ AI provider: openai · gpt-4o · configured
 - [ ] Enable Gmail API
 - [ ] Create OAuth 2.0 credentials
 - [ ] Connect Gmail account in Settings → Alerts
-- [ ] Start n8n: `npm run automation:start`
 - [ ] Select the connected account as the operational inbox
-- [ ] Accept the five fictional routes, then activate the core scheduler
+- [ ] Accept the five fictional routes, then enable the application-owned scheduler
 
 ---
 
@@ -329,18 +329,18 @@ All ports except 3000 and 5678 bind to `127.0.0.1` only (not accessible from oth
    - Watch the `npm run dev` terminal
    - Look for errors from `/ai` endpoints
 
-### n8n Not Connecting to App
+### Development automation cannot reach the app
 
-1. **Verify scheduler secret:**
-   - Confirm n8n and the application share `AUTOMATION_SHARED_SECRET` through
-     ignored/deployment secret storage.
+1. **Verify the development trigger secret:**
+   - Confirm the local automation trigger and application share
+     `AUTOMATION_SHARED_SECRET` through ignored/deployment secret storage.
    - Do not add Gmail or Telegram credentials to n8n.
 
-2. **Verify n8n can reach app:**
+2. **Verify the local trigger can reach the app:**
    - From n8n container: `curl http://host.docker.internal:3000`
    - (Docker uses `host.docker.internal` to access host machine)
 
-3. **Check n8n logs:**
+3. **Check local n8n logs when rehearsing:**
    - Run `docker logs torrance-yachts-automation_n8n_1 -f`
    - Look for connection errors
 

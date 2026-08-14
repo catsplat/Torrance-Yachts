@@ -1,6 +1,8 @@
-# Torrance Yachts platform: client progress summary
+# Torrance Yachts platform: historical client progress summary
 
 **Updated:** 26 July 2026
+**Historical note:** This is an archived project-status snapshot. For the current
+release state and activation gates, use the [completion register](../planning/PROJECT_COMPLETION_REGISTER.md).
 
 The project has moved from planning into a working, secured internal application.
 All twelve planned implementation phases are complete, followed by the
@@ -78,8 +80,8 @@ invitation/password recovery, evidence-based launch acceptance, protected health
 monitoring, backup/export tooling, a proven local restore drill, and the complete
 deployment, incident, privacy, maintenance, staff, and acceptance documentation.
 
-The recommended hosted form is now defined: managed Supabase plus one protected
-Linux server running the application, local n8n Community Edition, and HTTPS.
+The current hosted direction is the lean self-hosted Supabase profile on a
+protected Linux VPS, with an application-owned scheduler and Cloudflare Access.
 The requested downloadable local-app direction is preserved as a separate future
 distribution and is not allowed to delay the primary hosted release.
 

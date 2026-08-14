@@ -2,10 +2,11 @@
 
 ## Current deployment status
 
-This repository contains the technically verified `v0.19.1` pre-deployment candidate but
-is not yet approved for live Torrance Yachts data. Production approval requires
-all required evidence in `/settings/launch`, client-owned infrastructure and
-credentials, policy acceptance, staff acceptance, and recorded go-live sign-off.
+This repository contains a release-ready codebase with verified local and CI
+evidence. It is not yet authorised for live Torrance Yachts data. Production
+approval requires recorded evidence in `/settings/launch`, client-owned
+infrastructure and credentials, policy acceptance, staff training and formal
+go-live sign-off.
 
 ## Reporting a concern
 
@@ -65,8 +66,8 @@ Before production, the project requires reviewed authentication, database Row Le
 
 These controls are defence in depth. Production still requires environment-
 specific URL and redirect configuration, scoped provider credentials, an off-site
-encrypted backup destination, malware/quarantine acceptance, MFA consideration,
-an independent access review, and a production restore test.
+encrypted backup destination, malware/quarantine acceptance, an independent
+access review, and a production restore test.
 
 ## Local service exposure
 

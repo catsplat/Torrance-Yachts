@@ -2,8 +2,9 @@
 
 ## Role of n8n
 
-n8n is the integration and background-work runner. It is not the business
-database, state machine, pricing engine, or approval authority.
+n8n is a local development and rehearsal runner. The hosted application-owned
+scheduler performs bounded background work. Neither is the business database,
+state machine, pricing engine, or approval authority.
 
 ```text
 Human action / reviewed command
@@ -18,7 +19,7 @@ PostgreSQL transaction
 Outbox delivery claim
               |
               v
-n8n workflow
+Application-owned scheduler
   - schedules bounded application adapters
               |
               v
@@ -38,13 +39,13 @@ Visible success or failure in the application
 - Delivery attempts, external identifiers, timestamps, errors, and retry state are persisted.
 - Failed integrations do not roll back or corrupt the authoritative enquiry, offer, or booking.
 - Operators can see and retry failed deliveries.
-- The three retained workflows handle scheduling, development simulation, and
-  readiness monitoring; n8n contains no provider credential or business logic.
+- Local n8n workflows support development simulation and readiness rehearsal;
+  n8n contains no provider credential or business logic.
 
 ## Human approval
 
-n8n may schedule the application adapter that prepares an alert or approved Gmail
-draft, but the application command decides whether the action is allowed. AI
+The scheduler may prepare an alert or approved Gmail draft, but the application
+command decides whether the action is allowed. AI
 output remains a proposal with source evidence and confidence. Material actions,
 including offers, bookings, date reservations, invoices, and external contact,
 require an authenticated human decision.
@@ -69,13 +70,12 @@ commissioning.
 
 ## Production topology
 
-Phase 12 selected managed Supabase Pro plus a protected Linux VPS running the
-standalone Next.js application, pinned n8n Community Edition, ClamAV, and an
-outbound-only Cloudflare Tunnel as the primary hosted release. Cloudflare Access
-protects the sole application hostname; n8n has no public application route.
-PostgreSQL remains authoritative. Provider credentials remain outside source
-control and ordinary application tables; Google refresh credentials are held
-behind the service-only Vault boundary.
+The selected hosted release uses a protected Linux VPS running the standalone
+Next.js application, its application-owned scheduler, lean self-hosted Supabase
+core, ClamAV and an outbound-only Cloudflare Tunnel. Cloudflare Access protects
+the sole application hostname. PostgreSQL remains authoritative. Provider
+credentials remain outside source control and ordinary application tables;
+Google refresh credentials are held behind the service-only Vault boundary.
 
 The separately requested local packaged version remains documented as a future
 secondary distribution. It requires Windows and macOS packaging, signing,

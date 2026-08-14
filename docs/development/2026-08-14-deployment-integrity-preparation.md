@@ -30,4 +30,5 @@ starts the package.
 
 This does not deploy anything, create provider accounts, expose a service or use
 client data. Staging remains blocked only on client-controlled environment
-variables, secrets, managed Supabase and VPS configuration.
+variables, secrets, lean self-hosted Supabase runtime configuration and VPS
+configuration.

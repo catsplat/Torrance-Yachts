@@ -1,7 +1,7 @@
 # Project completion register
 
-**Reviewed:** 9 August 2026
-**Candidate:** v0.19.1 pre-deployment release
+**Reviewed:** 14 August 2026
+**Release state:** code and CI release-ready; hosted activation pending
 
 This register distinguishes code, automated proof, local human acceptance,
 client acceptance, and live provider acceptance. A phase number or successful
@@ -23,8 +23,8 @@ build is not evidence of a live service.
 | Acceptance | Administrator, staff, unapproved-user, MFA, mobile-review, workflow, keyboard and axe coverage across Chromium, Firefox and WebKit using fictional records |
 
 PostgreSQL remains authoritative. AI cannot create offers, bookings,
-reservations, or sent messages. n8n stores no Google or Telegram credentials and
-contains no business rules.
+reservations, or sent messages. The application-owned scheduler stores no Google
+or Telegram credentials and contains no business rules.
 
 ## Locally accepted
 
@@ -44,7 +44,7 @@ result is the release evidence for v0.19.1; its sanitized report is generated at
 ## Human/client gates still required
 
 1. Approve hosting, monthly budget, named system/recovery owners and support.
-2. Supply client-owned Supabase/VPS/domain/Cloudflare configuration.
+2. Complete the selected VPS-hosted Supabase, domain and Cloudflare configuration.
 3. Approve staff identities, roles, MFA recovery and production Auth email.
 4. Create/approve Google and Telegram owner accounts, scopes and recipients.
 5. Approve yachts, rates, templates, contacts, invoice profile and routing.

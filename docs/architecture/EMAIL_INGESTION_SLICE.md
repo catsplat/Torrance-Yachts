@@ -2,7 +2,7 @@
 
 ```text
 Administrator-selected staff Google Workspace connection
-  -> n8n scheduled POST /api/integrations/automation/tick
+  -> application-owned scheduler POST /api/integrations/automation/tick
   -> Vault-held token refresh + Gmail history reconciliation
   -> shared validated ingestion command
   -> payload validation and service-role command
@@ -17,9 +17,9 @@ Administrator-selected staff Google Workspace connection
 
 The preferred adapter uses periodic `history.list` reconciliation and then fetches
 each full message. The first run establishes a cursor without importing historical
-mail. An expired cursor uses a bounded seven-day recovery. The existing raw n8n
-Gmail endpoint remains as a compatibility/test boundary, but the preferred setup
-does not require a second Gmail credential inside n8n.
+mail. An expired cursor uses a bounded seven-day recovery. Local n8n may invoke
+the development simulator, but the hosted setup uses the application-owned
+scheduler and does not require a second Gmail credential.
 
 - https://developers.google.com/workspace/gmail/api/guides/push
 - https://developers.google.com/workspace/gmail/api/reference/rest

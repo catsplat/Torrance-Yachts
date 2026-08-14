@@ -35,7 +35,7 @@ Stored operational fact
   -> per-user topic filter
   -> in-app / Telegram / internal email
   -> transactional delivery outbox
-  -> n8n scheduled application adapter
+  -> application-owned scheduled adapter
   -> provider success or bounded failure
 ```
 
@@ -66,7 +66,8 @@ completion with evidence.
 
 - OAuth client IDs, client secrets, and refresh tokens are encrypted in Vault.
 - The Settings UI cannot read secrets back.
-- The n8n scheduler receives no user OAuth secret.
+- The local rehearsal runner and hosted application-owned scheduler receive no
+  user OAuth secret.
 - The delivery adapter receives decrypted values only for a claimed, supported
   delivery.
 - The shared Telegram bot token is server-only.

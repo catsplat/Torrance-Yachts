@@ -11,7 +11,7 @@ consequential actions remain subject to human approval.
 | --- | --- |
 | Read and categorise emails into enquiries, internal mail, circulars, and unknowns | Phase 9 stores messages/threads and deterministically routes safe cases; Phase 10 adds evidence-backed AI suggestions; the administrator-selected staff Google connection now reconciles Gmail history through the same validated/idempotent boundary; uncertain mail remains human-reviewed |
 | Track enquiry data in a presentable Sheet/website | Phase 4 enquiry database and UI are authoritative; Phase 11 provides a controlled one-way workbook snapshot |
-| Telegram notification for enquiries, internal mail, unknown mail, and non-circular mail | Phase 11/`v0.13` materialises per-user notifications with optional AI summary/draft content and queues idempotent Telegram delivery through the local n8n scheduler |
+| Telegram notification for enquiries, internal mail, unknown mail, and non-circular mail | Phase 11 materialises per-user notifications with optional AI summary/draft content and queues idempotent Telegram delivery through the application-owned scheduler; local n8n remains available for rehearsal |
 | Ignore, mark read, and archive circulars | Phase 9 creates idempotent actions; the application-owned Google adapter reconciles mark-read/archive failures without placing Google credentials in n8n |
 | Distinguish new enquiries from follow-ups | Phase 9 links Gmail threads, automatically recognises known threads, and lets staff create/reuse sender contacts and enquiries |
 | Draft the yacht-specific new-enquiry response | Phase 5/10 prepare the reviewed content; `v0.13` automatically analyses one pending email per tick and includes the clearly labelled draft in the staff alert without sending it |
@@ -27,7 +27,7 @@ consequential actions remain subject to human approval.
 | Keep the internal service private and resistant to attack | Approved individual accounts, mandatory TOTP AAL2, server-verified sessions, RLS, quarantined private documents, audit history, throttling, nonce CSP, HSTS, least-privilege adapters, and an evidence-based production gate |
 | Retain phone/notification ownership per yacht | Phase 3 yacht responsibilities and notification phone; Phase 11 central recipient/channel routing |
 | Let each staff member receive their own alerts | `v0.13` self-service alert email, phone, Telegram chat ID, channel/topic preferences, AI-summary preference, and encrypted Gmail OAuth connection |
-| Operate n8n without a paid n8n Cloud subscription | Pinned self-hosted n8n Community Edition in both local development and the Phase 12 Linux deployment package |
+| Operate n8n without a paid n8n Cloud subscription | Pinned self-hosted n8n Community Edition for local development and rehearsal; the hosted CX23 profile uses the application-owned scheduler instead |
 | Provide hosted and future downloadable/local forms | Phase 12 makes the hosted Linux/Supabase form the supported first release and preserves the cross-platform local package as a separate documented delivery |
 | Avoid missed operations and prove recoverability | Phase 11 observable retries plus Phase 12 readiness monitoring, encrypted exports, restore evidence, incident response, maintenance, and launch acceptance |
 
