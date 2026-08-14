@@ -60,7 +60,7 @@ for (const forbidden of ["studio:", "realtime:", "imgproxy:", "functions:", "sup
 for (const required of ["dispatch-alerts", "dispatch-google-workspace", "AUTOMATION_SHARED_SECRET", "cycle_completed"]) {
   if (!worker.includes(required)) throw new Error(`Automation worker is missing: ${required}`)
 }
-for (const required of ["86854671e95be31e24fa0785cded0579fe692fcb", "--depth 1", "Run as the non-root deployment user"]) {
+for (const required of ["86854671e95be31e24fa0785cded0579fe692fcb", "--depth 1", "self-hosted-cx23.env.example", "Run as the non-root deployment user"]) {
   if (!bootstrap.includes(required)) throw new Error(`Pinned Supabase bootstrap is missing: ${required}`)
 }
 console.log("Self-hosted CX23 package contract is internally consistent.")

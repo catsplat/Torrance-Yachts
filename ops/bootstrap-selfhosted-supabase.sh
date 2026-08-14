@@ -14,6 +14,11 @@ test "$(id -u)" -ne 0 || { echo "Run as the non-root deployment user." >&2; exit
 test -f "$deployment_path/.env" || { echo "Missing $deployment_path/.env." >&2; exit 2; }
 command -v git >/dev/null || { echo "git is required for the pinned official Supabase source." >&2; exit 2; }
 
+if [ ! -s "$deployment_path/.env" ]; then
+  cp "$deployment_path/self-hosted-cx23.env.example" "$deployment_path/.env"
+  chmod 600 "$deployment_path/.env"
+fi
+
 if [ ! -d "$source_path/.git" ]; then
   git clone --filter=blob:none --no-checkout "$source_url" "$source_path"
 fi
