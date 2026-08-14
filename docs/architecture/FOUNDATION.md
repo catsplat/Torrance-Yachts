@@ -33,10 +33,10 @@ flowchart LR
     Logic --> DB["Supabase PostgreSQL\nsource of truth"]
     Logic --> Storage["Private document storage"]
     DB --> Events["Durable workflow events"]
-    Events --> N8N["n8n automation adapters"]
-    N8N --> Gmail["Gmail"]
-    N8N --> Telegram["Telegram approvals"]
-    N8N --> Google["Drive / Calendar / Sheets"]
+    Events --> Worker["Application-owned scheduler and adapters"]
+    Worker --> Gmail["Gmail"]
+    Worker --> Telegram["Telegram approvals"]
+    Worker --> Google["Drive / Calendar / Sheets"]
     Logic -. "suggestions only" .-> AI["AI provider adapter"]
     Staff -. "human-confirmed task" .-> Yachtfolio["Yachtfolio"]
 ```
@@ -50,7 +50,8 @@ Planned integrations remain outside the trusted core. Their failures must not co
 - **Application/business layer (next milestone):** validates commands, state transitions, calculations, and permissions.
 - **Data layer (next milestone):** owns database queries and private storage access.
 - **Integration adapters (later milestones):** translate between core events and external providers.
-- **Automation definitions (later milestones):** retryable, idempotent n8n workflows stored in version control.
+- **Automation definitions (later milestones):** retryable, idempotent
+  application-owned worker contracts; local n8n workflows support rehearsal.
 
 ## Security posture at this milestone
 

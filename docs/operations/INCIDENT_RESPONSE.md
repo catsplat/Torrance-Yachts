@@ -11,7 +11,7 @@
 
 ## Immediate containment
 
-- disable affected n8n workflows and integration connections;
+- suspend the affected application worker route and integration connections;
 - rotate compromised provider/shared secrets;
 - deactivate affected user accounts without deleting audit history;
 - revoke public sales-material links if relevant;

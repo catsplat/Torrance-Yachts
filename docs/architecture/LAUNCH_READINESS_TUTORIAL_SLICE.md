@@ -8,10 +8,10 @@ flowchart LR
     App --> DB["Supabase PostgreSQL"]
     App --> Storage["Private Supabase Storage"]
     DB --> Outbox["Leased integration outbox"]
-    Outbox --> N8N["Protected n8n worker"]
-    N8N --> Providers["Gmail / Telegram / Google"]
+    Outbox --> Worker["Protected application worker"]
+    Worker --> Providers["Gmail / Telegram / Google"]
     Monitor["External uptime monitor"] --> Live["Public minimal liveness"]
-    N8N --> Ready["Authenticated readiness"]
+    Worker --> Ready["Authenticated readiness"]
     Backup["Encrypted backup job"] --> Offsite["Off-site failure domain"]
     Tutorial["Tutorial tables"] -. "no foreign keys or events" .-> Practice["Synthetic practice UI"]
 ```
@@ -40,7 +40,7 @@ credential has correct scope or ownership.
   restore evidence.
 - production readiness returns HTTP 503 when required settings or a recent restore
   are missing.
-- the version-controlled n8n monitor calls readiness every five minutes.
+- the application-owned scheduler performs the protected readiness check.
 
 ## Browser security
 

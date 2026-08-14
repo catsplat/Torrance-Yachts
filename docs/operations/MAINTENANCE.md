@@ -2,7 +2,7 @@
 
 ## Daily
 
-- confirm application and n8n health;
+- confirm application, scheduler, scanner and Supabase-core health;
 - inspect failed deliveries and notification failures;
 - confirm backup artifact completion;
 - review urgent/overdue operational work.
@@ -17,7 +17,7 @@
 ## Monthly
 
 - install tested security updates;
-- run application, database, dependency, n8n, and secret scans;
+- run application, database, dependency and secret scans;
 - verify backup checksums and off-site replication;
 - review access, integration scopes, audit events, and costs;
 - test the client tutorial against the current interface.
@@ -25,7 +25,7 @@
 ## Quarterly
 
 - complete an isolated restore drill;
-- run `n8n audit`;
+- review local n8n rehearsal workflows when they are used;
 - review retention/deletion eligibility;
 - repeat macOS critical-workflow acceptance;
 - review incident contacts, recovery ownership, and operating costs.

@@ -33,15 +33,15 @@ key is used while building. Never reuse the production values in `staging`.
 3. Authenticate Docker on the VPS to GHCR using a dedicated read-only package
    credential owned by the client; do not use a developer's broad personal token.
 4. Permit inbound SSH only from the approved administration path. Do not expose
-   application, n8n, ClamAV, PostgreSQL or Ollama ports.
-5. Create `DEPLOY_PATH`, copy `deploy/production/.env.example` to `.env`, set mode
-   `600`, and populate it from the approved secret store.
+   application, scheduler, ClamAV, PostgreSQL or Ollama ports.
+5. Create `DEPLOY_PATH`, copy `deploy/self-hosted-cx23/.env.example` to `.env`,
+   set mode `600`, and populate it from the approved secret store.
 6. Create a client-owned Cloudflare Tunnel whose only public hostname maps to
-   `http://app:3000`. Do not publish an n8n hostname.
+   `http://app:3000`. Do not publish any internal service hostname.
 7. Configure Cloudflare Access as the perimeter layer. Supabase login, approved
    profile, AAL2 MFA, application authorisation and RLS remain mandatory behind it.
-8. Seed the n8n owner through the protected administration path. Import only the
-   versioned core scheduler and readiness monitor; review before activation.
+8. Configure the application-owned scheduler with its protected automation
+   secret. Leave it disabled until the staged synthetic workflow is accepted.
 
 The idempotent Ubuntu preparation command and the exact secret/account handoff
 are maintained in [Hosted activation handoff](HOSTED_ACTIVATION_HANDOFF.md).
@@ -88,9 +88,9 @@ Docker network so it does not loop back through Cloudflare Access.
    reviewed Git revision, resolves the verified image to a digest and waits for
    container health.
 5. The target-side verifier then confirms that the deployment `.env` remains
-   mode `600`, App/n8n/ClamAV have no published host ports, all expected
+   mode `600`, App/worker/ClamAV have no published host ports, all expected
    containers are running, the immutable digest retains the expected OCI labels,
-   and the internal App/n8n/ClamAV health endpoints respond.
+   and the internal App/worker/ClamAV health endpoints respond.
 6. Verify Cloudflare Access, login/MFA, `/api/health/live`, authenticated
    readiness, scanner, scheduler, a synthetic notification, and a synthetic
    workflow. Record the image digest, migration list, operator, checks and

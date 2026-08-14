@@ -4,6 +4,16 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Documentation
+
+- Reframed the repository entry points around a release-ready, privately hosted
+  operations platform rather than an early development milestone.
+- Consolidated the README into a concise product, architecture, quality and
+  operations guide; preserved phase-level records as historical audit evidence.
+- Aligned the project brief, security policy, launch/completion registers and
+  deployment documentation with the selected lean self-hosted CX23 topology and
+  application-owned production scheduler.
+
 ### Changed
 
 - Added the lean self-hosted Supabase/CX23 deployment profile, with a private

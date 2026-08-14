@@ -6,8 +6,8 @@ acceptance—not another software build.
 
 Do not send a password, private key, API key, token, connection string or client
 data in chat, GitHub Issues, commits or screenshots. Store values in the client
-secret manager, GitHub Environment secrets, managed Supabase secrets, or the
-VPS-owned `600` deployment `.env` file only.
+secret manager, GitHub Environment secrets, or the VPS-owned `600` deployment
+`.env` file only.
 
 ## What I need later
 
@@ -42,8 +42,8 @@ deployment directory and an empty `600` `.env`. It does **not** start an app,
 open ports, create provider accounts, add data or write secrets.
 
 At the provider firewall, allow only the approved SSH administration route. Do
-not open application, n8n, ClamAV, PostgreSQL or Ollama ports. Cloudflare Tunnel
-is outbound-only.
+not open application, worker, ClamAV, PostgreSQL or Ollama ports. Cloudflare
+Tunnel is outbound-only.
 
 ## Runtime secret file
 

@@ -1,7 +1,8 @@
 # Phase 11 integrations, notifications, and calendar architecture
 
 Phase 11 turns durable operational facts into observable, retryable external work.
-PostgreSQL remains authoritative; n8n and provider systems are adapters.
+PostgreSQL remains authoritative; the application-owned scheduler and provider
+systems are adapters.
 
 ```text
 Booking/email/task/payment fact
@@ -9,7 +10,7 @@ Booking/email/task/payment fact
   -> notification/calendar/provider action
   -> integration delivery outbox
   -> five-minute worker lease
-  -> n8n provider adapter
+  -> application provider adapter
   -> success/failure callback
   -> visible audit and retry state
 ```
@@ -21,7 +22,7 @@ Booking/email/task/payment fact
 - Drive copies require an explicit request against a verified document.
 - Sheet synchronisation is one-way from PostgreSQL.
 - Calendar events contain no attendees and request no update emails.
-- n8n cannot call booking, task, payment, offer, Yachtfolio, or AI approval
+- The scheduler cannot call booking, task, payment, offer, Yachtfolio, or AI approval
   commands.
 
 ## Reliability
@@ -40,6 +41,7 @@ remain the date source.
 
 ## Deployment boundary
 
-Local development uses pinned n8n Community Edition in Docker on
-`127.0.0.1:5678`. Real Telegram/Google credentials, mailbox, bot/chat, calendar,
-Drive folder, and workbook are selected and accepted during Phase 12.
+Local development may use pinned n8n Community Edition in Docker on
+`127.0.0.1:5678` for rehearsal. The hosted profile uses the application-owned
+worker. Real Telegram/Google credentials, mailbox, bot/chat, calendar, Drive
+folder and workbook are selected and accepted during hosted activation.

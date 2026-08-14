@@ -2,17 +2,16 @@
 
 ## Layers
 
-1. Supabase Pro managed daily database backups.
+1. Hetzner VPS backups for the protected host and its lean Supabase core.
 2. Daily encrypted logical export of `public`, `auth`, and `storage` metadata.
 3. Daily export of private Storage objects with individual SHA-256 hashes.
 4. Encrypted off-site copy in a separate account/provider or failure domain.
-5. VPS provider backups for application/n8n configuration and encrypted
-   credentials.
-6. n8n encryption key held separately from the n8n data backup.
+5. Versioned Compose/runtime configuration and separately protected recovery
+   material required to rebuild the private service.
 
-Provider-managed Vault, Realtime, and analytics internals are excluded from the
-portable logical export. Managed physical backup and provider reconfiguration
-cover those services.
+The first hosted profile does not run Studio, Realtime, analytics or edge
+functions. Recovery of the lean core uses the pinned bootstrap, versioned
+migrations, protected runtime configuration and the verified exports above.
 
 ## Schedule
 
@@ -28,7 +27,7 @@ cover those services.
 1. Declare the incident and disable integrations.
 2. Preserve the failed environment for evidence.
 3. Select the accepted restore point and verify its external checksum.
-4. Restore into staging or a new project first.
+4. Restore into staging or a new isolated host first.
 5. verify identities, yachts, enquiries, offers, bookings, tasks, document
    metadata/objects, payments, notifications, and audit history;
 6. rotate any potentially exposed credentials;

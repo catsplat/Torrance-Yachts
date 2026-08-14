@@ -2,13 +2,13 @@
 
 ## Project brief and source of truth
 
-**Status:** v0.19.1 pre-deployment candidate; clean local acceptance and production activation pending
+**Status:** release-ready codebase; hosted activation, staged provider acceptance and client launch approval pending
 
 **Owner/developer:** Thom, working with Codex
 
 **Primary organisation:** Torrance Yachts
 
-**Last reviewed:** 13 August 2026
+**Last reviewed:** 14 August 2026
 
 This document translates the original project context into a stable, version-controlled brief. It defines what the project is intended to achieve and should be consulted before architecture, implementation, or scope decisions are made.
 
@@ -116,7 +116,8 @@ These are the current architectural defaults, not permission to create paid serv
 - **Database:** Supabase PostgreSQL.
 - **Authentication:** Supabase Auth, initially with individual local/email accounts. A single shared password is less desirable because it weakens auditability.
 - **File storage:** private Supabase Storage buckets with short-lived signed access URLs.
-- **Automation:** n8n, initially local during development and later hosted if selected.
+- **Automation:** application-owned scheduler in the hosted profile; local n8n
+  Community Edition is retained for development and rehearsal only.
 - **AI:** a provider-neutral application interface, with OpenAI the likely first provider and Anthropic or local Ollama possible later.
 - **Primary integrations:** Gmail, Telegram, Google Drive, Google Calendar, and controlled Google Sheets synchronisation.
 - **External operational system:** Yachtfolio. The initial integration is a human task and confirmation because no safe supported API has yet been established.
@@ -370,7 +371,7 @@ At minimum:
 1. **Local development:** Windows, fake/test data, local Next.js, safe development integrations.
 2. **Production:** browser-accessible from macOS, HTTPS, access-controlled, backed up, monitored, and able to run scheduled/background work without an employee laptop remaining on.
 
-A staging environment is desirable before live email or real client documents are connected. Hosting must be selected only after a costed comparison of a small Linux VPS, managed Supabase, Vercel/managed frontend, and backup/monitoring needs.
+A staging environment is mandatory before live email or real client documents are connected. The selected first-host topology is the deliberately lean self-hosted Supabase core on a cost-controlled Linux VPS, protected by Cloudflare Access and an outbound Tunnel. Managed alternatives remain viable only if they are re-evaluated through an architectural decision record.
 
 ## 10. Testing and acceptance
 

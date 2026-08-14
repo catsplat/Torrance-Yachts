@@ -44,14 +44,15 @@ web interface. Test both a staff invitation and password recovery, then set
 4. An administrator opens **Settings > Connections**, chooses that account under
    **Gmail > Incoming mail**, and enables monitoring. The first automation tick
    records the current Gmail history cursor without importing older mail.
-5. Import the n8n scheduler workflow but leave it inactive. It needs the
-   application automation secret, not a Gmail credential.
+5. Keep the application-owned scheduler inactive until the synthetic route is
+   accepted. Local n8n is optional for rehearsal only and never needs a Gmail
+   credential.
 6. Run a synthetic set: new enquiry, follow-up, internal message, circular, and
    unrecognised message.
 7. Verify classification, human review, Telegram/in-app alert materialisation,
    draft behaviour, idempotency, and failure visibility.
-8. Activate the core scheduler. Google and Telegram work remains inside the
-   application-owned adapters; n8n needs no provider credentials.
+8. Enable the application-owned scheduler. Google and Telegram work remains
+   inside the application-owned adapters; no scheduler holds provider credentials.
 
 The app cannot create a Google Cloud project or consent screen on the operator's
 behalf. That boundary is intentional.
@@ -99,14 +100,13 @@ created in that staff member's connected Gmail account and is never sent by the
 application. Broker, captain, booking, invoice, and status communications remain
 reviewable even when Telegram is connected.
 
-## 6. n8n
+## 6. Background scheduler
 
-Set `N8N_HEALTH_URL` to the private `http://n8n:5678/healthz` endpoint in the
-production Compose network. Import the three pinned workflow definitions, run
-the n8n security audit, and activate only the core scheduler and readiness
-monitor after synthetic acceptance. The simulator remains development-only.
-n8n stores no Google or Telegram credentials. PostgreSQL and application
-commands remain authoritative; n8n only schedules bounded application workers.
+The hosted application-owned worker runs inside the private Compose network and
+uses only the application automation secret. Enable it only after the synthetic
+acceptance path is recorded. Local n8n is retained for development rehearsal;
+it is not deployed as a production scheduler and never stores Google or Telegram
+credentials. PostgreSQL and application commands remain authoritative.
 
 ## 7. AI
 

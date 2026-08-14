@@ -1,7 +1,7 @@
 # Launch gap register
 
-**Status:** v0.19.1 pre-deployment verification in progress
-**Last reviewed:** 13 August 2026
+**Status:** release-ready codebase; hosted activation pending
+**Last reviewed:** 14 August 2026
 
 ## Evidence states
 
@@ -24,16 +24,17 @@
 | Documents | Private quarantine/release, ClamAV boundary, retry/reject/reconcile and blocked access | Retention policy and production scanner acceptance |
 | Alerts and mirrors | Fake-provider contracts, retry/back-off and reconciliation | Recipient and destination ownership acceptance |
 | Recovery | Disposable database restore drill and runbooks | Encrypted off-site schedule and production restore drill |
-| Deployment | Standalone image, hardened Compose, startup validation, separately labelled staging/production GHCR images, protected deployment/rollback workflow and local container smoke proof | Provisioning, private ingress, managed-Supabase migration rehearsal, monitoring and provider acceptance |
+| Deployment | Standalone image, hardened Compose, lean CX23 self-hosted Supabase profile, startup validation, separately labelled staging/production GHCR images, protected deployment/rollback workflow and local container smoke proof | Complete private ingress, runtime secrets, backup destination, monitoring and staged provider acceptance |
 
 ## Deliberate pre-deployment exclusions
 
-- no hosting, domain, Cloudflare activation or internet-facing service;
+- no active internet-facing application or connected production providers;
 - no live mailbox, Telegram recipient, cloud AI request or provider credential;
 - no client identity document, private contact, bank detail or current commercial term;
 - no claim of provider success based on a fake response;
-- no Windows/macOS desktop packaging or signing.
+- no signed or client-distributed Windows/macOS desktop package.
 
-When `npm run release:verify` passes from the clean v0.19.1 commit, the shared
-application is ready to bake. All remaining work is client-owned configuration,
-provider acceptance, training/UAT, infrastructure and packaging.
+`npm run release:verify` is the clean-checkout release gate. With the release
+evidence passing, the shared application is ready for hosted activation. The
+remaining work is controlled environment configuration, provider acceptance,
+training/UAT and launch sign-off.

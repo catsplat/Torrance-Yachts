@@ -36,7 +36,7 @@ from **Settings -> Offline workflow rehearsal**. Capture the following evidence:
    follow-up;
 5. conflict, cancellation, amendment, missing-document, overdue-payment, and
    delivery-recovery paths; and
-6. an inactive imported n8n set plus one manual development-simulator run.
+6. a disabled hosted scheduler plus one manual local development-simulator run.
 
 No real documents, external credentials, or recipient contact is permitted in
 this local prerequisite.

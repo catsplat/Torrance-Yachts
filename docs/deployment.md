@@ -9,8 +9,8 @@ flowchart TD
   U["Torrance staff"] --> A["Cloudflare Access"]
   A --> T["Outbound-only Cloudflare Tunnel"]
   T --> APP["Next.js application / Linux VPS"]
-  APP --> DB["Managed Supabase: PostgreSQL, Auth, Storage, Vault"]
-  N["n8n scheduler"] --> APP
+  APP --> DB["Lean self-hosted Supabase core: PostgreSQL, Auth, Storage, Vault"]
+  W["Application-owned scheduler"] --> APP
   APP --> C["ClamAV"]
   APP --> G["Approved external providers"]
 ```
@@ -27,8 +27,8 @@ flowchart LR
 | Component | Development | Staging/production |
 | --- | --- | --- |
 | Next.js | local `npm run dev` | immutable standalone GHCR image on VPS |
-| Supabase/PostgreSQL | local Docker | managed client-owned project |
-| n8n | local Docker | pinned private VPS container |
+| Supabase/PostgreSQL | local Docker | lean self-hosted core on the protected VPS |
+| Scheduler | local n8n rehearsal or application worker | application-owned worker on the protected VPS |
 | ClamAV | local Docker | private VPS container |
 | Mailpit | local only | never deployed |
 | SMTP | Mailpit capture | approved transactional SMTP |
@@ -56,4 +56,5 @@ secret or service credential is baked into either image. See
 [`ADR 0039`](decisions/0039-environment-specific-release-images.md).
 
 Detailed provisioning, secrets, migrations and rollback are in
-`docs/operations/PRODUCTION_DEPLOYMENT.md`.
+`docs/operations/PRODUCTION_DEPLOYMENT.md`. Local n8n is intentionally a
+development/rehearsal tool; it is not a production authority or credential store.
