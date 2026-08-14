@@ -8,7 +8,13 @@ import { Input } from "@/components/ui/input"
 
 const initialState: LoginState = {}
 
-export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
+export function LoginForm({
+  desktopCompanion = false,
+  googleEnabled,
+}: {
+  desktopCompanion?: boolean
+  googleEnabled: boolean
+}) {
   const [state, action, pending] = useActionState(loginAction, initialState)
 
   return (
@@ -58,7 +64,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
         {pending ? "Signing in…" : "Sign in"}
       </Button>
       </form>
-      {googleEnabled ? (
+      {googleEnabled && !desktopCompanion ? (
         <>
           <div className="relative py-1 text-center text-xs text-muted-foreground before:absolute before:inset-x-0 before:top-1/2 before:border-t">
             <span className="relative bg-card px-2">or</span>
@@ -69,6 +75,10 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
             </Button>
           </form>
         </>
+      ) : desktopCompanion && googleEnabled ? (
+        <p className="mt-5 border-t pt-5 text-xs leading-5 text-muted-foreground">
+          Google sign-in is available in the browser. Use your password here.
+        </p>
       ) : null}
     </>
   )

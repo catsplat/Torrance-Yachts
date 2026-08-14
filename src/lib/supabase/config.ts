@@ -10,3 +10,13 @@ export function getSupabaseConfig() {
 
   return { publishableKey, url }
 }
+
+/**
+ * The browser must use the public HTTPS endpoint. Server-side requests may use
+ * the private Kong address in a self-hosted deployment so Cloudflare Access is
+ * never asked to proxy the application's own database traffic back to itself.
+ */
+export function getServerSupabaseConfig() {
+  const { publishableKey, url } = getSupabaseConfig()
+  return { publishableKey, url: process.env.SUPABASE_INTERNAL_URL?.trim() || url }
+}

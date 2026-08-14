@@ -16,6 +16,9 @@ const eslintConfig = defineConfig([
     "playwright-report/**",
     "playwright/.auth/**",
     "test-results/**",
+    // Rust/Tauri generates JavaScript glue under this build directory. It is not
+    // application source and must not affect the Next.js lint gate.
+    "src-tauri/target/**",
   ]),
 ]);
 

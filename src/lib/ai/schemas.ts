@@ -78,6 +78,10 @@ export const aiReviewSchema = z.object({
   suggestionId: z.uuid(),
 })
 
+export const emailSuggestionGmailDraftSchema = z.object({
+  suggestionId: z.uuid(),
+})
+
 export const emailSuggestionRevisionSchema = z.object({
   budgetAmount: z.union([z.literal(""), z.coerce.number().min(0)]),
   charterEndDate: z.union([z.literal(""), z.iso.date()]),

@@ -4,8 +4,25 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Changed
+
+- Added the lean self-hosted Supabase/CX23 deployment profile, with a private
+  application-owned scheduler replacing production n8n on the constrained first
+  host. Local n8n rehearsal remains unchanged.
+- Added an internal Supabase endpoint for trusted server-side calls so the
+  application does not route its own database traffic through Cloudflare Access.
+
 ### Added
 
+- Added an idempotent Ubuntu VPS bootstrap package, secret-free hosted activation
+  handoff, and CI/release validation so provider configuration can be completed
+  cleanly once client-owned staging infrastructure is available.
+- Added a Windows CI gate that verifies, compiles, tests and packages the
+  unsigned Tauri NSIS test installer on every reviewed change.
+- Added an unsigned Windows x64 Tauri 2 developer-test companion and per-user
+  NSIS installer path. The strict loopback-only shell opens the already-running
+  local application or a bundled startup page; it packages no data, credentials,
+  backend services or native permissions.
 - Added database-backed per-user theme and AI provider/model/summary preferences,
   Vault-backed personal OpenAI credentials, stricter profile/notification privacy,
   and two-user RLS isolation proofs.
@@ -20,6 +37,17 @@ All notable project changes are recorded here. The format follows Keep a Changel
 - Added separately built and labelled staging/production release images from the
   same reviewed source tag. Deployment now rejects mutable or cross-environment
   images and records the verified content digest on the VPS.
+- Added source-revision verification and a protected-host runtime check to the
+  deployment path. A release now rejects an image that does not match the
+  reviewed Git commit, then verifies immutable deployment, private service ports,
+  file permissions and container health on the target VPS.
+- Pinned every GitHub Action used by CI and deployment to a specific reviewed
+  commit and made production-package validation reject mutable Action references.
+- Pinned the supporting n8n, ClamAV and Cloudflare Tunnel production images to
+  their reviewed multi-architecture content digests.
+- Added an explicit new-enquiry reply path: after staff approve and route an AI
+  suggestion, the app queues a Gmail draft addressed to the stored sender
+  contact. It never sends the broker email.
 
 ### Changed
 
@@ -33,9 +61,16 @@ All notable project changes are recorded here. The format follows Keep a Changel
   from attempting to reach an employee's localhost.
 - Reconciled deployment, operations, user and desktop documentation with the
   central hosted architecture and explicit external acceptance boundaries.
+- Local Supabase startup now suppresses routine printing of development
+  connection values unless an operator deliberately asks for them.
+- Telegram alerts now use a compact secure review button and provider-safe text
+  truncation, so long AI drafts cannot cause a Telegram delivery failure.
 
 ### Fixed
 
+- The Windows test companion now identifies its native WebView so the login page
+  offers its supported password sign-in path rather than a Google OAuth button
+  that requires a separate browser/deep-link flow.
 - Replaced the incompatible implicit Supabase invitation/recovery callback with
   a server-side token-hash confirmation route that establishes SSR cookies
   before password setup, while preserving approval and MFA controls.

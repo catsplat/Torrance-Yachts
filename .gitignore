@@ -87,6 +87,15 @@ out
 .vercel
 next-env.d.ts
 
+# Tauri/Rust build output. The source configuration and Cargo.lock are tracked;
+# the installer is a local test artefact and must never be committed.
+src-tauri/target/
+src-tauri/gen/
+# The first companion targets Windows only. Keep the generated Windows icon and
+# ignore platform variants until those platform installers are deliberately built.
+src-tauri/icons/*
+!src-tauri/icons/icon.ico
+
 # Operating system and IDE files
 .DS_Store
 Thumbs.db

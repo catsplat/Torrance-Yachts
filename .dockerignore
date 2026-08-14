@@ -2,7 +2,9 @@
 .github
 .learnings
 .next
+.next/
 .artifacts
+.artifacts/
 automation/.env
 deploy/production/.env
 .env
@@ -12,3 +14,11 @@ node_modules
 next-dev.stderr.log
 next-dev.stdout.log
 docs
+coverage
+coverage/
+playwright-report
+playwright-report/
+test-results
+test-results/
+src-tauri
+src-tauri/

@@ -22,10 +22,10 @@ jobs:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -48,10 +48,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Supabase CLI
-        uses: supabase/setup-cli@v3
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3
         with:
           version: 2.109.1
 
@@ -74,10 +74,10 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -89,7 +89,7 @@ jobs:
         run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Set up Supabase CLI
-        uses: supabase/setup-cli@v3
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3
         with:
           version: 2.109.1
 
@@ -106,7 +106,7 @@ jobs:
 
       - name: Publish browser failure evidence
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: browser-acceptance-report
           path: |
@@ -125,7 +125,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Validate automation workflow JSON
         run: npm run automation:validate
@@ -138,8 +138,49 @@ jobs:
       - name: Validate production Compose package
         run: npm run production:validate
 
+      - name: Validate lean CX23 self-hosted package
+        run: npm run production:validate:cx23
+
+      - name: Validate hosted VPS bootstrap package
+        run: npm run host:bootstrap:validate
+
       - name: Verify browser/server secret boundaries
         run: npm run security:boundaries
 
       - name: Build and smoke-test production application image
         run: npm run production:smoke
+
+  desktop:
+    name: Windows desktop companion
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm install --global npm@11.6.2; npm ci
+
+      - name: Select the Tauri MSVC toolchain
+        run: rustup default stable-msvc
+
+      - name: Verify, compile, test and package the NSIS installer
+        run: |
+          npm run desktop:verify
+          npm run desktop:check
+          cargo test --manifest-path src-tauri/Cargo.toml
+          npm run desktop:build
+
+      - name: Publish unsigned test installer
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: windows-tauri-test-installer
+          path: src-tauri/target/release/bundle/nsis/*-setup.exe
+          if-no-files-found: error
+          retention-days: 14

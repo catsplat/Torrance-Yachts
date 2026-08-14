@@ -5,6 +5,7 @@ import { useActionState } from "react"
 import {
   generateContractAiSuggestionAction,
   generateEmailAiSuggestionAction,
+  createEmailGmailDraftAction,
   reviseContractAiSuggestionAction,
   reviseEmailAiSuggestionAction,
   reviewAiSuggestionAction,
@@ -122,6 +123,19 @@ function AiReviewDecisionForm({
   )
 }
 
+function EmailGmailDraftForm({ suggestionId }: { suggestionId: string }) {
+  const [state, action, pending] = useActionState(createEmailGmailDraftAction, initialState)
+  return (
+    <form action={action} className="flex flex-wrap items-center gap-3">
+      <input name="suggestionId" type="hidden" value={suggestionId} />
+      <Button disabled={pending} type="submit" variant="outline">
+        {pending ? "Creating Gmail draft…" : "Create Gmail draft"}
+      </Button>
+      <Feedback state={state} />
+    </form>
+  )
+}
+
 function NullableInput({
   defaultValue,
   label,
@@ -161,6 +175,9 @@ export function EmailAiSuggestionReview({
           <p className="text-sm font-medium">{output.draft.subject || "No draft subject"}</p>
           <p className="mt-2 whitespace-pre-wrap text-sm">{output.draft.body || "No draft body"}</p>
         </div>
+        {status === "approved" && output.classification === "new_enquiry" ? (
+          <EmailGmailDraftForm suggestionId={suggestionId} />
+        ) : null}
         <p className="text-xs text-muted-foreground">
           This suggestion is {status.replace("_", " ")} and is retained for audit.
         </p>
