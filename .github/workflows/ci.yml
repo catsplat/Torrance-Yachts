@@ -229,7 +229,10 @@ jobs:
     needs: changes
     if: needs.changes.outputs.docs_only != 'true'
     runs-on: windows-latest
-    timeout-minutes: 20
+    # A cold Windows runner can complete the installer build at the 20-minute
+    # boundary, then be cancelled while saving the Cargo cache. Leave a small
+    # bounded margin for that cleanup without allowing an unbounded native job.
+    timeout-minutes: 25
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
