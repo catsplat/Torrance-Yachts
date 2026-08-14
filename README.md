@@ -58,13 +58,19 @@ n8n remains available for development and rehearsal only.
 
 ## Quality and release discipline
 
-Every pull request runs five independent checks:
+Every pull request receives a fast documentation check. Any change outside
+Markdown/documentation paths runs five additional independent release checks:
 
 1. linting, strict TypeScript, production build and dependency audit;
 2. migrations, Row Level Security tests and database linting;
 3. Chromium, Firefox and WebKit acceptance scenarios;
 4. automation, recovery, secret-boundary and production-container checks; and
 5. Windows Tauri compile, test and unsigned installer packaging.
+
+This keeps housekeeping changes quick without allowing source, database,
+deployment, workflow or desktop changes to bypass the release suite. Until the
+private repository plan supports required GitHub status checks, `main` must only
+be merged after the applicable checks have completed successfully.
 
 The complete local release gate is:
 

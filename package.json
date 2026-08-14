@@ -36,6 +36,7 @@
     "production:validate:cx23": "node ops/validate-selfhosted-cx23-package.mjs",
     "host:bootstrap:validate": "node ops/validate-hosted-bootstrap.mjs",
     "security:boundaries": "node ops/validate-secret-boundaries.mjs",
+    "docs:check": "node ops/validate-documentation.mjs",
     "release:verify": "node ops/release-verify.mjs",
     "desktop:dev": "tauri dev --config src-tauri/tauri.conf.json",
     "desktop:build": "tauri build --config src-tauri/tauri.conf.json --bundles nsis",

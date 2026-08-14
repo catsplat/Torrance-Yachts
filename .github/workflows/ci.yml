@@ -14,8 +14,70 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Change classification
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      docs_only: ${{ steps.classify.outputs.docs_only }}
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Classify the changed paths
+        id: classify
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+
+          # A zero base SHA is possible on a new branch push. Treat it as a
+          # full validation request rather than attempting a partial diff.
+          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > changed-files.txt
+          if [[ ! -s changed-files.txt ]]; then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          docs_only=true
+          while IFS= read -r path; do
+            case "$path" in
+              *.md|docs/*|catalog/*) ;;
+              *) docs_only=false; break ;;
+            esac
+          done < changed-files.txt
+
+          echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
+
+  documentation:
+    name: Documentation validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Validate documentation links and catalogue JSON
+        run: npm run docs:check
+
   quality:
     name: Lint, typecheck, build, and audit
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -44,6 +106,8 @@ jobs:
 
   database:
     name: Migrations, RLS tests, and database lint
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -70,6 +134,8 @@ jobs:
 
   browser:
     name: Cross-browser acceptance
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -84,6 +150,12 @@ jobs:
 
       - name: Install locked dependencies
         run: npm install --global npm@11.6.2 && npm ci
+
+      - name: Restore Playwright browser cache
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install browser runtimes
         run: npx playwright install --with-deps chromium firefox webkit
@@ -121,6 +193,8 @@ jobs:
 
   operations:
     name: Deployment and recovery package
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -152,6 +226,8 @@ jobs:
 
   desktop:
     name: Windows desktop companion
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
@@ -166,6 +242,17 @@ jobs:
 
       - name: Install locked dependencies
         run: npm install --global npm@11.6.2; npm ci
+
+      - name: Restore Cargo and Tauri build cache
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: |
+            ~\.cargo\registry
+            ~\.cargo\git
+            src-tauri\target
+          key: cargo-tauri-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock', 'src-tauri/Cargo.toml') }}
+          restore-keys: |
+            cargo-tauri-${{ runner.os }}-
 
       - name: Select the Tauri MSVC toolchain
         run: rustup default stable-msvc
