@@ -11,12 +11,32 @@
   exact tag;
 - no live data, credentials or private business values are present in Git.
 
+## First-host staging on one CX23
+
+The initial budget includes one VPS. Follow the synthetic-staging process in
+[ADR 0046](../decisions/0046-single-vps-temporal-staging.md): deploy the
+environment-specific staging image to `staging.<approved-domain>`, accept it
+using fictional data only, then take a final evidence backup and reset database
+and Storage volumes before building and deploying the separate production image
+to the approved production hostname. Never run staging and production against
+the same database or browser-safe Supabase configuration.
+
+After independently confirming the staging backup/restore evidence, the
+authorised VPS operator records its safe evidence reference and runs:
+
+```sh
+./reset-temporal-staging.sh "<backup-evidence-reference>" DESTROY_SYNTHETIC_STAGING
+```
+
+The script refuses any non-staging environment or hostname and removes only the
+private Supabase database/Storage Compose volumes. It does not reset production
+and does not remove the protected runtime `.env` file.
+
 ## GitHub environments
 
 Create protected `staging` and `production` environments. Require a reviewer for
 production. Configure these secrets independently in each environment:
 
-- `SUPABASE_DB_URL`
 - `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_HOST_KEY`
 
 Configure `DEPLOY_PATH` as an environment variable. Both environments also
@@ -83,14 +103,17 @@ Docker network so it does not loop back through Cloudflare Access.
 3. Start **Deploy approved release** for `staging`, enter the same source tag,
    and confirm the backup. The workflow rejects an unversioned, mutable, or
    cross-environment image before copying any runtime package.
-4. Review the migration dry-run in Actions. The workflow applies migrations,
-   copies the small runtime package, confirms the image labels match the exact
-   reviewed Git revision, resolves the verified image to a digest and waits for
-   container health.
+4. The workflow copies the reviewed migration directory and small runtime
+   package to the VPS. The private host starts its lean Supabase core and applies
+   pending SQL migrations through its local `db` container—GitHub Actions never
+   receives a PostgreSQL connection string. It then confirms image labels match
+   the exact reviewed Git revision, resolves the verified image to a digest and
+   waits for container health.
 5. The target-side verifier then confirms that the deployment `.env` remains
-   mode `600`, App/worker/ClamAV have no published host ports, all expected
-   containers are running, the immutable digest retains the expected OCI labels,
-   and the internal App/worker/ClamAV health endpoints respond.
+   mode `600`, App/worker/ClamAV and the private Supabase services have no
+   published host ports, all expected containers are running, the immutable
+   digest retains the expected OCI labels, all reviewed migrations are present,
+   and internal App/ClamAV/Supabase health endpoints respond.
 6. Verify Cloudflare Access, login/MFA, `/api/health/live`, authenticated
    readiness, scanner, scheduler, a synthetic notification, and a synthetic
    workflow. Record the image digest, migration list, operator, checks and

@@ -4,6 +4,17 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Fixed
+
+- Replaced the contradictory hosted deployment path that still copied a retired
+  n8n runtime and attempted to migrate a private database from GitHub Actions.
+  The CX23 release workflow now stages reviewed migrations on the VPS, applies
+  them only through the private Supabase database container, verifies the lean
+  runtime, and uses a temporary read-only GHCR pull credential.
+- Recorded the synthetic, temporal staging process for the initial single VPS:
+  staging uses its own hostname and image, then is backed up and reset before a
+  separate production image and empty operational database are introduced.
+
 ### Documentation
 
 - Reframed the repository entry points around a release-ready, privately hosted

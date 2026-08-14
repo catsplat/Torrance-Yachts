@@ -45,6 +45,8 @@ const compose = readFileSync("deploy/self-hosted-cx23/docker-compose.yml", "utf8
 const supabaseCore = readFileSync("deploy/self-hosted-cx23/supabase-core.compose.yml", "utf8")
 const worker = readFileSync("ops/automation-worker.mjs", "utf8")
 const bootstrap = readFileSync("ops/bootstrap-selfhosted-supabase.sh", "utf8")
+const migrationRunner = readFileSync("ops/apply-selfhosted-migrations.sh", "utf8")
+const stagingReset = readFileSync("ops/reset-temporal-staging.sh", "utf8")
 for (const required of ["app:", "worker:", "clamav:", "cloudflared:", "SUPABASE_INTERNAL_URL: http://kong:8000", "external: true", "torrance-internal"]) {
   if (!compose.includes(required)) throw new Error(`CX23 Compose package is missing: ${required}`)
 }
@@ -62,5 +64,16 @@ for (const required of ["dispatch-alerts", "dispatch-google-workspace", "AUTOMAT
 }
 for (const required of ["86854671e95be31e24fa0785cded0579fe692fcb", "--depth 1", "self-hosted-cx23.env.example", "Run as the non-root deployment user"]) {
   if (!bootstrap.includes(required)) throw new Error(`Pinned Supabase bootstrap is missing: ${required}`)
+}
+for (const required of [
+  "supabase_migrations.schema_migrations",
+  "Self-hosted migration $mode completed",
+  "core_compose exec -T db psql",
+  "apply|verify",
+]) {
+  if (!migrationRunner.includes(required)) throw new Error(`Self-hosted migration runner is missing: ${required}`)
+}
+for (const required of ["DESTROY_SYNTHETIC_STAGING", "APP_ENVIRONMENT is not staging", "staging.*", "core_compose down --volumes"]) {
+  if (!stagingReset.includes(required)) throw new Error(`Temporal staging reset is missing: ${required}`)
 }
 console.log("Self-hosted CX23 package contract is internally consistent.")
