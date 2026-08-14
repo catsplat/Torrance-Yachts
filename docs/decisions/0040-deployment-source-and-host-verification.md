@@ -20,16 +20,16 @@ enough evidence that the private host package obeys its operational boundary.
   non-secret operational evidence.
 - After every deployment, a target-side verifier confirms the `.env` mode,
   immutable digest deployment, expected running services, no host ports for the
-  application/n8n/ClamAV services, matching OCI labels and internal health
-  endpoints.
+  application/worker/ClamAV and private Supabase services, matching OCI labels,
+  applied reviewed migrations and internal health endpoints.
 - The verifier prints only safe deployment evidence; it never reads or outputs
   secret values from `.env`.
 - Every third-party GitHub Action used by the CI, image-build and deployment
   workflows is pinned to a full commit SHA. The release-package validator rejects
   a moving action tag or branch reference.
-- The n8n, ClamAV and Cloudflare Tunnel images in production Compose are pinned
-  to reviewed multi-architecture registry digests. Their readable version labels
-  are retained in adjacent comments for operator clarity.
+- The ClamAV and Cloudflare Tunnel images in the CX23 runtime Compose file are
+  pinned to reviewed multi-architecture registry digests. Local n8n is not part
+  of the hosted runtime.
 
 ## Consequences
 

@@ -8,7 +8,7 @@ services:
     cap_drop: ["ALL"]
     security_opt: ["no-new-privileges:true"]
     pids_limit: 256
-    mem_limit: 1152m
+    mem_limit: 896m
     cpus: 1.0
     environment:
       POSTGRES_HOST: /var/run/postgresql
@@ -47,7 +47,7 @@ services:
     cap_drop: ["ALL"]
     security_opt: ["no-new-privileges:true"]
     pids_limit: 128
-    mem_limit: 256m
+    mem_limit: 192m
     cpus: 0.4
     depends_on:
       db: { condition: service_healthy }
@@ -102,7 +102,7 @@ services:
     cap_drop: ["ALL"]
     security_opt: ["no-new-privileges:true"]
     pids_limit: 128
-    mem_limit: 192m
+    mem_limit: 128m
     cpus: 0.3
     depends_on:
       db: { condition: service_healthy }
@@ -135,7 +135,7 @@ services:
     cap_drop: ["ALL"]
     security_opt: ["no-new-privileges:true"]
     pids_limit: 192
-    mem_limit: 384m
+    mem_limit: 256m
     cpus: 0.45
     depends_on:
       db: { condition: service_healthy }
@@ -177,7 +177,7 @@ services:
     cap_drop: ["ALL"]
     security_opt: ["no-new-privileges:true"]
     pids_limit: 160
-    mem_limit: 256m
+    mem_limit: 192m
     cpus: 0.4
     depends_on:
       auth: { condition: service_healthy }

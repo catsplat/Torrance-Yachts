@@ -24,9 +24,36 @@ test ${#expected_revision} -eq 40 || {
 }
 
 test -f .env || { echo "Deployment .env is missing." >&2; exit 2; }
-test -f docker-compose.yml || { echo "Production Compose file is missing." >&2; exit 2; }
+test -f docker-compose.yml || { echo "Application Compose file is missing." >&2; exit 2; }
+test -f supabase-core.compose.yml || { echo "Self-hosted Supabase Compose file is missing." >&2; exit 2; }
+test -x apply-selfhosted-migrations.sh || { echo "Self-hosted migration script is missing or not executable." >&2; exit 2; }
 
-docker pull "$requested_image"
+ghcr_username=$(sed -n 's/^GHCR_USERNAME=//p' .env | tail -n 1)
+ghcr_pull_token=$(sed -n 's/^GHCR_PULL_TOKEN=//p' .env | tail -n 1)
+test -n "$ghcr_username" || { echo "GHCR_USERNAME is missing from the protected deployment environment." >&2; exit 2; }
+test -n "$ghcr_pull_token" || { echo "GHCR_PULL_TOKEN is missing from the protected deployment environment." >&2; exit 2; }
+
+registry_auth_dir=$(mktemp -d)
+cleanup_registry_auth() {
+  rm -rf "$registry_auth_dir"
+}
+trap cleanup_registry_auth EXIT
+printf '%s' "$ghcr_pull_token" | DOCKER_CONFIG="$registry_auth_dir" docker login ghcr.io --username "$ghcr_username" --password-stdin >/dev/null
+unset ghcr_pull_token
+
+registry_docker() {
+  DOCKER_CONFIG="$registry_auth_dir" docker "$@"
+}
+
+core_compose() {
+  docker compose --env-file .env -f supabase-core.compose.yml "$@"
+}
+
+app_compose() {
+  docker compose --env-file .env "$@"
+}
+
+registry_docker pull "$requested_image"
 actual_environment=$(docker image inspect --format '{{index .Config.Labels "io.torrance.environment"}}' "$requested_image")
 actual_release=$(docker image inspect --format '{{index .Config.Labels "io.torrance.release-tag"}}' "$requested_image")
 actual_revision=$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$requested_image")
@@ -74,15 +101,30 @@ rollback() {
   if [ -f .env.previous ]; then
     cp .env.previous .env
     chmod 600 .env
-    docker compose --env-file .env pull app
-    docker compose --env-file .env up -d --remove-orphans
+    previous_image=$(sed -n 's/^APP_IMAGE=//p' .env | tail -n 1)
+    case "$previous_image" in
+      ghcr.io/*@sha256:*)
+        registry_docker compose --env-file .env pull app
+        app_compose up -d --remove-orphans
+        ;;
+      *)
+        echo "No prior immutable application image exists; retained the private Supabase core for diagnosis." >&2
+        ;;
+    esac
   fi
 }
 
+# Supabase is started only on the private Docker network. The source migration
+# directory is staged by GitHub Actions and applied here, never from a public
+# runner that would need database access.
+core_compose config --quiet
+core_compose up -d --wait --wait-timeout 240
+./apply-selfhosted-migrations.sh apply
+
 trap rollback HUP INT TERM
-docker compose --env-file .env config --quiet
-docker compose --env-file .env pull
-if ! docker compose --env-file .env up -d --remove-orphans --wait --wait-timeout 240; then
+app_compose config --quiet
+registry_docker compose --env-file .env pull
+if ! app_compose up -d --remove-orphans --wait --wait-timeout 240; then
   rollback
   echo "Deployment failed health checks and was rolled back." >&2
   exit 1

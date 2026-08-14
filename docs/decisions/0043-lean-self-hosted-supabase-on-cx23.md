@@ -27,6 +27,12 @@ The exact official Supabase source revision is pinned by
 Tunnel will route the private application hostname and Supabase browser API paths
 only after the client owns a domain and Tunnel configuration.
 
+The final hard limits total 2.8 GB across application services, Supabase core,
+ClamAV and Cloudflare Tunnel, leaving measured operating-system and Docker
+headroom on the 3.8 GB host. A 1 GB encrypted-permission swap file with low
+swappiness is configured on the empty VPS as a burst buffer; it is not treated
+as normal operating capacity.
+
 ## Consequences
 
 - The CX23 must be monitored during synthetic staging acceptance. A memory or

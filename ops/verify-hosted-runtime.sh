@@ -24,7 +24,9 @@ test ${#expected_revision} -eq 40 || {
 }
 
 test -f .env || { echo "Deployment .env is missing." >&2; exit 2; }
-test -f docker-compose.yml || { echo "Production Compose file is missing." >&2; exit 2; }
+test -f docker-compose.yml || { echo "Application Compose file is missing." >&2; exit 2; }
+test -f supabase-core.compose.yml || { echo "Self-hosted Supabase Compose file is missing." >&2; exit 2; }
+test -x apply-selfhosted-migrations.sh || { echo "Self-hosted migration script is missing or not executable." >&2; exit 2; }
 
 environment_file_mode=$(stat -c "%a" .env)
 test "$environment_file_mode" = "600" || {
@@ -32,19 +34,43 @@ test "$environment_file_mode" = "600" || {
   exit 2
 }
 
-docker compose --env-file .env config --quiet
+app_compose() {
+  docker compose --env-file .env "$@"
+}
 
-for mapping in "app 3000" "n8n 5678" "clamav 3310"; do
+core_compose() {
+  docker compose --env-file .env -f supabase-core.compose.yml "$@"
+}
+
+app_compose config --quiet
+core_compose config --quiet
+
+for mapping in "app 3000" "worker 3000" "clamav 3310"; do
   set -- $mapping
-  if docker compose --env-file .env port "$1" "$2" >/dev/null 2>&1; then
+  if app_compose port "$1" "$2" >/dev/null 2>&1; then
     echo "Internal service $1 unexpectedly has a host port." >&2
     exit 2
   fi
 done
 
-for service in app clamav n8n cloudflared; do
-  docker compose --env-file .env ps --status running --services | grep --fixed-strings --line-regexp "$service" >/dev/null || {
+for mapping in "db 5432" "auth 9999" "rest 3000" "storage 5000" "kong 8000"; do
+  set -- $mapping
+  if core_compose port "$1" "$2" >/dev/null 2>&1; then
+    echo "Private Supabase service $1 unexpectedly has a host port." >&2
+    exit 2
+  fi
+done
+
+for service in app worker clamav cloudflared; do
+  app_compose ps --status running --services | grep --fixed-strings --line-regexp "$service" >/dev/null || {
     echo "Required service $service is not running." >&2
+    exit 1
+  }
+done
+
+for service in db auth rest storage kong; do
+  core_compose ps --status running --services | grep --fixed-strings --line-regexp "$service" >/dev/null || {
+    echo "Required private Supabase service $service is not running." >&2
     exit 1
   }
 done
@@ -72,8 +98,13 @@ test "$actual_revision" = "$expected_revision" || {
   exit 2
 }
 
-docker compose --env-file .env exec -T app wget --quiet --spider http://127.0.0.1:3000/api/health/live
-docker compose --env-file .env exec -T n8n wget --quiet --spider http://127.0.0.1:5678/healthz
-docker compose --env-file .env exec -T clamav clamdscan --ping 1 >/dev/null
+app_compose exec -T app wget --quiet --spider http://127.0.0.1:3000/api/health/live
+app_compose exec -T clamav clamdscan --ping 1 >/dev/null
+core_compose exec -T db pg_isready -U postgres -h localhost >/dev/null
+core_compose exec -T auth wget --quiet --spider http://127.0.0.1:9999/health
+core_compose exec -T rest postgrest --ready
+core_compose exec -T storage wget --quiet --spider http://127.0.0.1:5000/status
+core_compose exec -T kong kong health
+./apply-selfhosted-migrations.sh verify
 
 echo "Hosted runtime invariants passed: $expected_environment $expected_release $expected_revision $deployed_image"

@@ -6,9 +6,11 @@ const required = [
   ["NEXT_PUBLIC_SUPABASE_URL", "production Supabase URL"],
   ["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "Supabase publishable key"],
   ["SUPABASE_SECRET_KEY", "Supabase server secret"],
-  ["AUTOMATION_SHARED_SECRET", "application-to-n8n delivery secret"],
+  ["AUTOMATION_SHARED_SECRET", "application-owned worker delivery secret"],
+  ["BACKUP_DIRECTORY", "protected local encrypted backup directory"],
+  ["BACKUP_ENCRYPTION_RECIPIENT", "off-VPS age encryption recipient"],
+  ["BACKUP_RCLONE_REMOTE", "client-owned off-site backup destination"],
   ["MONITORING_SHARED_SECRET", "readiness-monitor secret"],
-  ["N8N_ENCRYPTION_KEY", "n8n credential encryption key"],
   ["GOOGLE_OAUTH_CLIENT_ID", "staff Google inbox OAuth application"],
   ["GOOGLE_OAUTH_CLIENT_SECRET", "staff Google inbox OAuth secret"],
   ["TELEGRAM_BOT_TOKEN", "company Telegram bot"],
@@ -60,7 +62,6 @@ if (appDomain && (appDomain.includes("://") || appDomain.includes("/") || appDom
 for (const name of [
   "AUTOMATION_SHARED_SECRET",
   "MONITORING_SHARED_SECRET",
-  "N8N_ENCRYPTION_KEY",
   "TELEGRAM_WEBHOOK_SECRET",
 ]) {
   if (present(name) && value(name).length < 32) {

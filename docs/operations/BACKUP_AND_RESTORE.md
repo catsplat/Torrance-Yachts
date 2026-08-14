@@ -22,6 +22,39 @@ migrations, protected runtime configuration and the verified exports above.
 - monthly checksum verification;
 - quarterly isolated restore drill and before every material migration.
 
+## CX23 export command
+
+Install `age` and `rclone` during server activation, configure the client-owned
+off-site rclone remote directly on the VPS, then run the protected export from
+the deployment directory:
+
+```sh
+./backup-production.sh
+```
+
+The script reads the local Docker `db` and Storage volume only. It requires a
+public `age` recipient and makes an encrypted local artifact with checksum. In
+production it refuses to succeed unless that artifact is copied to the configured
+off-site rclone destination. Keep the corresponding `age` private identity away
+from the VPS.
+
+## Hosted staging restore rehearsal
+
+Only after an export has completed and its private `age` identity is available
+outside the VPS, rehearse a recovery on the disposable staging hostname:
+
+```sh
+./restore-to-temporal-staging.sh \
+  <encrypted-artifact.tar.age> \
+  <protected-age-identity-file> \
+  RESTORE_SYNTHETIC_STAGING
+```
+
+The command rejects production and non-staging hostnames, verifies both archive
+checksums, restores database and private Storage content, and writes non-secret
+restore evidence. Inspect the restored operational counts before treating the
+rehearsal as accepted.
+
 ## Restore
 
 1. Declare the incident and disable integrations.

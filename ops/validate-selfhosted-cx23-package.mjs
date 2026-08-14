@@ -45,14 +45,23 @@ const compose = readFileSync("deploy/self-hosted-cx23/docker-compose.yml", "utf8
 const supabaseCore = readFileSync("deploy/self-hosted-cx23/supabase-core.compose.yml", "utf8")
 const worker = readFileSync("ops/automation-worker.mjs", "utf8")
 const bootstrap = readFileSync("ops/bootstrap-selfhosted-supabase.sh", "utf8")
+const migrationRunner = readFileSync("ops/apply-selfhosted-migrations.sh", "utf8")
+const stagingReset = readFileSync("ops/reset-temporal-staging.sh", "utf8")
+const stagingRestore = readFileSync("ops/backup/restore-to-temporal-staging.sh", "utf8")
 for (const required of ["app:", "worker:", "clamav:", "cloudflared:", "SUPABASE_INTERNAL_URL: http://kong:8000", "external: true", "torrance-internal"]) {
   if (!compose.includes(required)) throw new Error(`CX23 Compose package is missing: ${required}`)
+}
+for (const memoryContract of ["mem_limit: 384m", "mem_limit: 96m", "mem_limit: 640m", "mem_limit: 64m"]) {
+  if (!compose.includes(memoryContract)) throw new Error(`CX23 application memory profile is missing: ${memoryContract}`)
 }
 for (const forbidden of ["n8n:", "ports:", "studio:", "realtime:"]) {
   if (compose.includes(forbidden)) throw new Error(`CX23 Compose package must not contain: ${forbidden}`)
 }
 for (const required of ["db:", "auth:", "rest:", "storage:", "kong:", "ENABLE_IMAGE_TRANSFORMATION: \"false\"", "torrance-internal"]) {
   if (!supabaseCore.includes(required)) throw new Error(`Self-hosted Supabase core is missing: ${required}`)
+}
+for (const memoryContract of ["mem_limit: 896m", "mem_limit: 192m", "mem_limit: 128m", "mem_limit: 256m"]) {
+  if (!supabaseCore.includes(memoryContract)) throw new Error(`CX23 Supabase memory profile is missing: ${memoryContract}`)
 }
 for (const forbidden of ["studio:", "realtime:", "imgproxy:", "functions:", "supavisor:", "ports:"]) {
   if (supabaseCore.includes(forbidden)) throw new Error(`Self-hosted Supabase core must not contain: ${forbidden}`)
@@ -62,5 +71,19 @@ for (const required of ["dispatch-alerts", "dispatch-google-workspace", "AUTOMAT
 }
 for (const required of ["86854671e95be31e24fa0785cded0579fe692fcb", "--depth 1", "self-hosted-cx23.env.example", "Run as the non-root deployment user"]) {
   if (!bootstrap.includes(required)) throw new Error(`Pinned Supabase bootstrap is missing: ${required}`)
+}
+for (const required of [
+  "supabase_migrations.schema_migrations",
+  "Self-hosted migration $mode completed",
+  "core_compose exec -T db psql",
+  "apply|verify",
+]) {
+  if (!migrationRunner.includes(required)) throw new Error(`Self-hosted migration runner is missing: ${required}`)
+}
+for (const required of ["DESTROY_SYNTHETIC_STAGING", "APP_ENVIRONMENT is not staging", "staging.*", "core_compose down --volumes"]) {
+  if (!stagingReset.includes(required)) throw new Error(`Temporal staging reset is missing: ${required}`)
+}
+for (const required of ["RESTORE_SYNTHETIC_STAGING", "APP_ENVIRONMENT is not staging", "drop schema if exists public cascade", "Synthetic staging restore completed"]) {
+  if (!stagingRestore.includes(required)) throw new Error(`Temporal staging restore is missing: ${required}`)
 }
 console.log("Self-hosted CX23 package contract is internally consistent.")

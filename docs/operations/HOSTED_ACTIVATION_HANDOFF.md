@@ -69,6 +69,7 @@ this document:
 APP_DOMAIN                    APP_ENVIRONMENT
 APP_IMAGE                     DEPLOYMENT_VERSION
 CLOUDFLARE_TUNNEL_TOKEN       NEXT_PUBLIC_SUPABASE_URL
+GHCR_USERNAME                 GHCR_PULL_TOKEN
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 SUPABASE_SECRET_KEY           AUTOMATION_SHARED_SECRET
 POSTGRES_PASSWORD             JWT_SECRET
@@ -81,14 +82,28 @@ GOOGLE_SIGN_IN_ENABLED        TELEGRAM_BOT_TOKEN
 TELEGRAM_BOT_USERNAME         TELEGRAM_WEBHOOK_SECRET
 AI_PROVIDER                   OPENAI_API_KEY
 OPENAI_MODEL
+BACKUP_DIRECTORY              BACKUP_ENCRYPTION_RECIPIENT
+BACKUP_RCLONE_REMOTE
 ```
 
-Use `npm run production:preflight` only against an operator-controlled local copy
-of the file. It reports missing names and unsafe configuration but never prints
-values. The deployment script will reject unversioned/cross-environment images,
-missing secrets, exposed service ports and unhealthy containers.
+`GHCR_PULL_TOKEN` is a client-owned, read-only package credential. The deployment
+script uses it only through a temporary Docker credential directory while pulling
+the accepted image; it does not persist it in the deployment user's Docker login
+store. Use `npm run production:preflight` only against an operator-controlled
+local copy of the file. It reports missing names and unsafe configuration but
+never prints values. The deployment script rejects unversioned/cross-environment
+images, missing secrets, exposed service ports and unhealthy containers.
+
+Before live use, install `age` and `rclone` on the VPS, configure a client-owned
+off-site backup remote there, and retain the `age` private identity outside the
+VPS. The reviewed backup script refuses a production export without an encrypted
+off-site copy.
 
 ## Staging first
+
+With the initial single CX23, staging is synthetic and temporal rather than a
+second concurrently running server. See
+[Production deployment](PRODUCTION_DEPLOYMENT.md#first-host-staging-on-one-cx23).
 
 1. Create a client-owned **staging** hostname and Cloudflare Tunnel.
 2. Add its GitHub Environment secrets/variables directly in GitHub.

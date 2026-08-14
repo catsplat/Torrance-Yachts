@@ -207,7 +207,7 @@ jobs:
       - name: Validate backup tooling
         run: |
           bash -n ops/backup/backup-production.sh
-          node --check ops/backup/export-storage.mjs
+          bash -n ops/backup/restore-to-temporal-staging.sh
 
       - name: Validate production Compose package
         run: npm run production:validate

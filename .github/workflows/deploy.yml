@@ -67,21 +67,6 @@ jobs:
           IMAGE_TAG="$DEPLOYMENT_ENVIRONMENT-$RELEASE_TAG"
           docker manifest inspect "$IMAGE:$IMAGE_TAG" > requested-image-manifest.json
 
-      - name: Install pinned Supabase CLI
-        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3
-        with:
-          version: 2.109.1
-
-      - name: Review pending production migrations
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
-
-      - name: Apply reviewed migrations
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: supabase db push --db-url "$SUPABASE_DB_URL" --yes
-
       - name: Configure restricted SSH client
         env:
           VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
@@ -99,15 +84,20 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
         run: |
+          test "$DEPLOY_PATH" = "/opt/torrance-yachts"
           ssh "$VPS_USER@$VPS_HOST" "mkdir -p '$DEPLOY_PATH'"
-          scp deploy/production/docker-compose.yml ops/deploy-release.sh ops/verify-hosted-runtime.sh \
+          scp deploy/self-hosted-cx23/docker-compose.yml \
+            deploy/self-hosted-cx23/supabase-core.compose.yml \
+            ops/backup/backup-production.sh \
+            ops/backup/restore-to-temporal-staging.sh \
+            ops/deploy-release.sh \
+            ops/verify-hosted-runtime.sh \
+            ops/apply-selfhosted-migrations.sh \
             "$VPS_USER@$VPS_HOST:$DEPLOY_PATH/"
-          ssh "$VPS_USER@$VPS_HOST" "rm -rf '$DEPLOY_PATH/workflows.next' && mkdir -p '$DEPLOY_PATH/workflows.next'"
-          scp automation/workflows/01-core-scheduler.json \
-            automation/workflows/03-readiness-monitor.json \
-            "$VPS_USER@$VPS_HOST:$DEPLOY_PATH/workflows.next/"
+          ssh "$VPS_USER@$VPS_HOST" "rm -rf '$DEPLOY_PATH/migrations.next' && mkdir -p '$DEPLOY_PATH/migrations.next'"
+          scp supabase/migrations/*.sql "$VPS_USER@$VPS_HOST:$DEPLOY_PATH/migrations.next/"
           ssh "$VPS_USER@$VPS_HOST" \
-            "rm -rf '$DEPLOY_PATH/workflows.previous' && if test -d '$DEPLOY_PATH/workflows'; then mv '$DEPLOY_PATH/workflows' '$DEPLOY_PATH/workflows.previous'; fi && mv '$DEPLOY_PATH/workflows.next' '$DEPLOY_PATH/workflows'"
+            "rm -rf '$DEPLOY_PATH/migrations.previous' && if test -d '$DEPLOY_PATH/migrations'; then mv '$DEPLOY_PATH/migrations' '$DEPLOY_PATH/migrations.previous'; fi && mv '$DEPLOY_PATH/migrations.next' '$DEPLOY_PATH/migrations' && chmod 700 '$DEPLOY_PATH/apply-selfhosted-migrations.sh' '$DEPLOY_PATH/backup-production.sh' '$DEPLOY_PATH/restore-to-temporal-staging.sh' '$DEPLOY_PATH/deploy-release.sh' '$DEPLOY_PATH/verify-hosted-runtime.sh'"
 
       - name: Deploy and verify container health
         env:
