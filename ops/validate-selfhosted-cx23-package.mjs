@@ -50,11 +50,17 @@ const stagingReset = readFileSync("ops/reset-temporal-staging.sh", "utf8")
 for (const required of ["app:", "worker:", "clamav:", "cloudflared:", "SUPABASE_INTERNAL_URL: http://kong:8000", "external: true", "torrance-internal"]) {
   if (!compose.includes(required)) throw new Error(`CX23 Compose package is missing: ${required}`)
 }
+for (const memoryContract of ["mem_limit: 384m", "mem_limit: 96m", "mem_limit: 640m", "mem_limit: 64m"]) {
+  if (!compose.includes(memoryContract)) throw new Error(`CX23 application memory profile is missing: ${memoryContract}`)
+}
 for (const forbidden of ["n8n:", "ports:", "studio:", "realtime:"]) {
   if (compose.includes(forbidden)) throw new Error(`CX23 Compose package must not contain: ${forbidden}`)
 }
 for (const required of ["db:", "auth:", "rest:", "storage:", "kong:", "ENABLE_IMAGE_TRANSFORMATION: \"false\"", "torrance-internal"]) {
   if (!supabaseCore.includes(required)) throw new Error(`Self-hosted Supabase core is missing: ${required}`)
+}
+for (const memoryContract of ["mem_limit: 896m", "mem_limit: 192m", "mem_limit: 128m", "mem_limit: 256m"]) {
+  if (!supabaseCore.includes(memoryContract)) throw new Error(`CX23 Supabase memory profile is missing: ${memoryContract}`)
 }
 for (const forbidden of ["studio:", "realtime:", "imgproxy:", "functions:", "supavisor:", "ports:"]) {
   if (supabaseCore.includes(forbidden)) throw new Error(`Self-hosted Supabase core must not contain: ${forbidden}`)

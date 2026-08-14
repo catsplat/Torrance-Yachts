@@ -18,6 +18,8 @@ All notable project changes are recorded here. The format follows Keep a Changel
   private Postgres container and archives the private Storage volume directly,
   encrypts artifacts with `age`, and requires off-site rclone replication before
   a production backup can succeed.
+- Reduced the CX23 container memory envelope to leave meaningful host headroom
+  and documented its 1 GB low-swappiness emergency swap buffer.
 
 ### Documentation
 
