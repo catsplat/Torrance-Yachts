@@ -33,8 +33,14 @@
     "production:preflight": "node --env-file=deploy/production/.env ops/production-preflight.mjs",
     "production:smoke": "node ops/smoke-production-image.mjs",
     "production:validate": "node ops/validate-production-package.mjs",
+    "production:validate:cx23": "node ops/validate-selfhosted-cx23-package.mjs",
+    "host:bootstrap:validate": "node ops/validate-hosted-bootstrap.mjs",
     "security:boundaries": "node ops/validate-secret-boundaries.mjs",
-    "release:verify": "node ops/release-verify.mjs"
+    "release:verify": "node ops/release-verify.mjs",
+    "desktop:dev": "tauri dev --config src-tauri/tauri.conf.json",
+    "desktop:build": "tauri build --config src-tauri/tauri.conf.json --bundles nsis",
+    "desktop:check": "cargo check --manifest-path src-tauri/Cargo.toml",
+    "desktop:verify": "node ops/verify-desktop-companion.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -57,6 +63,7 @@
     "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
+    "@tauri-apps/cli": "2.11.4",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",

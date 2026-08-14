@@ -1,7 +1,9 @@
 import { LockKeyhole, ShipWheel } from "lucide-react"
+import { headers } from "next/headers"
 
 import { LoginForm } from "@/components/auth/login-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { isTauriDesktopUserAgent } from "@/lib/auth/desktop-client"
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -12,7 +14,7 @@ type LoginPageProps = {
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const params = await searchParams
+  const [params, requestHeaders] = await Promise.all([searchParams, headers()])
   const recovery = params.recovery
   const recoveryMessage = recovery === "complete"
     ? {
@@ -77,7 +79,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </p>
             ) : null}
             {oauthMessage ? <p aria-live="polite" className="mb-5 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm text-destructive" role="alert">{oauthMessage}</p> : null}
-            <LoginForm googleEnabled={process.env.GOOGLE_SIGN_IN_ENABLED === "true"} />
+            <LoginForm
+              desktopCompanion={isTauriDesktopUserAgent(requestHeaders.get("user-agent"))}
+              googleEnabled={process.env.GOOGLE_SIGN_IN_ENABLED === "true"}
+            />
             <div className="mt-6 flex gap-2 border-t pt-5 text-xs leading-5 text-muted-foreground">
               <LockKeyhole aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
               <p>Need access or a password reset? Contact your administrator.</p>

@@ -2,7 +2,7 @@
 
 ## Preconditions
 
-- client-owned managed Supabase project and private hostname exist;
+- client-owned private hostname, Cloudflare account and approved backup destination exist;
 - staging has passed migrations and synthetic acceptance;
 - Cloudflare Access identities and the outbound-only Tunnel are approved;
 - production SMTP, MFA and disabled public registration are verified;
@@ -43,16 +43,33 @@ key is used while building. Never reuse the production values in `staging`.
 8. Seed the n8n owner through the protected administration path. Import only the
    versioned core scheduler and readiness monitor; review before activation.
 
-## Managed Supabase checklist
+The idempotent Ubuntu preparation command and the exact secret/account handoff
+are maintained in [Hosted activation handoff](HOSTED_ACTIVATION_HANDOFF.md).
 
-- apply versioned migrations through the deployment workflow;
+## Self-hosted Supabase CX23 checklist
+
+The initial Hetzner CX23 is deliberately constrained to the essential Supabase
+core. Run `ops/bootstrap-selfhosted-supabase.sh` as the non-root deployment user
+to obtain the exact pinned upstream source and create the private baseline.
+Never start the full upstream Compose stack on this host. The release profile
+starts only PostgreSQL, Kong, Auth, REST and Storage, alongside the application,
+worker, ClamAV and Cloudflare Tunnel. Studio, Realtime, Analytics/Logs,
+Functions, imgproxy and Supavisor are intentionally absent.
+
+The app's browser configuration must use the private HTTPS hostname. Server-side
+database traffic uses `http://kong:8000` on the private `torrance-internal`
+Docker network so it does not loop back through Cloudflare Access.
+
+- create Supabase Auth/JWT keys only on the VPS secret file; never in Git;
+
+- apply versioned migrations from the reviewed release against the self-hosted database;
 - verify every exposed table has RLS and database tests pass;
 - configure production SMTP, site URL and exact redirect allow-list;
 - disable public registration and enforce the approved invitation flow;
 - require TOTP MFA in the application and test recovery administration;
 - create private quarantine/released Storage buckets and verify policies;
 - verify Vault access is service-only and user OAuth/AI secrets remain isolated;
-- configure platform backups/PITR as approved and complete a disposable restore;
+- configure encrypted database and Storage exports in addition to Hetzner Backups, then complete a disposable restore;
 - record indexes, database lint, backup evidence and restoration owner.
 
 ## Deploy
@@ -67,13 +84,18 @@ key is used while building. Never reuse the production values in `staging`.
    and confirm the backup. The workflow rejects an unversioned, mutable, or
    cross-environment image before copying any runtime package.
 4. Review the migration dry-run in Actions. The workflow applies migrations,
-   copies the small runtime package, resolves the verified image to a digest and
-   waits for container health.
-5. Verify Cloudflare Access, login/MFA, `/api/health/live`, authenticated
+   copies the small runtime package, confirms the image labels match the exact
+   reviewed Git revision, resolves the verified image to a digest and waits for
+   container health.
+5. The target-side verifier then confirms that the deployment `.env` remains
+   mode `600`, App/n8n/ClamAV have no published host ports, all expected
+   containers are running, the immutable digest retains the expected OCI labels,
+   and the internal App/n8n/ClamAV health endpoints respond.
+6. Verify Cloudflare Access, login/MFA, `/api/health/live`, authenticated
    readiness, scanner, scheduler, a synthetic notification, and a synthetic
    workflow. Record the image digest, migration list, operator, checks and
    result as staging evidence.
-6. Only after staged provider checks and staff acceptance, repeat the image
+7. Only after staged provider checks and staff acceptance, repeat the image
    build for `production` from the *same* source tag. Deploy
    `production-v0.19.1` with the production approval gate and repeat the
    documented checks.

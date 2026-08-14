@@ -1,7 +1,7 @@
 # ADR 0009: Dual hosted and local desktop distributions
 
-**Status:** Validated as a secondary future distribution; deferred from the first
-production launch
+**Status:** Full standalone distribution deferred from the first production launch;
+limited Windows local test shell delivered
 
 ## Context
 
@@ -14,6 +14,14 @@ The principal client computer is macOS. A Windows `.exe` therefore cannot be the
 only deliverable; equivalent signed macOS `.app`/`.dmg` packaging is required.
 
 ## Direction
+
+### Limited Windows local test shell
+
+- Permit a Windows-only Tauri shell for developer-machine testing.
+- Open only the already-running local web application on the fixed loopback
+  address; do not package services, data, credentials or a second backend.
+- Keep this unsigned NSIS output outside the client distribution path. Its scope
+  is recorded separately in ADR 0041.
 
 ### Primary: hosted web product
 
@@ -43,10 +51,11 @@ portable executable containing mutable databases and documents. The installer ca
 make setup effectively one-click while keeping data in a predictable, backed-up
 folder. The employee's computer must be powered on for scheduled automation.
 
-The packaged edition is investigated only after the hosted product's operational
-workflow and integrations are stable. PostgreSQL remains the source of truth in
-both distributions; neither deployment justifies replacing it with ad-hoc files
-or spreadsheets.
+The standalone packaged edition remains an investigation after the hosted product's
+operational workflow and integrations are stable. The local test shell does not
+alter this decision because it owns no operational services or data. PostgreSQL
+remains the source of truth in both future distributions; neither deployment
+justifies replacing it with ad-hoc files or spreadsheets.
 
 ## Phase 12 validation result
 

@@ -60,8 +60,8 @@ The current candidate provides the secured operational master-data, enquiry, off
 - token-protected one-time first-administrator setup with no public registration;
 - truthful integration-readiness status for Gmail, Telegram, n8n, Auth email,
   AI, and the audited manual Yachtfolio boundary;
-- a standalone Next.js/n8n/Cloudflare-Tunnel Linux production package and a separately
-  documented future desktop distribution;
+- a standalone Next.js/n8n/Cloudflare-Tunnel Linux production package and an unsigned,
+  loopback-only Windows Tauri test shell that does not package the application stack;
 - PostgreSQL Row Level Security and append-only audit events across all operational records and relationships;
 - Zod validation, a recoverable error boundary, and synthetic seed records;
 - fail-fast unit, database, route-contract, automation, build, dependency,
@@ -164,9 +164,12 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Provider-neutral human-reviewed AI decision](docs/decisions/0011-provider-neutral-human-reviewed-ai.md)
 - [Transactional integration outbox decision](docs/decisions/0012-transactional-integration-outbox.md)
 - [Production hosting topology decision](docs/decisions/0013-production-hosting-topology.md)
+- [Deployment source and host verification decision](docs/decisions/0040-deployment-source-and-host-verification.md)
+- [Credential-free hosted activation preparation](docs/decisions/0042-credential-free-hosted-activation-preparation.md)
 - [Personal alerts and encrypted OAuth decision](docs/decisions/0014-personal-alerts-encrypted-oauth.md)
 - [User state isolation](docs/security/USER_STATE_ISOLATION.md)
 - [Deployment architecture](docs/deployment.md)
+- [Windows local test companion](docs/desktop.md)
 - [Productionisation implementation register](docs/planning/PRODUCTIONISATION_IMPLEMENTATION.md)
 - [One-time administrator bootstrap decision](docs/decisions/0015-one-time-administrator-bootstrap.md)
 - [Local development setup](docs/development/LOCAL_SETUP.md)
@@ -204,6 +207,7 @@ Use a short-lived branch and pull request for every product change. The current 
 - [Phase 11 portfolio case study](docs/portfolio/INTEGRATIONS_AUTOMATION_CASE_STUDY.md)
 - [Phase 12 portfolio case study](docs/portfolio/LAUNCH_READINESS_CASE_STUDY.md)
 - [Production operations runbooks](docs/operations/PRODUCTION_DEPLOYMENT.md)
+- [Hosted activation handoff](docs/operations/HOSTED_ACTIVATION_HANDOFF.md)
 - [Email and integration activation](docs/operations/EMAIL_AND_INTEGRATION_ACTIVATION.md)
 - [Staff quick-start guide](docs/client/STAFF_QUICK_START.md)
 - [Security policy](SECURITY.md)

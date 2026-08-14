@@ -91,8 +91,13 @@ mail automatically.
 7. Send a synthetic internal alert and verify pairing, delivery, and failure
    history. Confirm that a reused pairing link is ignored.
 
-Broker, captain, booking, invoice, and status communications remain reviewable
-even when Telegram is connected.
+Telegram delivers concise internal alerts with a **Review in workspace** button.
+The button opens an authenticated application page; it does not approve, send, or
+change anything in Telegram. For a new enquiry, staff review the AI extraction,
+route the message as an enquiry, then select **Create Gmail draft**. The draft is
+created in that staff member's connected Gmail account and is never sent by the
+application. Broker, captain, booking, invoice, and status communications remain
+reviewable even when Telegram is connected.
 
 ## 6. n8n
 

@@ -2,7 +2,7 @@
 
 ## Current deployment status
 
-This repository contains the technically verified `v0.12.0` release candidate but
+This repository contains the technically verified `v0.19.1` pre-deployment candidate but
 is not yet approved for live Torrance Yachts data. Production approval requires
 all required evidence in `/settings/launch`, client-owned infrastructure and
 credentials, policy acceptance, staff acceptance, and recorded go-live sign-off.

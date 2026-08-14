@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Torrance Yachts</title>
+    <style>
+      :root { color-scheme: light dark; font-family: Inter, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { align-items: center; background: #f5f7f7; color: #172326; display: flex; justify-content: center; margin: 0; min-height: 100vh; padding: 24px; }
+      main { background: #fff; border: 1px solid #d8e0e0; border-radius: 16px; box-shadow: 0 16px 48px rgba(8, 37, 50, .12); max-width: 560px; padding: 40px; width: 100%; }
+      .mark { background: #082532; border-radius: 12px; color: #63d4bd; display: inline-flex; font-size: 24px; font-weight: 700; height: 48px; align-items: center; justify-content: center; width: 48px; }
+      h1 { font-size: 28px; letter-spacing: -.02em; margin: 24px 0 12px; }
+      p { color: #52666a; line-height: 1.55; margin: 0 0 16px; }
+      ol { color: #52666a; line-height: 1.6; margin: 0 0 24px; padding-left: 22px; }
+      a { background: #082532; border-radius: 8px; color: #fff; display: inline-block; font-weight: 600; padding: 12px 16px; text-decoration: none; }
+      a:focus-visible { outline: 3px solid #63d4bd; outline-offset: 3px; }
+      @media (prefers-color-scheme: dark) { body { background: #07181d; color: #eff7f6; } main { background: #10282e; border-color: #31515a; } p, ol { color: #bdd0d2; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark" aria-hidden="true">TY</div>
+      <h1>Local workspace is not running</h1>
+      <p>This companion opens the locally running Torrance Yachts workspace. It does not contain a second copy of the system or its data.</p>
+      <ol>
+        <li>Start Docker Desktop and run <code>npm run db:start</code> in the project folder.</li>
+        <li>Run <code>npm run dev</code>.</li>
+        <li>Open this companion again.</li>
+      </ol>
+      <a href="http://127.0.0.1:3000">Try the local workspace again</a>
+    </main>
+  </body>
+</html>

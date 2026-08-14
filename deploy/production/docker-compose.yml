@@ -54,7 +54,8 @@ services:
       - internal
 
   clamav:
-    image: clamav/clamav:1.5-debian13-slim
+    # 1.5-debian13-slim multi-architecture index, resolved 2026-08-14.
+    image: clamav/clamav@sha256:8117550b0e762eeabe5376c9f6f9c6adbf1a2da50c1bc70c08ae600930817523
     restart: unless-stopped
     cap_drop: ["ALL"]
     security_opt: ["no-new-privileges:true"]
@@ -78,7 +79,8 @@ services:
       - internal
 
   n8n:
-    image: docker.n8n.io/n8nio/n8n:2.30.5
+    # 2.30.5 multi-architecture index, resolved 2026-08-14.
+    image: docker.n8n.io/n8nio/n8n@sha256:450853cd21a2ce36587c4c860eb26927c1ceba9496bf55f4c213b5d3a6dc8c6f
     restart: unless-stopped
     read_only: true
     cap_drop: ["ALL"]
@@ -127,7 +129,8 @@ services:
       - internal
 
   cloudflared:
-    image: cloudflare/cloudflared:2026.7.0
+    # 2026.7.0 multi-architecture index, resolved 2026-08-14.
+    image: cloudflare/cloudflared@sha256:5e49861633763e8933475477c20bae6039ed47f32c1d267a34babc347f28f0df
     restart: unless-stopped
     depends_on:
       app:

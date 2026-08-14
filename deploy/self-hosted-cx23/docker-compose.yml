@@ -1,0 +1,137 @@
+# Lean hosted profile for the 4 GB Hetzner CX23.
+#
+# Supabase itself is bootstrapped from the pinned official release by
+# ops/bootstrap-selfhosted-supabase.sh. This Compose file owns only Torrance
+# services and joins its private Docker network. No service publishes a host
+# port; Cloudflare Tunnel is the sole ingress once configured.
+services:
+  app:
+    image: ${APP_IMAGE:?Set APP_IMAGE to an immutable GHCR digest}
+    restart: unless-stopped
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 192
+    mem_limit: 512m
+    cpus: 1.0
+    environment:
+      APP_BASE_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
+      APP_ENVIRONMENT: ${APP_ENVIRONMENT:-production}
+      DEPLOYMENT_IMAGE_ENVIRONMENT: ${DEPLOYMENT_IMAGE_ENVIRONMENT:?Set DEPLOYMENT_IMAGE_ENVIRONMENT}
+      DEPLOYMENT_VERSION: ${DEPLOYMENT_VERSION:?Set DEPLOYMENT_VERSION}
+      AUTH_SMTP_CONFIGURED: ${AUTH_SMTP_CONFIGURED:-false}
+      AUTOMATION_SHARED_SECRET: ${AUTOMATION_SHARED_SECRET:?Set AUTOMATION_SHARED_SECRET}
+      MONITORING_SHARED_SECRET: ${MONITORING_SHARED_SECRET:?Set MONITORING_SHARED_SECRET}
+      AI_PROVIDER: ${AI_PROVIDER:-local}
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: "3310"
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
+      GOOGLE_SIGN_IN_ENABLED: ${GOOGLE_SIGN_IN_ENABLED:-false}
+      INITIAL_ADMIN_SETUP_TOKEN: ${INITIAL_ADMIN_SETUP_TOKEN:-}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:?Set NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?Set NEXT_PUBLIC_SUPABASE_URL}
+      SUPABASE_INTERNAL_URL: http://kong:8000
+      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY:?Set SUPABASE_SECRET_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-}
+      TRUST_PROXY_HEADERS: "true"
+      MFA_ENFORCEMENT_ENABLED: "true"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:3000/api/health/live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=48m
+    logging:
+      driver: local
+      options: { max-file: "3", max-size: "8m" }
+    networks: [torrance_internal]
+
+  worker:
+    image: ${APP_IMAGE:?Set APP_IMAGE to an immutable GHCR digest}
+    command: ["node", "ops/automation-worker.mjs"]
+    restart: unless-stopped
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 96
+    mem_limit: 128m
+    cpus: 0.35
+    depends_on:
+      app: { condition: service_healthy }
+    environment:
+      APP_ENVIRONMENT: ${APP_ENVIRONMENT:-production}
+      AUTOMATION_HEARTBEAT_FILE: /var/run/torrance/heartbeat
+      AUTOMATION_INTERVAL_MS: "60000"
+      AUTOMATION_SHARED_SECRET: ${AUTOMATION_SHARED_SECRET:?Set AUTOMATION_SHARED_SECRET}
+      TORRANCE_APP_URL: http://app:3000
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /var/run/torrance/heartbeat && test $$(($$(date +%s) - $$(stat -c %Y /var/run/torrance/heartbeat))) -lt 180"]
+      interval: 45s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+      - /var/run/torrance:rw,noexec,nosuid,size=1m
+    logging:
+      driver: local
+      options: { max-file: "3", max-size: "8m" }
+    networks: [torrance_internal]
+
+  clamav:
+    image: clamav/clamav@sha256:8117550b0e762eeabe5376c9f6f9c6adbf1a2da50c1bc70c08ae600930817523
+    restart: unless-stopped
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 256
+    mem_limit: 768m
+    cpus: 0.75
+    healthcheck:
+      test: ["CMD-SHELL", "clamdscan --ping 1 >/dev/null 2>&1"]
+      interval: 45s
+      timeout: 10s
+      retries: 10
+      start_period: 240s
+    volumes:
+      - clamav_data:/var/lib/clamav
+    logging:
+      driver: local
+      options: { max-file: "3", max-size: "8m" }
+    networks: [torrance_internal]
+
+  cloudflared:
+    image: cloudflare/cloudflared@sha256:5e49861633763e8933475477c20bae6039ed47f32c1d267a34babc347f28f0df
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?Set CLOUDFLARE_TUNNEL_TOKEN}
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 96
+    mem_limit: 128m
+    cpus: 0.2
+    depends_on:
+      app: { condition: service_healthy }
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    logging:
+      driver: local
+      options: { max-file: "3", max-size: "8m" }
+    networks: [torrance_internal]
+
+networks:
+  torrance_internal:
+    external: true
+    name: torrance-internal
+
+volumes:
+  clamav_data:

@@ -3,6 +3,7 @@ set -eu
 
 requested_image=${1:-}
 expected_environment=${2:-}
+expected_revision=${3:-}
 
 case "$expected_environment" in
   staging|production) ;;
@@ -14,12 +15,21 @@ case "$requested_image" in
   *) echo "Refusing an image that is not versioned for $expected_environment." >&2; exit 2 ;;
 esac
 
+case "$expected_revision" in
+  ""|*[!0-9a-f]*) echo "Expected source revision must be a lowercase Git SHA." >&2; exit 2 ;;
+esac
+test ${#expected_revision} -eq 40 || {
+  echo "Expected source revision must be a 40-character Git SHA." >&2
+  exit 2
+}
+
 test -f .env || { echo "Deployment .env is missing." >&2; exit 2; }
 test -f docker-compose.yml || { echo "Production Compose file is missing." >&2; exit 2; }
 
 docker pull "$requested_image"
 actual_environment=$(docker image inspect --format '{{index .Config.Labels "io.torrance.environment"}}' "$requested_image")
 actual_release=$(docker image inspect --format '{{index .Config.Labels "io.torrance.release-tag"}}' "$requested_image")
+actual_revision=$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$requested_image")
 requested_release=${requested_image##*:$expected_environment-}
 
 test "$actual_environment" = "$expected_environment" || {
@@ -28,6 +38,10 @@ test "$actual_environment" = "$expected_environment" || {
 }
 test "$actual_release" = "$requested_release" || {
   echo "Image label does not match the requested release tag." >&2
+  exit 2
+}
+test "$actual_revision" = "$expected_revision" || {
+  echo "Image source revision does not match the reviewed release tag." >&2
   exit 2
 }
 
@@ -76,4 +90,5 @@ fi
 trap - HUP INT TERM
 rm -f .env.previous
 printf '%s\n' "$requested_image" > .deployed-image
+printf '%s\n' "$expected_revision" > .deployed-revision
 echo "Deployment healthy: $resolved_image"

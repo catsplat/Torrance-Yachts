@@ -30,7 +30,7 @@ The project is successful when the full workflow described in this brief can be 
 - The developer is relatively new to large web applications and is most experienced with Python.
 - Development should minimise custom code by composing proven services and using AI-assisted implementation, while keeping business rules understandable and tested.
 - Development takes place on Windows. The principal user will access the finished product from macOS through a web browser.
-- A desktop wrapper such as Electron is optional and must not be part of the initial critical path.
+- A production desktop edition is optional and must not be part of the initial critical path. A Windows-only, loopback Tauri test shell may be used on the developer machine without changing the hosted delivery path.
 
 ## 3. Delivery constraints
 
@@ -120,7 +120,7 @@ These are the current architectural defaults, not permission to create paid serv
 - **AI:** a provider-neutral application interface, with OpenAI the likely first provider and Anthropic or local Ollama possible later.
 - **Primary integrations:** Gmail, Telegram, Google Drive, Google Calendar, and controlled Google Sheets synchronisation.
 - **External operational system:** Yachtfolio. The initial integration is a human task and confirmation because no safe supported API has yet been established.
-- **Production hosting:** selected as managed Supabase Pro plus a protected Linux VPS running the standalone Next.js application, local n8n Community Edition, ClamAV, and an outbound-only Cloudflare Tunnel protected by Cloudflare Access. Production purchase and activation remain subject to client approval. The fully local desktop package remains a separately documented future distribution.
+- **Production hosting:** selected as a cost-controlled Hetzner CX23 running a deliberately lean self-hosted Supabase core, the standalone Next.js application, application-owned scheduler, ClamAV, and an outbound-only Cloudflare Tunnel protected by Cloudflare Access. Local n8n remains a development/rehearsal tool; production activation remains subject to staged acceptance. The fully local desktop package remains a separately documented future distribution.
 
 Make.com may be used as a reference or prototype because an existing shared scenario was supplied, but it is not the intended core source of workflow logic. Logic essential to correctness must be represented in application code, database rules, or version-controlled n8n definitions.
 
@@ -421,7 +421,7 @@ The live internal application and any future open-source/portfolio edition must 
 
 - Public customer booking interface.
 - Native mobile app.
-- Electron desktop packaging unless web deployment proves insufficient.
+- A standalone desktop package with local services unless web deployment proves insufficient. The Windows loopback Tauri test shell is not that product and remains developer-test-only until native acceptance is complete.
 - Enterprise SSO and multi-organisation tenancy.
 - Large-scale/million-user architecture.
 - Fully autonomous AI actions.

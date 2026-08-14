@@ -75,7 +75,14 @@ if (process.platform === "win32") {
 }
 runNpm("Automation contracts", ["run", "automation:validate"])
 runNpm("Production package contracts", ["run", "production:validate"])
+runNpm("Lean CX23 self-hosted package contracts", ["run", "production:validate:cx23"])
+runNpm("Hosted VPS bootstrap contract", ["run", "host:bootstrap:validate"])
 runNpm("Client/server secret boundaries", ["run", "security:boundaries"])
+if (process.platform === "win32") {
+  runNpm("Desktop companion configuration", ["run", "desktop:verify"])
+  runNpm("Desktop companion compilation", ["run", "desktop:check"])
+  run("Desktop companion tests", "cargo", ["test", "--manifest-path", "src-tauri/Cargo.toml"])
+}
 runNpm("Production build", ["run", "build"])
 runNpm("Production container smoke test", ["run", "production:smoke"])
 runNpm("Production dependency audit", ["audit", "--omit=dev", "--audit-level=high"])

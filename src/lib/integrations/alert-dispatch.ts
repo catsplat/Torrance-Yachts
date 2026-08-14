@@ -10,6 +10,8 @@ type Delivery = Database["public"]["Tables"]["integration_deliveries"]["Row"]
 type AdminClient = SupabaseClient<Database>
 type FetchImplementation = typeof fetch
 
+const telegramMessageLimit = 4096
+
 function applicationBaseUrl() {
   return (process.env.APP_BASE_URL || "http://localhost:3000").replace(/\/+$/, "")
 }
@@ -28,6 +30,26 @@ function alertText(payload: Delivery["payload"]) {
   }
 }
 
+function truncateTelegramText(value: string) {
+  if (value.length <= telegramMessageLimit) return value
+  return `${value.slice(0, telegramMessageLimit - 1).trimEnd()}…`
+}
+
+export function formatTelegramAlert(payload: Delivery["payload"]) {
+  const alert = alertText(payload)
+  return {
+    ...(alert.link ? {
+      reply_markup: {
+        inline_keyboard: [[{
+          text: "Review in workspace",
+          url: alert.link,
+        }]],
+      },
+    } : {}),
+    text: truncateTelegramText([alert.title, alert.body].filter(Boolean).join("\n\n")),
+  }
+}
+
 async function dispatchTelegram(
   delivery: Delivery,
   signal?: AbortSignal,
@@ -43,14 +65,14 @@ async function dispatchTelegram(
   if (typeof recipient !== "string" || !recipient.trim()) {
     throw new Error("Telegram recipient is missing.")
   }
-  const alert = alertText(delivery.payload)
+  const alert = formatTelegramAlert(delivery.payload)
   const response = await request(
     `https://api.telegram.org/bot${encodeURIComponent(botToken)}/sendMessage`,
     {
       body: JSON.stringify({
         chat_id: recipient,
         disable_web_page_preview: true,
-        text: [alert.title, alert.body, alert.link].filter(Boolean).join("\n\n"),
+        ...alert,
       }),
       headers: { "Content-Type": "application/json" },
       method: "POST",

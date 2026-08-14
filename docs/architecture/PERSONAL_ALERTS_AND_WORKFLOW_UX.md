@@ -42,6 +42,12 @@ Stored operational fact
 Every user can configure their own destinations and topics in
 `Settings -> My alerts and connections`. In-app alerts remain the safe default.
 
+For a new enquiry, Telegram contains the sender, concise summary and suggested
+reply preview where configured, plus a secure **Review in workspace** button.
+The mobile review page requires the normal application session and MFA. Staff
+approve the suggestion and route the email before they can create a Gmail draft;
+neither Telegram nor AI can send the broker email.
+
 ## Task communication assistance
 
 The numbered workflow exposes preparation actions at the relevant task:

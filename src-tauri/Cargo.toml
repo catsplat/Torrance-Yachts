@@ -1,0 +1,13 @@
+[package]
+name = "torrance-yachts-desktop"
+version = "0.19.1"
+description = "Thin local companion for the Torrance Yachts Charter Operations Platform"
+authors = ["Torrance Yachts"]
+edition = "2021"
+rust-version = "1.77"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }

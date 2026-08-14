@@ -11,6 +11,7 @@ import {
   contractSuggestionRevisionSchema,
   emailAiRequestSchema,
   emailAiSuggestionSchema,
+  emailSuggestionGmailDraftSchema,
   emailSuggestionRevisionSchema,
 } from "@/lib/ai/schemas"
 import {
@@ -222,6 +223,70 @@ export async function reviewAiSuggestionAction(
       : "Suggestion rejected.",
     success: true,
   }
+}
+
+export async function createEmailGmailDraftAction(
+  _state: AiActionState,
+  formData: FormData,
+): Promise<AiActionState> {
+  const parsed = emailSuggestionGmailDraftSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return validationState(parsed.error)
+  const context = await contextOrMessage()
+  if ("message" in context) return context
+
+  const { data: suggestion, error: suggestionError } = await context.supabase
+    .from("ai_suggestions")
+    .select("id, source_id, status, reviewed_payload")
+    .eq("id", parsed.data.suggestionId)
+    .eq("analysis_kind", "email_triage")
+    .single()
+  if (suggestionError || !suggestion || suggestion.status !== "approved") {
+    return { message: "Approve the email suggestion before creating a Gmail draft." }
+  }
+  const output = emailAiSuggestionSchema.safeParse(suggestion.reviewed_payload)
+  if (!output.success || output.data.classification !== "new_enquiry" || output.data.draft.body.length < 2) {
+    return { message: "A valid approved new-enquiry reply is required before creating a Gmail draft." }
+  }
+
+  const { data: message, error: messageError } = await context.supabase
+    .from("email_messages")
+    .select("id, classification, sender_email, subject")
+    .eq("id", suggestion.source_id)
+    .single()
+  if (messageError || !message || message.classification !== "new_enquiry") {
+    return { message: "Route the email as a new enquiry before creating its Gmail draft." }
+  }
+  const { data: recipient, error: recipientError } = await context.supabase
+    .from("contacts")
+    .select("id")
+    .eq("active", true)
+    .eq("email", message.sender_email)
+    .maybeSingle()
+  if (recipientError || !recipient) {
+    return { message: "The sender contact is unavailable. Review the enquiry routing first." }
+  }
+  const draftTitle = (output.data.draft.subject || `Re: ${message.subject}`).trim().slice(0, 240)
+
+  const { error } = await context.supabase.rpc("create_notification", {
+    p_action_url: `/emails/${message.id}`,
+    p_body: output.data.draft.body,
+    p_channel: "email_draft",
+    p_idempotency_key: `email-suggestion-draft:${suggestion.id}`,
+    p_notification_type: "new_enquiry_gmail_draft",
+    p_priority: "normal",
+    p_recipient_contact_id: recipient.id,
+    p_recipient_user_id: null as unknown as string,
+    p_requires_approval: false,
+    p_source_id: suggestion.id,
+    p_source_type: "ai_suggestion",
+    p_title: draftTitle,
+  })
+  if (error) {
+    return { message: "The Gmail draft could not be created. Check your Gmail connection and integration status." }
+  }
+  revalidatePath("/integrations")
+  revalidatePath(`/emails/${message.id}`)
+  return { message: "Gmail draft queued. It has not been sent.", success: true }
 }
 
 export async function createCommunicationTemplateAction(

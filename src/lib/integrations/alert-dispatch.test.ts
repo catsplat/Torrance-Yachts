@@ -2,7 +2,11 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
 
-import { dispatchInternalAlert, safeDeliveryFailure } from "./alert-dispatch"
+import {
+  dispatchInternalAlert,
+  formatTelegramAlert,
+  safeDeliveryFailure,
+} from "./alert-dispatch"
 import { GoogleOAuthError } from "./google-workspace"
 
 type DeliveryFixture = Parameters<typeof dispatchInternalAlert>[1]
@@ -48,7 +52,7 @@ afterEach(() => {
 })
 
 describe("external alert provider contracts", () => {
-  it("formats a Telegram alert with the secure in-app review link", async () => {
+  it("formats a Telegram alert with a secure in-app review button", async () => {
     vi.stubEnv("TELEGRAM_BOT_TOKEN", "fictional-test-token")
     const request = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
       ok: true,
@@ -65,8 +69,28 @@ describe("external alert provider contracts", () => {
     expect(JSON.parse(String(options?.body))).toEqual({
       chat_id: "100000000",
       disable_web_page_preview: true,
-      text: "Fictional enquiry\n\nA fictional enquiry needs review.\n\nhttp://localhost:3000/emails/10000000-0000-4000-8000-000000000001",
+      reply_markup: {
+        inline_keyboard: [[{
+          text: "Review in workspace",
+          url: "http://localhost:3000/emails/10000000-0000-4000-8000-000000000001",
+        }]],
+      },
+      text: "Fictional enquiry\n\nA fictional enquiry needs review.",
     })
+  })
+
+  it("keeps Telegram text inside the provider limit without losing the review route", () => {
+    const alert = formatTelegramAlert({
+      action_url: "/emails/10000000-0000-4000-8000-000000000001",
+      body: "x".repeat(10_000),
+      title: "Fictional enquiry",
+    })
+
+    expect(alert.text).toHaveLength(4096)
+    expect(alert.text.endsWith("…")).toBe(true)
+    expect(alert.reply_markup?.inline_keyboard[0][0].url).toBe(
+      "http://localhost:3000/emails/10000000-0000-4000-8000-000000000001",
+    )
   })
 
   it("creates a Gmail draft rather than sending a broker-facing email", async () => {
