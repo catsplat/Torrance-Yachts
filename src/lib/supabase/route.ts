@@ -4,7 +4,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
-import { getSupabaseConfig } from "@/lib/supabase/config"
+import { getServerSupabaseConfig } from "@/lib/supabase/config"
 import type { Database } from "@/types/database"
 
 type PendingCookie = {
@@ -20,7 +20,7 @@ type PendingCookie = {
  */
 export async function createRouteClient() {
   const cookieStore = await cookies()
-  const { publishableKey, url } = getSupabaseConfig()
+  const { publishableKey, url } = getServerSupabaseConfig()
   let pendingCookies: PendingCookie[] = []
   let pendingHeaders: Record<string, string> = {}
 
