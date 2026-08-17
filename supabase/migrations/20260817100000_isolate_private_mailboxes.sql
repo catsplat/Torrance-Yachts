@@ -16,6 +16,8 @@ alter table public.email_ingestion_events
 -- Existing production rows must come from the explicitly selected mailbox.
 -- Keep the migration fail-closed if that ownership cannot be recovered rather
 -- than assigning private mail to an administrator as a convenience.
+select set_config('app.phase9_command', 'yes', true);
+
 update public.email_threads thread
 set owner_user_id = coalesce(
   (select settings.user_id
@@ -39,6 +41,8 @@ where message.id = event.message_id
 update public.email_threads
 set shared_at = coalesce(shared_at, updated_at)
 where enquiry_id is not null and shared_at is null;
+
+select set_config('app.phase9_command', '', true);
 
 do $$
 begin
