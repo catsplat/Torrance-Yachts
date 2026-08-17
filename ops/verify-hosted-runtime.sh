@@ -56,7 +56,7 @@ assert_no_host_port() {
   scope=$3
   mapping=$($scope port "$service" "$port" 2>&1 || true)
   case "$mapping" in
-    ""|"invalid IP:0") ;;
+    ""|"invalid IP:0"|"no port"*) ;;
     *) echo "$scope service $service unexpectedly has a host port: $mapping" >&2; exit 2 ;;
   esac
 }
