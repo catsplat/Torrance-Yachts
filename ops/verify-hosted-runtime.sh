@@ -50,21 +50,25 @@ core_compose() {
 app_compose config --quiet
 core_compose config --quiet
 
-for mapping in "app 3000" "worker 3000" "clamav 3310"; do
-  set -- $mapping
-  if app_compose port "$1" "$2" >/dev/null 2>&1; then
-    echo "Internal service $1 unexpectedly has a host port." >&2
-    exit 2
-  fi
-done
+assert_no_host_port() {
+  service=$1
+  port=$2
+  scope=$3
+  mapping=$($scope port "$service" "$port" 2>&1 || true)
+  case "$mapping" in
+    ""|"invalid IP:0") ;;
+    *) echo "$scope service $service unexpectedly has a host port: $mapping" >&2; exit 2 ;;
+  esac
+}
 
-for mapping in "db 5432" "auth 9999" "rest 3000" "storage 5000" "kong 8000"; do
-  set -- $mapping
-  if core_compose port "$1" "$2" >/dev/null 2>&1; then
-    echo "Private Supabase service $1 unexpectedly has a host port." >&2
-    exit 2
-  fi
-done
+assert_no_host_port app 3000 app_compose
+assert_no_host_port worker 3000 app_compose
+assert_no_host_port clamav 3310 app_compose
+assert_no_host_port db 5432 core_compose
+assert_no_host_port auth 9999 core_compose
+assert_no_host_port rest 3000 core_compose
+assert_no_host_port storage 5000 core_compose
+assert_no_host_port kong 8000 core_compose
 
 for service in gateway app worker clamav; do
   app_compose ps --status running --services | grep --fixed-strings --line-regexp "$service" >/dev/null || {
