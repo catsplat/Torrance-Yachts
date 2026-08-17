@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.3] - 2026-08-17
+
+### Fixed
+
+- Corrected the token-free VPS deployment path so the host uses the image
+  transferred by GitHub Actions and never attempts a registry operation.
+
 ## [0.19.2] - 2026-08-17
 
 ### Added
