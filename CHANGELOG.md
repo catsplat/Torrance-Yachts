@@ -27,6 +27,15 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Fixed
 
+- Aligned the self-hosted database image with the official local Supabase
+  runtime so the required `supabase_vault` encryption extension is available
+  for per-user integration credentials.
+- Restored the vendor PostgreSQL initialisation profile in self-hosted Compose;
+  the database can now initialise an empty volume and drop privileges to the
+  `postgres` account while all stateless containers retain their stricter
+  runtime boundary.
+- Increased the bounded hosted ClamAV memory allowance to accommodate the
+  current signature set during scanner start-up on the resized CX33 host.
 - Corrected hosted automation readiness so production reports the
   application-owned worker rather than incorrectly requiring local development
   n8n. The Operations and integration screens now describe the actual CX23

@@ -10,8 +10,10 @@ services:
     image: caddy:2.10.2-alpine@sha256:d8c17a862962def15cde69863a3a463f25a2664942eafd7bdbf050e9c3116b83
     restart: unless-stopped
     read_only: true
-    cap_drop: ["ALL"]
-    security_opt: ["no-new-privileges:true"]
+    # The official Caddy binary carries a file capability. Docker's
+    # no-new-privileges setting prevents that binary from being executed, so
+    # retain Docker's default capability set here rather than weakening the
+    # private network or loopback-only ingress boundary.
     pids_limit: 96
     mem_limit: 96m
     cpus: 0.2
@@ -111,7 +113,8 @@ services:
       start_period: 90s
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=16m
-      - /var/run/torrance:rw,noexec,nosuid,size=1m
+      # The worker runs as the non-root application user (UID/GID 1001).
+      - /var/run/torrance:rw,noexec,nosuid,size=1m,uid=1001,gid=1001,mode=0700
     logging:
       driver: local
       options: { max-file: "3", max-size: "8m" }
@@ -120,10 +123,14 @@ services:
   clamav:
     image: clamav/clamav@sha256:8117550b0e762eeabe5376c9f6f9c6adbf1a2da50c1bc70c08ae600930817523
     restart: unless-stopped
-    cap_drop: ["ALL"]
-    security_opt: ["no-new-privileges:true"]
+    # The vendor entrypoint must initialise and own its signature volume on
+    # first boot. It remains unexposed on the private Docker network with
+    # explicit resource and PID limits.
     pids_limit: 256
-    mem_limit: 640m
+    # The current ClamAV signature set exceeds a 640 MiB cgroup during first
+    # load. The CX33 has headroom; retain a bounded 1 GiB limit rather than
+    # letting the kernel repeatedly terminate the scanner.
+    mem_limit: 1024m
     cpus: 0.75
     healthcheck:
       test: ["CMD-SHELL", "clamdscan --ping 1 >/dev/null 2>&1"]

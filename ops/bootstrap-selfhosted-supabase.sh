@@ -31,6 +31,11 @@ if [ ! -d "$deployment_path/supabase/volumes" ]; then
   cp -R "$source_path/docker/volumes" "$deployment_path/supabase/"
 fi
 chmod -R go-rwx "$deployment_path/supabase/volumes"
+# Kong runs as an unprivileged container user and must read its two mounted
+# gateway files. Database initialisation files remain owner-only.
+chmod 0755 "$deployment_path/supabase/volumes/api"
+chmod 0644 "$deployment_path/supabase/volumes/api/kong.yml" \
+  "$deployment_path/supabase/volumes/api/kong-entrypoint.sh"
 
 if ! grep -q '^JWT_SECRET=.' "$deployment_path/.env"; then
   (
