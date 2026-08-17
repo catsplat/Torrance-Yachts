@@ -4,7 +4,7 @@ import { cache } from "react"
 import { z } from "zod"
 
 import { getDocumentScannerHealth } from "@/lib/documents/scanner"
-import { checkN8nHealth } from "@/lib/integrations/readiness"
+import { checkAutomationHealth } from "@/lib/integrations/readiness"
 import { createClient } from "@/lib/supabase/server"
 
 const healthSchema = z.object({
@@ -45,7 +45,7 @@ export const getOperationsWorkspace = cache(async () => {
   const [database, scanner, automation] = await Promise.all([
     supabase.rpc("get_operations_health"),
     getDocumentScannerHealth(),
-    checkN8nHealth(),
+    checkAutomationHealth(),
   ])
   if (database.error) throw new Error("Operations health could not be loaded.")
   return { automation, database: healthSchema.parse(database.data), scanner }

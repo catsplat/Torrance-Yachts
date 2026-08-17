@@ -50,14 +50,17 @@ key is used while building. Never reuse the production values in `staging`.
 1. Provision a supported Linux VPS with SSH keys, security updates, UTC time,
    provider backup, and a named recovery administrator.
 2. Install Docker Engine and Compose from their vendor packages.
-3. Authenticate Docker on the VPS to GHCR using a dedicated read-only package
-   credential owned by the client; do not use a developer's broad personal token.
+3. Do not authenticate Docker on the VPS to GHCR. The reviewed deployment
+   workflow transfers the accepted image from GitHub Actions and records its
+   immutable registry digest on the host.
 4. Permit inbound SSH only from the approved administration path. Do not expose
    application, scheduler, ClamAV, PostgreSQL or Ollama ports.
 5. Create `DEPLOY_PATH`, copy `deploy/self-hosted-cx23/.env.example` to `.env`,
    set mode `600`, and populate it from the approved secret store.
 6. Create a client-owned Cloudflare Tunnel whose only public hostname maps to
-   `http://app:3000`. Do not publish any internal service hostname.
+   `http://gateway:8080`. The private gateway routes application traffic and
+   the browser-facing Supabase API while Kong itself remains private. Do not
+   publish any internal service hostname.
 7. Configure Cloudflare Access as the perimeter layer. Supabase login, approved
    profile, AAL2 MFA, application authorisation and RLS remain mandatory behind it.
 8. Configure the application-owned scheduler with its protected automation
@@ -90,6 +93,9 @@ Docker network so it does not loop back through Cloudflare Access.
 - create private quarantine/released Storage buckets and verify policies;
 - verify Vault access is service-only and user OAuth/AI secrets remain isolated;
 - configure encrypted database and Storage exports in addition to Hetzner Backups, then complete a disposable restore;
+- after a manual encrypted export and checksum check, enable the reviewed
+  non-root daily `torrance-yachts-backup.timer` and verify it with the freshness
+  command in the backup runbook;
 - record indexes, database lint, backup evidence and restoration owner.
 
 ## Deploy

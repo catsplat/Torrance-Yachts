@@ -208,6 +208,8 @@ jobs:
         run: |
           bash -n ops/backup/backup-production.sh
           bash -n ops/backup/restore-to-temporal-staging.sh
+          bash -n ops/backup/verify-backup-freshness.sh
+          bash -n ops/install-backup-schedule.sh
 
       - name: Validate production Compose package
         run: npm run production:validate

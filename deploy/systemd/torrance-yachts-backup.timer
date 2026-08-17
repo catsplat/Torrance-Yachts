@@ -1,0 +1,12 @@
+[Unit]
+Description=Run the Torrance Yachts encrypted backup daily
+
+[Timer]
+OnCalendar=*-*-* 03:17:00 UTC
+Persistent=true
+RandomizedDelaySec=20m
+AccuracySec=1m
+Unit=torrance-yachts-backup.service
+
+[Install]
+WantedBy=timers.target

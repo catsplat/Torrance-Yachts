@@ -114,7 +114,7 @@ export const tutorialSteps: TutorialStep[] = [
     explanation:
       "Telegram messages, Gmail drafts, Drive copies, Sheets snapshots, and Calendar records use one observable, retry-safe delivery queue.",
     humanControl:
-      "Consequential messages remain held for human approval and n8n cannot change booking state.",
+      "Consequential messages remain held for human approval and automations cannot change booking state.",
     id: 8,
     practiceStage: "charter_active",
     route: "/integrations",

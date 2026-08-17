@@ -1,0 +1,9 @@
+# Temporary private-pilot ingress. It deliberately publishes the gateway only
+# to host loopback; Tailscale Serve is the sole remote path to it.
+#
+# Start with:
+# docker compose --env-file .env -f docker-compose.yml -f docker-compose.tailscale-pilot.yml up -d --wait
+services:
+  gateway:
+    ports:
+      - "127.0.0.1:3000:8080"

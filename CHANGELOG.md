@@ -1,11 +1,29 @@
 # Changelog
 
+## [0.19.2] - 2026-08-17
+
+### Added
+
+- Private Tailscale pilot ingress documentation, a loopback-only gateway
+  override and an authenticated gateway configuration script for use while the
+  client-controlled domain is pending.
+
+### Changed
+
+- Hosted ingress now uses a minimal internal gateway so the application and
+  browser-facing Supabase endpoints share one private origin without exposing
+  Kong or Docker services directly.
+
 All notable project changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning.
 
 ## [Unreleased]
 
 ### Fixed
 
+- Corrected hosted automation readiness so production reports the
+  application-owned worker rather than incorrectly requiring local development
+  n8n. The Operations and integration screens now describe the actual CX23
+  runtime.
 - Replaced the contradictory hosted deployment path that still copied a retired
   n8n runtime and attempted to migrate a private database from GitHub Actions.
   The CX23 release workflow now stages reviewed migrations on the VPS, applies
@@ -55,6 +73,10 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ### Added
 
+- Added a guarded, non-root daily encrypted-backup systemd timer for the CX23,
+  post-backup success/checksum evidence, and a freshness verifier. The timer can
+  only be enabled after an operator configures encryption and, in production,
+  an off-site backup destination.
 - Added an idempotent Ubuntu VPS bootstrap package, secret-free hosted activation
   handoff, and CI/release validation so provider configuration can be completed
   cleanly once client-owned staging infrastructure is available.

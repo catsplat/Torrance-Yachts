@@ -96,4 +96,19 @@ if [ -n "$offsite_remote" ]; then
   rclone copy "$artifact" "$artifact.sha256" "$offsite_remote"
 fi
 
+artifact_hash=$(awk '{print $1}' "$artifact.sha256")
+state_file="$backup_directory/latest-success.json"
+state_temporary="$temporary/latest-success.json"
+cat > "$state_temporary" <<EOF
+{
+  "createdAt": "$timestamp",
+  "environment": "$environment",
+  "artifact": "$(basename "$artifact")",
+  "artifactSha256": "$artifact_hash",
+  "offsiteReplication": $(if [ -n "$offsite_remote" ]; then printf true; else printf false; fi)
+}
+EOF
+chmod 600 "$state_temporary"
+mv "$state_temporary" "$state_file"
+
 echo "Encrypted private backup created: $(basename "$artifact")"

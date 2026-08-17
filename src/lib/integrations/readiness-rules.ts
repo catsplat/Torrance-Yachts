@@ -1,5 +1,16 @@
 export type ActivationState = "attention" | "manual" | "ready" | "setup_required"
 
+export function deriveAutomationRuntimeState({
+  environment,
+  sharedSecretConfigured,
+}: {
+  environment: "development" | "staging" | "production"
+  sharedSecretConfigured: boolean
+}): ActivationState {
+  if (environment === "development") return "setup_required"
+  return sharedSecretConfigured ? "ready" : "setup_required"
+}
+
 export function deriveGmailIngestionState({
   connectionEnabled,
   ingestionTokenConfigured,
