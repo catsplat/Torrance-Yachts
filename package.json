@@ -1,6 +1,6 @@
 {
   "name": "torrance-yachts-platform",
-  "version": "0.19.1",
+  "version": "0.19.2",
   "private": true,
   "packageManager": "npm@11.6.2",
   "engines": {

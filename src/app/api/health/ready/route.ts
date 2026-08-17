@@ -1,7 +1,7 @@
 import packageJson from "../../../../../package.json"
 
 import { getDocumentScannerHealth } from "@/lib/documents/scanner"
-import { checkN8nHealth } from "@/lib/integrations/readiness"
+import { checkAutomationHealth } from "@/lib/integrations/readiness"
 import { hasValidMonitoringToken } from "@/lib/operations/auth"
 import { getProductionConfigurationStatus } from "@/lib/tutorial/data"
 import { createAdminClient } from "@/lib/supabase/admin"
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
       supabase.rpc("get_operational_readiness", { p_environment: environment }),
       supabase.storage.listBuckets(),
       getDocumentScannerHealth(),
-      checkN8nHealth(),
+      checkAutomationHealth(),
     ])
     if (readiness.error) throw new Error("Readiness query failed")
     const operational = readiness.data as {

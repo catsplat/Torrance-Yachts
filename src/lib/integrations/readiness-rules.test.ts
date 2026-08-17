@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest"
 
-import { deriveGmailIngestionState } from "./readiness-rules"
+import { deriveAutomationRuntimeState, deriveGmailIngestionState } from "./readiness-rules"
+
+describe("automation runtime activation state", () => {
+  it("uses the application-owned worker outside development", () => {
+    expect(deriveAutomationRuntimeState({ environment: "staging", sharedSecretConfigured: true })).toBe("ready")
+    expect(deriveAutomationRuntimeState({ environment: "production", sharedSecretConfigured: false })).toBe("setup_required")
+  })
+
+  it("keeps local n8n optional in development", () => {
+    expect(deriveAutomationRuntimeState({ environment: "development", sharedSecretConfigured: true })).toBe("setup_required")
+  })
+})
 
 describe("Gmail ingestion activation state", () => {
   const now = new Date("2026-07-17T12:00:00.000Z")

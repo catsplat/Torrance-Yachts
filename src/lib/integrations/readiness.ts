@@ -1,7 +1,11 @@
 import "server-only"
 
 import { getAiConfigurationSummary } from "@/lib/ai/config"
-import { deriveGmailIngestionState, type ActivationState } from "@/lib/integrations/readiness-rules"
+import {
+  deriveAutomationRuntimeState,
+  deriveGmailIngestionState,
+  type ActivationState,
+} from "@/lib/integrations/readiness-rules"
 import { createAdminClient } from "@/lib/supabase/admin"
 
 export type ActivationCheck = {
@@ -19,24 +23,42 @@ type ActivationSnapshot = {
   telegram_user_count: number
 }
 
-export async function checkN8nHealth(): Promise<Pick<ActivationCheck, "detail" | "state">> {
+function applicationEnvironment(): "development" | "staging" | "production" {
+  if (process.env.APP_ENVIRONMENT === "production") return "production"
+  if (process.env.APP_ENVIRONMENT === "staging") return "staging"
+  return "development"
+}
+
+async function checkDevelopmentN8nHealth(): Promise<Pick<ActivationCheck, "detail" | "state">> {
   const healthUrl = process.env.N8N_HEALTH_URL?.trim()
-  if (!healthUrl) return { detail: "Set N8N_HEALTH_URL to the private /healthz endpoint, then activate reviewed workflows explicitly.", state: "setup_required" }
+  if (!healthUrl) return { detail: "Local n8n is optional for development rehearsal and is not running.", state: "setup_required" }
   try {
     const response = await fetch(healthUrl, { cache: "no-store", signal: AbortSignal.timeout(3_000) })
     return response.ok
-      ? { detail: "The private n8n health endpoint responded. Workflow activation is still an explicit operator decision.", state: "ready" }
-      : { detail: "The n8n health endpoint did not report ready. Review the container and workflow logs.", state: "attention" }
+      ? { detail: "Local n8n rehearsal is available.", state: "ready" }
+      : { detail: "Local n8n rehearsal is not ready. Review its container and workflow logs.", state: "attention" }
   } catch {
-    return { detail: "The n8n health endpoint could not be reached from the application container.", state: "attention" }
+    return { detail: "Local n8n rehearsal could not be reached from the application.", state: "attention" }
   }
+}
+
+export async function checkAutomationHealth(): Promise<Pick<ActivationCheck, "detail" | "state">> {
+  const environment = applicationEnvironment()
+  const state = deriveAutomationRuntimeState({
+    environment,
+    sharedSecretConfigured: Boolean(process.env.AUTOMATION_SHARED_SECRET?.trim()),
+  })
+  if (environment === "development") return checkDevelopmentN8nHealth()
+  return state === "ready"
+    ? { detail: "The application worker processes queues every minute; its container heartbeat is checked by the hosted runtime monitor.", state }
+    : { detail: "The application worker is not configured. Set its protected automation secret before deployment.", state }
 }
 
 export async function getIntegrationActivationChecks(): Promise<ActivationCheck[]> {
   const admin = createAdminClient()
-  const [snapshotResult, n8n] = await Promise.all([
+  const [snapshotResult, automation] = await Promise.all([
     admin.rpc("get_activation_readiness_snapshot"),
-    checkN8nHealth(),
+    checkAutomationHealth(),
   ])
   if (snapshotResult.error || !snapshotResult.data) {
     throw new Error("Integration activation status could not be loaded.")
@@ -78,7 +100,7 @@ export async function getIntegrationActivationChecks(): Promise<ActivationCheck[
       state: telegramReady ? "ready" : "setup_required",
       title: "Telegram alerts",
     },
-    { description: "Self-hosted n8n schedules the application workers and holds no provider credentials.", detail: n8n.detail, key: "n8n", state: n8n.state, title: "Automation scheduler" },
+    { description: "The application-owned worker processes queues; local n8n remains available only for development rehearsal.", detail: automation.detail, key: "automation", state: automation.state, title: "Automation scheduler" },
     {
       description: "Supabase Auth sends invitations and password recovery mail.",
       detail: production ? (smtpReady ? "Production SMTP is operator-confirmed. Complete an invitation and recovery delivery test before approval." : "Configure production SMTP outside the web app, then set AUTH_SMTP_CONFIGURED=true only after delivery is verified.") : "Local Auth mail is captured safely by Mailpit at http://127.0.0.1:54324.",

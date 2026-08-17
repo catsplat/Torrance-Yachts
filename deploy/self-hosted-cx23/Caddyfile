@@ -1,0 +1,16 @@
+# One private origin serves the application and the browser-facing Supabase API.
+# TLS terminates at Cloudflare Tunnel or Tailscale Serve; this gateway is never
+# published directly to the Internet.
+{
+  auto_https off
+  admin off
+}
+
+:8080 {
+  encode zstd gzip
+
+  @supabase_api path /auth/v1/* /rest/v1/* /storage/v1/* /realtime/v1/* /functions/v1/*
+  reverse_proxy @supabase_api kong:8000
+
+  reverse_proxy app:3000
+}

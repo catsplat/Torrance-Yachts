@@ -22,6 +22,12 @@ migrations, protected runtime configuration and the verified exports above.
 - monthly checksum verification;
 - quarterly isolated restore drill and before every material migration.
 
+The reviewed `torrance-yachts-backup.timer` is installed only after the first
+manual encrypted export succeeds. It runs daily at 03:17 UTC with up to 20
+minutes of jitter, catches up once after downtime, and uses `flock` to prevent
+overlapping exports. The associated service runs as the non-root deployment user
+with a private temporary directory and restrictive file permissions.
+
 ## CX23 export command
 
 Install `age` and `rclone` during server activation, configure the client-owned
@@ -37,6 +43,23 @@ public `age` recipient and makes an encrypted local artifact with checksum. In
 production it refuses to succeed unless that artifact is copied to the configured
 off-site rclone destination. Keep the corresponding `age` private identity away
 from the VPS.
+
+After the first successful export, enable the checked-in schedule:
+
+```sh
+sudo ./install-backup-schedule.sh <deployment-user> /opt/torrance-yachts
+systemctl list-timers torrance-yachts-backup.timer
+```
+
+Monitor the newest artifact without decrypting it:
+
+```sh
+./verify-backup-freshness.sh 27
+```
+
+It checks the recorded success timestamp, local encrypted artifact checksum and
+production off-site replication evidence. It does not replace the periodic
+isolated restore drill.
 
 ## Hosted staging restore rehearsal
 

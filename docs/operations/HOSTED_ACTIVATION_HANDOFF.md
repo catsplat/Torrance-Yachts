@@ -20,9 +20,9 @@ relevant provider consoles.
 | --- | --- | --- |
 | VPS | `VPS_HOST`, non-root `VPS_USER`, SSH public-key access and verified `VPS_HOST_KEY` | Runs the private app, lean self-hosted Supabase core, scheduler, ClamAV and Cloudflare Tunnel. |
 | GitHub `staging` / `production` environments | `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_HOST_KEY`; `DEPLOY_PATH`; public Supabase URL/key variables | Lets the reviewed workflow deploy only the accepted immutable image. Database migrations run from the protected VPS. |
-| VPS secret file | Fields in `deploy/self-hosted-cx23/.env.example`, generated non-secret values excluded | Runtime-only credentials for the container stack. |
+| VPS secret file | Fields in `deploy/self-hosted-cx23/.env.example`, generated non-secret values excluded | Runtime-only credentials for the container stack; no GHCR credential is retained on the VPS. |
 | Self-hosted Supabase | generated Auth/JWT keys, private Kong URL, SMTP, Auth URLs, Storage and encrypted backup destination | Authoritative database, Auth and private documents. |
-| Cloudflare | client-owned domain, Tunnel token and Access policy | HTTPS private ingress with no public VPS application ports. |
+| Cloudflare | client-owned domain, Tunnel token and Access policy | Normal HTTPS private ingress with no public VPS application ports. A temporary Tailscale pilot is documented separately when the domain remains pending. |
 | Google | OAuth client ID/secret, exact redirect URIs and approved scopes | Staff sign-in/Workspace connection and controlled Gmail drafts. |
 | Telegram | company bot token, username and webhook secret | Internal alerts and secure review links. |
 | AI (optional) | OpenAI key and approved model, or leave deterministic provider enabled | AI suggestions only; it never performs consequential work. |
@@ -69,7 +69,6 @@ this document:
 APP_DOMAIN                    APP_ENVIRONMENT
 APP_IMAGE                     DEPLOYMENT_VERSION
 CLOUDFLARE_TUNNEL_TOKEN       NEXT_PUBLIC_SUPABASE_URL
-GHCR_USERNAME                 GHCR_PULL_TOKEN
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 SUPABASE_SECRET_KEY           AUTOMATION_SHARED_SECRET
 POSTGRES_PASSWORD             JWT_SECRET
@@ -86,10 +85,9 @@ BACKUP_DIRECTORY              BACKUP_ENCRYPTION_RECIPIENT
 BACKUP_RCLONE_REMOTE
 ```
 
-`GHCR_PULL_TOKEN` is a client-owned, read-only package credential. The deployment
-script uses it only through a temporary Docker credential directory while pulling
-the accepted image; it does not persist it in the deployment user's Docker login
-store. Use `npm run production:preflight` only against an operator-controlled
+The deployment workflow pulls the accepted image with its short-lived GitHub
+Actions token, streams it directly to the VPS, and records the immutable digest.
+The VPS has no GitHub Container Registry credential. Use `npm run production:preflight` only against an operator-controlled
 local copy of the file. It reports missing names and unsafe configuration but
 never prints values. The deployment script rejects unversioned/cross-environment
 images, missing secrets, exposed service ports and unhealthy containers.
@@ -98,6 +96,19 @@ Before live use, install `age` and `rclone` on the VPS, configure a client-owned
 off-site backup remote there, and retain the `age` private identity outside the
 VPS. The reviewed backup script refuses a production export without an encrypted
 off-site copy.
+
+After one manually verified encrypted export, install the reviewed daily timer
+from the protected deployment directory. It refuses to enable without the public
+`age` recipient and, in production, the off-site rclone destination:
+
+```sh
+sudo ./install-backup-schedule.sh <deployment-user> /opt/torrance-yachts
+```
+
+The timer catches up after a VPS restart, prevents overlapping runs, and records
+only a non-secret success identifier and checksum beside the encrypted artifact.
+Check it with `systemctl list-timers torrance-yachts-backup.timer`; the freshness
+verifier checks that the latest local artifact is recent and unchanged.
 
 ## Staging first
 

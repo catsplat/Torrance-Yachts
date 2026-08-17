@@ -2,9 +2,38 @@
 #
 # Supabase itself is bootstrapped from the pinned official release by
 # ops/bootstrap-selfhosted-supabase.sh. This Compose file owns only Torrance
-# services and joins its private Docker network. No service publishes a host
-# port; Cloudflare Tunnel is the sole ingress once configured.
+# services and joins its private Docker network. No service publishes a public
+# host port. Cloudflare Tunnel is the normal ingress; a separate, loopback-only
+# Tailscale override can be used for a private pilot.
 services:
+  gateway:
+    image: caddy:2.10.2-alpine@sha256:d8c17a862962def15cde69863a3a463f25a2664942eafd7bdbf050e9c3116b83
+    restart: unless-stopped
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 96
+    mem_limit: 96m
+    cpus: 0.2
+    depends_on:
+      app: { condition: service_healthy }
+    command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    tmpfs:
+      - /config:rw,noexec,nosuid,size=8m
+      - /data:rw,noexec,nosuid,size=8m
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/api/health/live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: local
+      options: { max-file: "3", max-size: "8m" }
+    networks: [torrance_internal]
+
   app:
     image: ${APP_IMAGE:?Set APP_IMAGE to an immutable GHCR digest}
     restart: unless-stopped
@@ -112,7 +141,8 @@ services:
   cloudflared:
     image: cloudflare/cloudflared@sha256:5e49861633763e8933475477c20bae6039ed47f32c1d267a34babc347f28f0df
     restart: unless-stopped
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?Set CLOUDFLARE_TUNNEL_TOKEN}
+    profiles: ["cloudflare"]
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:-}
     read_only: true
     cap_drop: ["ALL"]
     security_opt: ["no-new-privileges:true"]
@@ -120,7 +150,7 @@ services:
     mem_limit: 64m
     cpus: 0.2
     depends_on:
-      app: { condition: service_healthy }
+      gateway: { condition: service_healthy }
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=16m
     logging:

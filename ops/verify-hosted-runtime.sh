@@ -35,7 +35,12 @@ test "$environment_file_mode" = "600" || {
 }
 
 app_compose() {
-  docker compose --env-file .env "$@"
+  ingress=$(sed -n 's/^DEPLOYMENT_INGRESS=//p' .env | tail -n 1)
+  case "$ingress" in
+    cloudflare) docker compose --profile cloudflare --env-file .env "$@" ;;
+    tailscale) docker compose --env-file .env -f docker-compose.yml -f docker-compose.tailscale-pilot.yml "$@" ;;
+    *) echo "DEPLOYMENT_INGRESS must be cloudflare or tailscale." >&2; exit 2 ;;
+  esac
 }
 
 core_compose() {
@@ -61,12 +66,19 @@ for mapping in "db 5432" "auth 9999" "rest 3000" "storage 5000" "kong 8000"; do
   fi
 done
 
-for service in app worker clamav cloudflared; do
+for service in gateway app worker clamav; do
   app_compose ps --status running --services | grep --fixed-strings --line-regexp "$service" >/dev/null || {
     echo "Required service $service is not running." >&2
     exit 1
   }
 done
+
+if [ "$(sed -n 's/^DEPLOYMENT_INGRESS=//p' .env | tail -n 1)" = "cloudflare" ]; then
+  app_compose ps --status running --services | grep --fixed-strings --line-regexp cloudflared >/dev/null || {
+    echo "Cloudflare ingress is configured but cloudflared is not running." >&2
+    exit 1
+  }
+fi
 
 for service in db auth rest storage kong; do
   core_compose ps --status running --services | grep --fixed-strings --line-regexp "$service" >/dev/null || {
@@ -77,8 +89,13 @@ done
 
 deployed_image=$(sed -n 's/^APP_IMAGE=//p' .env | tail -n 1)
 case "$deployed_image" in
+  ghcr.io/*:*) ;;
+  *) echo "APP_IMAGE is not the immutable release tag transferred by GitHub Actions." >&2; exit 2 ;;
+esac
+deployed_digest=$(cat .deployed-image 2>/dev/null || true)
+case "$deployed_digest" in
   ghcr.io/*@sha256:*) ;;
-  *) echo "APP_IMAGE is not an immutable registry digest." >&2; exit 2 ;;
+  *) echo "Deployment digest evidence is missing." >&2; exit 2 ;;
 esac
 
 actual_environment=$(docker image inspect --format '{{index .Config.Labels "io.torrance.environment"}}' "$deployed_image")
@@ -99,6 +116,7 @@ test "$actual_revision" = "$expected_revision" || {
 }
 
 app_compose exec -T app wget --quiet --spider http://127.0.0.1:3000/api/health/live
+app_compose exec -T gateway wget --quiet --spider http://127.0.0.1:8080/api/health/live
 app_compose exec -T clamav clamdscan --ping 1 >/dev/null
 core_compose exec -T db pg_isready -U postgres -h localhost >/dev/null
 core_compose exec -T auth wget --quiet --spider http://127.0.0.1:9999/health

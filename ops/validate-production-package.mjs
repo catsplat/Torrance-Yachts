@@ -15,8 +15,6 @@ function syntheticEnvironmentFor(environment) {
     BACKUP_RCLONE_REMOTE: "synthetic-remote:torrance-yachts",
     CLOUDFLARE_TUNNEL_TOKEN: "synthetic-cloudflare-tunnel-token",
     DEPLOYMENT_VERSION: "v0.19.1",
-    GHCR_PULL_TOKEN: "synthetic-ghcr-read-token",
-    GHCR_USERNAME: "torrance-deploy",
     GOOGLE_OAUTH_CLIENT_ID: "synthetic-google-client",
     GOOGLE_OAUTH_CLIENT_SECRET: "synthetic-google-secret",
     MONITORING_SHARED_SECRET: "m".repeat(32),
@@ -55,6 +53,11 @@ for (const environment of ["staging", "production"]) {
 
 const deployScript = readFileSync("ops/deploy-release.sh", "utf8")
 const runtimeVerifier = readFileSync("ops/verify-hosted-runtime.sh", "utf8")
+const backupScript = readFileSync("ops/backup/backup-production.sh", "utf8")
+const backupFreshness = readFileSync("ops/backup/verify-backup-freshness.sh", "utf8")
+const backupScheduleInstaller = readFileSync("ops/install-backup-schedule.sh", "utf8")
+const backupService = readFileSync("deploy/systemd/torrance-yachts-backup.service.template", "utf8")
+const backupTimer = readFileSync("deploy/systemd/torrance-yachts-backup.timer", "utf8")
 const deploymentWorkflow = readFileSync(".github/workflows/deploy.yml", "utf8")
 const applicationCompose = readFileSync("deploy/self-hosted-cx23/docker-compose.yml", "utf8")
 const coreCompose = readFileSync("deploy/self-hosted-cx23/supabase-core.compose.yml", "utf8")
@@ -69,7 +72,8 @@ for (const requiredContract of [
   "org.opencontainers.image.revision",
   ".deployed-revision",
   "apply-selfhosted-migrations.sh apply",
-  "GHCR_PULL_TOKEN is missing",
+  "Approved image is not loaded on the VPS",
+  "expected_digest=${4:-}",
 ]) {
   if (!deployScript.includes(requiredContract)) {
     throw new Error(`Deployment script is missing the source-provenance contract: ${requiredContract}`)
@@ -79,7 +83,7 @@ for (const requiredContract of [
 for (const requiredInvariant of [
   "Deployment .env must have mode 600",
   "unexpectedly has a host port",
-  "APP_IMAGE is not an immutable registry digest",
+  "Deployment digest evidence is missing",
   "apply-selfhosted-migrations.sh verify",
   "Hosted runtime invariants passed",
 ]) {
@@ -88,7 +92,55 @@ for (const requiredInvariant of [
   }
 }
 
-for (const requiredService of ["app:", "worker:", "clamav:", "cloudflared:"]) {
+for (const [path, source] of [
+  ["ops/backup/backup-production.sh", backupScript],
+  ["ops/backup/verify-backup-freshness.sh", backupFreshness],
+  ["ops/install-backup-schedule.sh", backupScheduleInstaller],
+]) {
+  const syntax = spawnSync("bash", ["-n", path], { encoding: "utf8" })
+  if (syntax.status !== 0) throw new Error(`${path} has invalid shell syntax: ${syntax.stderr}`)
+  if (!source.includes("BACKUP_")) throw new Error(`${path} is missing its backup configuration boundary.`)
+}
+
+for (const requiredContract of [
+  "latest-success.json",
+  "artifactSha256",
+  "offsiteReplication",
+]) {
+  if (!backupScript.includes(requiredContract)) {
+    throw new Error(`Backup export is missing completion evidence: ${requiredContract}`)
+  }
+}
+
+for (const requiredContract of [
+  "maximum_age_hours",
+  "latest-success.json",
+  "checksum-verified",
+]) {
+  if (!backupFreshness.includes(requiredContract)) {
+    throw new Error(`Backup freshness monitor is missing: ${requiredContract}`)
+  }
+}
+
+for (const requiredContract of [
+  "torrance-yachts-backup.timer",
+  "BACKUP_ENCRYPTION_RECIPIENT",
+  "BACKUP_RCLONE_REMOTE",
+  "systemctl enable --now",
+]) {
+  if (!backupScheduleInstaller.includes(requiredContract)) {
+    throw new Error(`Backup scheduler installer is missing: ${requiredContract}`)
+  }
+}
+
+for (const requiredContract of ["ExecStart=/usr/bin/flock", "NoNewPrivileges=true", "ProtectSystem=full", "UMask=0077"]) {
+  if (!backupService.includes(requiredContract)) throw new Error(`Backup service hardening is missing: ${requiredContract}`)
+}
+for (const requiredContract of ["OnCalendar=*-*-* 03:17:00 UTC", "Persistent=true", "RandomizedDelaySec=20m"]) {
+  if (!backupTimer.includes(requiredContract)) throw new Error(`Backup timer schedule is missing: ${requiredContract}`)
+}
+
+for (const requiredService of ["gateway:", "app:", "worker:", "clamav:", "cloudflared:"]) {
   if (!applicationCompose.includes(requiredService)) throw new Error(`Application Compose is missing: ${requiredService}`)
 }
 for (const requiredService of ["db:", "auth:", "rest:", "storage:", "kong:"]) {
@@ -105,9 +157,15 @@ for (const requiredWorkflowStep of [
   "apply-selfhosted-migrations.sh",
   "backup-production.sh",
   "restore-to-temporal-staging.sh",
+  "verify-backup-freshness.sh",
+  "install-backup-schedule.sh",
+  "torrance-yachts-backup.service.template",
+  "torrance-yachts-backup.timer",
   "deploy/self-hosted-cx23/docker-compose.yml",
   "verify-hosted-runtime.sh",
   "Verify protected host runtime",
+  "Transfer approved image without a VPS registry credential",
+  "docker image save",
 ]) {
   if (!deploymentWorkflow.includes(requiredWorkflowStep)) {
     throw new Error(`Deployment workflow is missing the required integrity step: ${requiredWorkflowStep}`)

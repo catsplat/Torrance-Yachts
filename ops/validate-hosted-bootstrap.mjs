@@ -43,8 +43,8 @@ for (const requiredEnvironmentName of [
   "BACKUP_ENCRYPTION_RECIPIENT",
   "BACKUP_RCLONE_REMOTE",
   "CLOUDFLARE_TUNNEL_TOKEN",
-  "GHCR_USERNAME",
-  "GHCR_PULL_TOKEN",
+  "DEPLOYMENT_INGRESS",
+  "HOSTED_PILOT_MODE",
   "NEXT_PUBLIC_SUPABASE_URL",
   "SUPABASE_SECRET_KEY",
   "AUTOMATION_SHARED_SECRET",
@@ -65,6 +65,8 @@ for (const requiredSelfHostedName of ["POSTGRES_PASSWORD", "JWT_SECRET", "ANON_K
 
 for (const expectedDeploymentContract of [
   "deploy/self-hosted-cx23/docker-compose.yml",
+  "Transfer approved image without a VPS registry credential",
+  "docker image save",
   "apply-selfhosted-migrations.sh",
   "migrations.next",
 ]) {

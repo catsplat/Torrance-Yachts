@@ -57,7 +57,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Inspect requested image before migrating
+      - name: Inspect and pull requested image before migrating
+        id: image
         env:
           DEPLOYMENT_ENVIRONMENT: ${{ inputs.environment }}
           IMAGE: ghcr.io/${{ github.repository }}
@@ -66,6 +67,11 @@ jobs:
           IMAGE=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
           IMAGE_TAG="$DEPLOYMENT_ENVIRONMENT-$RELEASE_TAG"
           docker manifest inspect "$IMAGE:$IMAGE_TAG" > requested-image-manifest.json
+          docker pull "$IMAGE:$IMAGE_TAG"
+          IMAGE_DIGEST=$(docker image inspect "$IMAGE:$IMAGE_TAG" --format '{{index .RepoDigests 0}}')
+          [[ "$IMAGE_DIGEST" =~ ^ghcr\.io/.+@sha256:[a-f0-9]{64}$ ]]
+          echo "reference=$IMAGE:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "digest=$IMAGE_DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Configure restricted SSH client
         env:
@@ -87,30 +93,44 @@ jobs:
           test "$DEPLOY_PATH" = "/opt/torrance-yachts"
           ssh "$VPS_USER@$VPS_HOST" "mkdir -p '$DEPLOY_PATH'"
           scp deploy/self-hosted-cx23/docker-compose.yml \
+            deploy/self-hosted-cx23/docker-compose.tailscale-pilot.yml \
+            deploy/self-hosted-cx23/Caddyfile \
             deploy/self-hosted-cx23/supabase-core.compose.yml \
             ops/backup/backup-production.sh \
             ops/backup/restore-to-temporal-staging.sh \
+            ops/backup/verify-backup-freshness.sh \
+            ops/install-backup-schedule.sh \
             ops/deploy-release.sh \
             ops/verify-hosted-runtime.sh \
             ops/apply-selfhosted-migrations.sh \
+            deploy/systemd/torrance-yachts-backup.service.template \
+            deploy/systemd/torrance-yachts-backup.timer \
             "$VPS_USER@$VPS_HOST:$DEPLOY_PATH/"
           ssh "$VPS_USER@$VPS_HOST" "rm -rf '$DEPLOY_PATH/migrations.next' && mkdir -p '$DEPLOY_PATH/migrations.next'"
           scp supabase/migrations/*.sql "$VPS_USER@$VPS_HOST:$DEPLOY_PATH/migrations.next/"
           ssh "$VPS_USER@$VPS_HOST" \
-            "rm -rf '$DEPLOY_PATH/migrations.previous' && if test -d '$DEPLOY_PATH/migrations'; then mv '$DEPLOY_PATH/migrations' '$DEPLOY_PATH/migrations.previous'; fi && mv '$DEPLOY_PATH/migrations.next' '$DEPLOY_PATH/migrations' && chmod 700 '$DEPLOY_PATH/apply-selfhosted-migrations.sh' '$DEPLOY_PATH/backup-production.sh' '$DEPLOY_PATH/restore-to-temporal-staging.sh' '$DEPLOY_PATH/deploy-release.sh' '$DEPLOY_PATH/verify-hosted-runtime.sh'"
+            "rm -rf '$DEPLOY_PATH/migrations.previous' && if test -d '$DEPLOY_PATH/migrations'; then mv '$DEPLOY_PATH/migrations' '$DEPLOY_PATH/migrations.previous'; fi && mv '$DEPLOY_PATH/migrations.next' '$DEPLOY_PATH/migrations' && chmod 700 '$DEPLOY_PATH/apply-selfhosted-migrations.sh' '$DEPLOY_PATH/backup-production.sh' '$DEPLOY_PATH/restore-to-temporal-staging.sh' '$DEPLOY_PATH/verify-backup-freshness.sh' '$DEPLOY_PATH/install-backup-schedule.sh' '$DEPLOY_PATH/deploy-release.sh' '$DEPLOY_PATH/verify-hosted-runtime.sh'"
+
+      - name: Transfer approved image without a VPS registry credential
+        env:
+          IMAGE_REFERENCE: ${{ steps.image.outputs.reference }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -o pipefail
+          docker image save "$IMAGE_REFERENCE" | gzip -1 | ssh "$VPS_USER@$VPS_HOST" 'gzip -d | docker image load'
 
       - name: Deploy and verify container health
         env:
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
           DEPLOYMENT_ENVIRONMENT: ${{ inputs.environment }}
-          IMAGE: ghcr.io/${{ github.repository }}
-          RELEASE_TAG: ${{ inputs.release_tag }}
+          IMAGE_REFERENCE: ${{ steps.image.outputs.reference }}
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
         run: |
-          IMAGE=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
           ssh "$VPS_USER@$VPS_HOST" \
-            "cd '$DEPLOY_PATH' && chmod 700 deploy-release.sh && ./deploy-release.sh '$IMAGE:$DEPLOYMENT_ENVIRONMENT-$RELEASE_TAG' '$DEPLOYMENT_ENVIRONMENT' '${{ steps.source.outputs.revision }}'"
+            "cd '$DEPLOY_PATH' && chmod 700 deploy-release.sh && ./deploy-release.sh '$IMAGE_REFERENCE' '$DEPLOYMENT_ENVIRONMENT' '${{ steps.source.outputs.revision }}' '$IMAGE_DIGEST'"
 
       - name: Verify protected host runtime
         env:

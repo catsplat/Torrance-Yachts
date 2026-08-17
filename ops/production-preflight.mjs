@@ -1,21 +1,12 @@
 const required = [
   ["APP_DOMAIN", "private application hostname"],
   ["APP_IMAGE", "immutable GHCR application image"],
-  ["CLOUDFLARE_TUNNEL_TOKEN", "outbound-only private application tunnel"],
   ["DEPLOYMENT_VERSION", "immutable release identifier"],
   ["NEXT_PUBLIC_SUPABASE_URL", "production Supabase URL"],
   ["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "Supabase publishable key"],
   ["SUPABASE_SECRET_KEY", "Supabase server secret"],
   ["AUTOMATION_SHARED_SECRET", "application-owned worker delivery secret"],
-  ["BACKUP_DIRECTORY", "protected local encrypted backup directory"],
-  ["BACKUP_ENCRYPTION_RECIPIENT", "off-VPS age encryption recipient"],
-  ["BACKUP_RCLONE_REMOTE", "client-owned off-site backup destination"],
   ["MONITORING_SHARED_SECRET", "readiness-monitor secret"],
-  ["GOOGLE_OAUTH_CLIENT_ID", "staff Google inbox OAuth application"],
-  ["GOOGLE_OAUTH_CLIENT_SECRET", "staff Google inbox OAuth secret"],
-  ["TELEGRAM_BOT_TOKEN", "company Telegram bot"],
-  ["TELEGRAM_BOT_USERNAME", "Telegram pairing link"],
-  ["TELEGRAM_WEBHOOK_SECRET", "Telegram webhook authentication"],
 ]
 
 function present(name) {
@@ -32,8 +23,33 @@ for (const [name, purpose] of required) {
 }
 
 const environment = process.env.APP_ENVIRONMENT?.trim() || "production"
+const pilotMode = process.env.HOSTED_PILOT_MODE === "true"
+const ingress = process.env.DEPLOYMENT_INGRESS?.trim() || "cloudflare"
 if (!new Set(["staging", "production"]).has(environment)) {
   failures.push("APP_ENVIRONMENT - deployment packages support staging or production")
+}
+if (!new Set(["cloudflare", "tailscale"]).has(ingress)) {
+  failures.push("DEPLOYMENT_INGRESS - must be cloudflare or tailscale")
+}
+if (ingress === "cloudflare" && !present("CLOUDFLARE_TUNNEL_TOKEN")) {
+  failures.push("CLOUDFLARE_TUNNEL_TOKEN - outbound-only private application tunnel")
+}
+if (ingress === "tailscale" && !value("APP_DOMAIN").endsWith(".ts.net")) {
+  failures.push("APP_DOMAIN - Tailscale ingress requires the approved .ts.net hostname")
+}
+if (!pilotMode) {
+  for (const [name, purpose] of [
+    ["BACKUP_DIRECTORY", "protected local encrypted backup directory"],
+    ["BACKUP_ENCRYPTION_RECIPIENT", "off-VPS age encryption recipient"],
+    ["BACKUP_RCLONE_REMOTE", "client-owned off-site backup destination"],
+    ["GOOGLE_OAUTH_CLIENT_ID", "staff Google inbox OAuth application"],
+    ["GOOGLE_OAUTH_CLIENT_SECRET", "staff Google inbox OAuth secret"],
+    ["TELEGRAM_BOT_TOKEN", "company Telegram bot"],
+    ["TELEGRAM_BOT_USERNAME", "Telegram pairing link"],
+    ["TELEGRAM_WEBHOOK_SECRET", "Telegram webhook authentication"],
+  ]) {
+    if (!present(name)) failures.push(`${name} - ${purpose}`)
+  }
 }
 
 const image = value("APP_IMAGE")
@@ -97,8 +113,11 @@ if (aiProvider === "ollama" && environment === "production") {
   failures.push("OLLAMA_BASE_URL - required for staging Ollama validation")
 }
 
-if (process.env.AUTH_SMTP_CONFIGURED !== "true") {
+if (!pilotMode && process.env.AUTH_SMTP_CONFIGURED !== "true") {
   failures.push("AUTH_SMTP_CONFIGURED - set true only after account email delivery is tested")
+}
+if (pilotMode && process.env.AUTH_SMTP_CONFIGURED === "true") {
+  failures.push("AUTH_SMTP_CONFIGURED - private pilot must not enable external account email")
 }
 
 if (process.env.MFA_ENFORCEMENT_ENABLED === "false") {

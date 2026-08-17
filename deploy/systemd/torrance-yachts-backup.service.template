@@ -1,0 +1,26 @@
+[Unit]
+Description=Torrance Yachts encrypted private backup
+Documentation=file:{{DEPLOYMENT_PATH}}/backup-production.sh
+Wants=network-online.target
+After=docker.service network-online.target
+Requires=docker.service
+ConditionPathExists={{DEPLOYMENT_PATH}}/.env
+
+[Service]
+Type=oneshot
+User={{DEPLOYMENT_USER}}
+Group={{DEPLOYMENT_USER}}
+WorkingDirectory={{DEPLOYMENT_PATH}}
+ExecStart=/usr/bin/flock -n /run/torrance-yachts-backup.lock {{DEPLOYMENT_PATH}}/backup-production.sh
+TimeoutStartSec=45min
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
