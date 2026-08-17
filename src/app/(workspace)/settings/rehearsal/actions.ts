@@ -53,7 +53,7 @@ async function ingestFixture(
     threadId,
   })
   const admin = createAdminClient()
-  const { data: messageId, error } = await admin.rpc("ingest_gmail_message", {
+  const { data: messageId, error } = await admin.rpc("ingest_gmail_message_for_owner", {
     p_attachments: email.attachments,
     p_body_text: email.body_text,
     p_cc_emails: email.cc_emails,
@@ -63,6 +63,7 @@ async function ingestFixture(
     p_has_list_unsubscribe: email.has_list_unsubscribe,
     p_internet_message_id: email.internet_message_id,
     p_is_bulk: email.is_bulk,
+    p_owner_user_id: context.userId,
     p_provider_event_id: email.provider_event_id,
     p_provider_message_id: email.provider_message_id,
     p_provider_thread_id: email.provider_thread_id,

@@ -1430,6 +1430,7 @@ export type Database = {
           error_code: string | null
           id: string
           message_id: string | null
+          owner_user_id: string
           provider_event_id: string
           provider_message_id: string
           received_at: string
@@ -1440,6 +1441,7 @@ export type Database = {
           error_code?: string | null
           id?: string
           message_id?: string | null
+          owner_user_id: string
           provider_event_id: string
           provider_message_id: string
           received_at?: string
@@ -1450,6 +1452,7 @@ export type Database = {
           error_code?: string | null
           id?: string
           message_id?: string | null
+          owner_user_id?: string
           provider_event_id?: string
           provider_message_id?: string
           received_at?: string
@@ -1461,6 +1464,13 @@ export type Database = {
             columns: ["message_id"]
             isOneToOne: false
             referencedRelation: "email_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_ingestion_events_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1479,6 +1489,7 @@ export type Database = {
           has_attachments: boolean
           id: string
           internet_message_id: string | null
+          owner_user_id: string
           processing_status: Database["public"]["Enums"]["email_processing_status"]
           provider: string
           provider_message_id: string
@@ -1503,6 +1514,7 @@ export type Database = {
           has_attachments?: boolean
           id?: string
           internet_message_id?: string | null
+          owner_user_id: string
           processing_status?: Database["public"]["Enums"]["email_processing_status"]
           provider?: string
           provider_message_id: string
@@ -1527,6 +1539,7 @@ export type Database = {
           has_attachments?: boolean
           id?: string
           internet_message_id?: string | null
+          owner_user_id?: string
           processing_status?: Database["public"]["Enums"]["email_processing_status"]
           provider?: string
           provider_message_id?: string
@@ -1542,6 +1555,13 @@ export type Database = {
           {
             foreignKeyName: "email_messages_classified_by_fkey"
             columns: ["classified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_messages_owner_user_id_fkey"
+            columns: ["owner_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1607,9 +1627,12 @@ export type Database = {
           id: string
           last_message_at: string
           message_count: number
+          owner_user_id: string
           participants: string[]
           provider: string
           provider_thread_id: string
+          shared_at: string | null
+          shared_by: string | null
           subject: string
           updated_at: string
         }
@@ -1620,9 +1643,12 @@ export type Database = {
           id?: string
           last_message_at: string
           message_count?: number
+          owner_user_id: string
           participants?: string[]
           provider?: string
           provider_thread_id: string
+          shared_at?: string | null
+          shared_by?: string | null
           subject: string
           updated_at?: string
         }
@@ -1633,9 +1659,12 @@ export type Database = {
           id?: string
           last_message_at?: string
           message_count?: number
+          owner_user_id?: string
           participants?: string[]
           provider?: string
           provider_thread_id?: string
+          shared_at?: string | null
+          shared_by?: string | null
           subject?: string
           updated_at?: string
         }
@@ -1645,6 +1674,20 @@ export type Database = {
             columns: ["enquiry_id"]
             isOneToOne: false
             referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_threads_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_threads_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -4734,6 +4777,10 @@ export type Database = {
         }
         Returns: string
       }
+      can_read_email_message: {
+        Args: { p_message_id: string }
+        Returns: boolean
+      }
       cancel_ad_hoc_task: {
         Args: { p_reason: string; p_task_id: string }
         Returns: {
@@ -5507,6 +5554,30 @@ export type Database = {
           p_has_list_unsubscribe: boolean
           p_internet_message_id: string
           p_is_bulk: boolean
+          p_provider_event_id: string
+          p_provider_message_id: string
+          p_provider_thread_id: string
+          p_received_at: string
+          p_recipient_emails: string[]
+          p_sender_email: string
+          p_sender_name: string
+          p_snippet: string
+          p_subject: string
+        }
+        Returns: string
+      }
+      ingest_gmail_message_for_owner: {
+        Args: {
+          p_attachments?: Json
+          p_body_text: string
+          p_cc_emails: string[]
+          p_gmail_label_ids: string[]
+          p_has_attachments: boolean
+          p_has_list_id: boolean
+          p_has_list_unsubscribe: boolean
+          p_internet_message_id: string
+          p_is_bulk: boolean
+          p_owner_user_id: string
           p_provider_event_id: string
           p_provider_message_id: string
           p_provider_thread_id: string

@@ -45,7 +45,8 @@ export default async function EmailInboxPage({ searchParams }: Props) {
         <div>
           <h1 className="text-3xl font-semibold">Inbox</h1>
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Review new enquiries, follow-ups and internal email.
+            Review your imported mailbox. Messages stay private until you link a
+            thread to shared operational work such as an enquiry.
           </p>
         </div>
         <Badge

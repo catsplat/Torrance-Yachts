@@ -25,6 +25,14 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Changed
+
+- Isolated imported Gmail mailboxes by connected-account owner, scoped email
+  reads and AI-derived content through RLS, and made explicit operational
+  linking the point at which an email thread becomes shared company data.
+- Prevented notification materialisation from exposing private email content
+  to unrelated staff while preserving per-user encrypted OAuth credentials.
+
 ### Fixed
 
 - Aligned the self-hosted database image with the official local Supabase

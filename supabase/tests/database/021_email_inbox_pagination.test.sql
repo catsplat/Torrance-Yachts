@@ -21,6 +21,9 @@ values (
   'inbox.pagination@example.test',
   '{"display_name":"Inbox Pagination"}'::jsonb
 );
+update public.profiles
+set active = true, role = 'administrator', access_approved_at = now(), access_approved_by = id
+where id = '23000000-0000-4000-8000-000000000001';
 
 set local role service_role;
 select public.ingest_gmail_message(
