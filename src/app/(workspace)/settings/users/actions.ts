@@ -34,6 +34,14 @@ function passwordSetupRedirectUrl() {
   return `${applicationBaseUrl()}/auth/confirm?next=/account/update-password`
 }
 
+function manualAuthActionLink(type: "invite" | "recovery", tokenHash: string) {
+  const link = new URL("/auth/confirm", applicationBaseUrl())
+  link.searchParams.set("token_hash", tokenHash)
+  link.searchParams.set("type", type)
+  link.searchParams.set("next", "/account/update-password")
+  return link.toString()
+}
+
 export async function resetUserMfaAction(
   _state: UserAdminActionState,
   formData: FormData,
@@ -106,7 +114,7 @@ export async function inviteInternalUserAction(
       redirectTo: passwordSetupRedirectUrl(),
       },
     })
-    if (invitation.error || !invitation.data.user || !invitation.data.properties?.action_link) {
+    if (invitation.error || !invitation.data.user || !invitation.data.properties?.hashed_token) {
       return { message: "The invitation link could not be generated. Check that the account does not already exist." }
     }
     const approval = await admin.rpc("approve_internal_user_invitation", {
@@ -118,7 +126,7 @@ export async function inviteInternalUserAction(
       return { message: "The invitation could not be approved safely. No usable account was retained." }
     }
     revalidatePath("/settings/users")
-    return { link: invitation.data.properties.action_link, message: "Invitation link generated. Send it to the invitee through a secure channel.", success: true }
+    return { link: manualAuthActionLink("invite", invitation.data.properties.hashed_token), message: "Invitation link generated. Send it to the invitee through a secure channel.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }
@@ -139,8 +147,8 @@ export async function sendRecoveryEmailAction(
       email: parsed.data.email,
       options: { redirectTo: passwordSetupRedirectUrl() },
     })
-    if (recovery.error || !recovery.data.properties?.action_link) return { message: "The recovery link could not be generated." }
-    return { link: recovery.data.properties.action_link, message: "Recovery link generated. Send it to the user through a secure channel.", success: true }
+    if (recovery.error || !recovery.data.properties?.hashed_token) return { message: "The recovery link could not be generated." }
+    return { link: manualAuthActionLink("recovery", recovery.data.properties.hashed_token), message: "Recovery link generated. Send it to the user through a secure channel.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }
