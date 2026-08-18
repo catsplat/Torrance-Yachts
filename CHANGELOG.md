@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added administrator-generated, single-use Supabase invitation and recovery links so a private pilot can operate without SMTP.
+
 ## [0.19.3] - 2026-08-17
 
 ### Fixed

@@ -12,6 +12,7 @@ import {
 } from "@/lib/users/validation"
 
 export type UserAdminActionState = {
+  link?: string
   message?: string
   success?: boolean
 }
@@ -97,12 +98,16 @@ export async function inviteInternalUserAction(
   if ("message" in context) return context
   try {
     const admin = createAdminClient()
-    const invitation = await admin.auth.admin.inviteUserByEmail(parsed.data.email, {
+    const invitation = await admin.auth.admin.generateLink({
+      type: "invite",
+      email: parsed.data.email,
+      options: {
       data: { display_name: parsed.data.displayName },
       redirectTo: passwordSetupRedirectUrl(),
+      },
     })
-    if (invitation.error || !invitation.data.user) {
-      return { message: "The invitation could not be sent. Check SMTP and whether the account already exists." }
+    if (invitation.error || !invitation.data.user || !invitation.data.properties?.action_link) {
+      return { message: "The invitation link could not be generated. Check that the account does not already exist." }
     }
     const approval = await admin.rpc("approve_internal_user_invitation", {
       p_approved_by: context.userId,
@@ -113,7 +118,7 @@ export async function inviteInternalUserAction(
       return { message: "The invitation could not be approved safely. No usable account was retained." }
     }
     revalidatePath("/settings/users")
-    return { message: "Invitation sent.", success: true }
+    return { link: invitation.data.properties.action_link, message: "Invitation link generated. Send it to the invitee through a secure channel.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }
@@ -129,11 +134,13 @@ export async function sendRecoveryEmailAction(
   if ("message" in context) return context
   try {
     const admin = createAdminClient()
-    const { error } = await admin.auth.resetPasswordForEmail(parsed.data.email, {
-      redirectTo: passwordSetupRedirectUrl(),
+    const recovery = await admin.auth.admin.generateLink({
+      type: "recovery",
+      email: parsed.data.email,
+      options: { redirectTo: passwordSetupRedirectUrl() },
     })
-    if (error) return { message: "The recovery email could not be requested. Check SMTP and rate limits." }
-    return { message: "Recovery email requested without revealing account status.", success: true }
+    if (recovery.error || !recovery.data.properties?.action_link) return { message: "The recovery link could not be generated." }
+    return { link: recovery.data.properties.action_link, message: "Recovery link generated. Send it to the user through a secure channel.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }

@@ -113,8 +113,9 @@ if (aiProvider === "ollama" && environment === "production") {
   failures.push("OLLAMA_BASE_URL - required for staging Ollama validation")
 }
 
-if (!pilotMode && process.env.AUTH_SMTP_CONFIGURED !== "true") {
-  failures.push("AUTH_SMTP_CONFIGURED - set true only after account email delivery is tested")
+const manualLinksEnabled = process.env.AUTH_MANUAL_LINKS_ENABLED === "true"
+if (!pilotMode && process.env.AUTH_SMTP_CONFIGURED !== "true" && !manualLinksEnabled) {
+  failures.push("AUTH_SMTP_CONFIGURED or AUTH_MANUAL_LINKS_ENABLED - configure one verified account-access delivery mode")
 }
 if (pilotMode && process.env.AUTH_SMTP_CONFIGURED === "true") {
   failures.push("AUTH_SMTP_CONFIGURED - private pilot must not enable external account email")

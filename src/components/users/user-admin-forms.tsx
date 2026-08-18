@@ -16,7 +16,10 @@ const initialState: UserAdminActionState = {}
 
 function Feedback({ state }: { state: UserAdminActionState }) {
   if (!state.message) return null
-  return <p aria-live="polite" className={state.success ? "text-sm text-emerald-700" : "text-sm text-destructive"}>{state.message}</p>
+  return <div aria-live="polite" className={state.success ? "space-y-2 text-sm text-emerald-700" : "text-sm text-destructive"}>
+    <p>{state.message}</p>
+    {state.link ? <div className="flex gap-2"><Input aria-label="One-time account link" readOnly value={state.link} /><Button type="button" variant="outline" onClick={() => navigator.clipboard.writeText(state.link ?? "")}>Copy link</Button></div> : null}
+  </div>
 }
 
 export function InviteUserForm() {
@@ -24,7 +27,7 @@ export function InviteUserForm() {
   return <form action={action} className="grid gap-4 md:grid-cols-2">
     <label className="grid gap-2 text-sm font-medium">Name<Input autoComplete="name" name="displayName" required /></label>
     <label className="grid gap-2 text-sm font-medium">Work email<Input autoComplete="email" name="email" required type="email" /></label>
-    <div className="flex items-center gap-3 md:col-span-2"><Button disabled={pending} type="submit">{pending ? "Sending…" : "Send invitation"}</Button><Feedback state={state} /></div>
+    <div className="flex items-center gap-3 md:col-span-2"><Button disabled={pending} type="submit">{pending ? "Generating…" : "Generate invite link"}</Button><Feedback state={state} /></div>
   </form>
 }
 
@@ -51,7 +54,7 @@ export function UserAdministrationForm({ profile }: { profile: InternalUserAdmin
 
 export function RecoveryEmailForm({ email }: { email: string }) {
   const [state, action, pending] = useActionState(sendRecoveryEmailAction, initialState)
-  return <form action={action} className="mt-3 grid gap-2"><input name="email" type="hidden" value={email} /><Button disabled={pending} type="submit" variant="ghost">Send recovery email</Button><Feedback state={state} /></form>
+  return <form action={action} className="mt-3 grid gap-2"><input name="email" type="hidden" value={email} /><Button disabled={pending} type="submit" variant="ghost">{pending ? "Generating…" : "Generate recovery link"}</Button><Feedback state={state} /></form>
 }
 
 export function ResetMfaForm({ userId }: { userId: string }) {
