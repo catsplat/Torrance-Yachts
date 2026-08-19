@@ -15,7 +15,7 @@ function Get-Sha256Hex([string]$Path) {
   $stream = [System.IO.File]::OpenRead($Path)
   $hasher = [System.Security.Cryptography.SHA256]::Create()
   try {
-    return [System.Convert]::ToHexString($hasher.ComputeHash($stream)).ToLowerInvariant()
+    return ([System.BitConverter]::ToString($hasher.ComputeHash($stream)) -replace "-", "").ToLowerInvariant()
   }
   finally {
     $hasher.Dispose()
