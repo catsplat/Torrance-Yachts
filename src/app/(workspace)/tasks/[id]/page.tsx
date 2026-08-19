@@ -55,6 +55,12 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
   ])
   if (!record.task) notFound()
   const { task, dependencies, dependents, history, notes } = record
+  const workLink = task.booking ? `/bookings/${task.booking.id}/tasks` : task.enquiry ? `/enquiries/${task.enquiry.id}` : "/tasks"
+  const workLabel = task.booking
+    ? `${task.booking.reference} · ${task.booking.yacht.name}`
+    : task.enquiry
+      ? `${task.enquiry.reference} · ${task.enquiry.yacht?.name ?? "Enquiry"}`
+      : "Operational task"
   const communicationStep = task.step_code &&
     ["0.A", "2.A", "2.B", "7"].includes(task.step_code)
   return (
@@ -95,7 +101,7 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
           </div>
         </CardHeader>
         <CardContent className="grid gap-5 pt-5 sm:grid-cols-2 xl:grid-cols-4">
-          <Fact icon={Link2} label="Booking" value={`${task.booking.reference} · ${task.booking.yacht.name}`} />
+          <Fact icon={Link2} label={task.booking ? "Booking" : "Enquiry"} value={workLabel} />
           <Fact
             icon={CalendarClock}
             label="Date source"
@@ -114,12 +120,12 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
               <CardDescription>{task.description ?? "No additional description recorded."}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 pt-5 sm:grid-cols-2">
-              <div>
+              {task.booking ? <div>
                 <p className="text-xs text-muted-foreground">Charter</p>
                 <p className="mt-1 text-sm font-medium">
                   {formatTaskDate(task.booking.charter_start_date)} – {formatTaskDate(task.booking.charter_end_date)}
                 </p>
-              </div>
+              </div> : null}
               <div>
                 <p className="text-xs text-muted-foreground">Current blocker</p>
                 <p className="mt-1 text-sm font-medium">{task.blocked_reason ?? "None"}</p>
@@ -224,7 +230,7 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
               </CardContent>
             </Card>
           ) : null}
-          {task.step_code === "1.C" ? (
+          {task.step_code === "1.C" && task.booking ? (
             <Link
               className="block rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm hover:bg-primary/10"
               href={`/bookings/${task.booking.id}/documents`}
@@ -257,9 +263,9 @@ export default async function TaskDetailPage({ params, searchParams }: Props) {
           </Card>
           <Link
             className="block rounded-xl border p-4 text-sm hover:bg-muted/40"
-            href={`/bookings/${task.booking.id}/tasks`}
+            href={workLink}
           >
-            Open full booking checklist →
+            {task.booking ? "Open full booking checklist →" : "Open enquiry →"}
           </Link>
         </div>
       </div>

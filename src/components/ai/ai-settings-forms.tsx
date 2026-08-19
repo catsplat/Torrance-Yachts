@@ -4,6 +4,8 @@ import { useActionState } from "react"
 
 import {
   clearMyOpenAiKeyAction,
+  createLocalAiPairingAction,
+  revokeMyLocalAiAgentAction,
   saveMyOpenAiKeyAction,
   testMyAiConnectionAction,
   updateMyAiPreferencesAction,
@@ -91,5 +93,23 @@ export function AiConnectionTestForm() {
         </p>
       </div>
     ) : null}
+  </form>
+}
+
+export function LocalAiPairingForm() {
+  const [state, action, pending] = useActionState(createLocalAiPairingAction, initialState)
+  return <form action={action} className="space-y-3">
+    <p className="text-sm text-muted-foreground">Pair a Mac helper from Settings without exposing its local Ollama service to the internet.</p>
+    <Button disabled={pending} type="submit" variant="outline">{pending ? "Creating code…" : "Create pairing code"}</Button>
+    <Feedback state={state} />
+    {state.pairingCode ? <div className="rounded-lg border bg-muted/40 p-3"><p className="text-xs text-muted-foreground">One-time pairing code</p><p className="mt-1 font-mono text-lg font-semibold tracking-widest">{state.pairingCode}</p><p className="mt-1 text-xs text-muted-foreground">Expires {new Intl.DateTimeFormat("en-GB", { timeStyle: "short" }).format(new Date(state.pairingExpiresAt!))}. It is shown once.</p></div> : null}
+  </form>
+}
+
+export function RevokeLocalAiAgentForm({ agentId }: { agentId: string }) {
+  const [state, action, pending] = useActionState(revokeMyLocalAiAgentAction.bind(null, agentId), initialState)
+  return <form action={action} className="flex items-center gap-2">
+    <Button disabled={pending} size="sm" type="submit" variant="outline">{pending ? "Revoking…" : "Remove"}</Button>
+    <Feedback state={state} />
   </form>
 }

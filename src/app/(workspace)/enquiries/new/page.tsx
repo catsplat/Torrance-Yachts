@@ -2,6 +2,7 @@ import { ArrowLeft, Inbox } from "lucide-react"
 import Link from "next/link"
 
 import { EnquiryForm } from "@/components/enquiries/enquiry-form"
+import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card"
 import { getEnquiryFormOptions } from "@/lib/enquiries/form-options"
 
@@ -31,6 +32,10 @@ export default async function NewEnquiryPage() {
           </div>
         </CardHeader>
         <CardContent className="pt-6">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/20 p-4 text-sm">
+            <p>Check yacht availability before recording the enquiry. This does not reserve dates.</p>
+            <Link className={buttonVariants({ variant: "outline", size: "sm" })} href="/bookings/availability">Check availability</Link>
+          </div>
           <EnquiryForm mode="create" options={options} />
         </CardContent>
       </Card>

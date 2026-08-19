@@ -4,6 +4,7 @@ import { useActionState } from "react"
 
 import {
   addAdHocTaskAction,
+  addOperationalTaskAction,
   addTaskTemplateStepAction,
   addTaskNoteAction,
   approveTaskTemplateAction,
@@ -26,6 +27,7 @@ import {
   taskPriorityLabels,
   taskPriorityValues,
 } from "@/lib/tasks/options"
+import { documentTypeLabels, documentTypeValues } from "@/lib/documents/options"
 
 const initialState: TaskActionState = {}
 
@@ -124,6 +126,33 @@ export function AdHocTaskForm({
     <Field label="Assignee"><select className="h-9 w-full rounded-lg border border-input bg-background px-2 text-sm" defaultValue="" name="assigned_user_id"><option value="">Unassigned</option>{assignees.map((person) => <option key={person.id} value={person.id}>{person.display_name}</option>)}</select></Field>
     <label className="space-y-1.5 text-xs font-medium sm:col-span-2">Description<textarea className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={5000} name="description" /></label>
     <div className="flex items-center justify-between gap-3 sm:col-span-2"><Feedback state={state} /><Button disabled={pending} type="submit">{pending ? "Adding…" : "Add ad-hoc task"}</Button></div>
+  </form>
+}
+
+export function OperationalTaskForm({
+  assignees,
+  prerequisites,
+  workId,
+  workType,
+}: {
+  assignees: { id: string; display_name: string }[]
+  prerequisites: { id: string; reference: string; step_code: string | null; status: string; title: string }[]
+  workId: string
+  workType: "booking" | "enquiry"
+}) {
+  const [state, action, pending] = useActionState(addOperationalTaskAction, initialState)
+  const isBooking = workType === "booking"
+  return <form action={action} className="grid gap-3 sm:grid-cols-2">
+    <input name="work_id" type="hidden" value={workId} /><input name="work_type" type="hidden" value={workType} />
+    <Field label="Task"><Input maxLength={240} name="title" placeholder="What needs doing?" required /></Field>
+    <Field label="Assignee"><select className="h-9 w-full rounded-lg border border-input bg-background px-2 text-sm" defaultValue="" name="assigned_user_id"><option value="">Unassigned</option>{assignees.map((person) => <option key={person.id} value={person.id}>{person.display_name}</option>)}</select></Field>
+    <Field label="Due date"><Input name="due_date" type="date" /></Field>
+    <Field label="Priority"><select className="h-9 w-full rounded-lg border border-input bg-background px-2 text-sm" defaultValue="normal" name="priority">{taskPriorityValues.map((value) => <option key={value} value={value}>{taskPriorityLabels[value]}</option>)}</select></Field>
+    {prerequisites.length ? <fieldset className="space-y-2 rounded-lg border p-3 sm:col-span-2"><legend className="px-1 text-xs font-medium">Only start after</legend><div className="grid gap-2 sm:grid-cols-2">{prerequisites.map((task) => <label className="flex items-start gap-2 text-sm" key={task.id}><input className="mt-1" name="depends_on_task_ids" type="checkbox" value={task.id} /><span><strong>{task.step_code ? `${task.step_code} · ` : ""}{task.title}</strong><br /><span className="text-xs text-muted-foreground">{task.status === "ready" ? "Ready" : "Blocked"}</span></span></label>)}</div></fieldset> : null}
+    {isBooking ? <><Field label="Or wait for an approved document"><select className="h-9 w-full rounded-lg border border-input bg-background px-2 text-sm" defaultValue="" name="document_type"><option value="">No document condition</option>{documentTypeValues.map((value) => <option key={value} value={value}>{documentTypeLabels[value]}</option>)}</select></Field><Field label="Or wait for booking status"><select className="h-9 w-full rounded-lg border border-input bg-background px-2 text-sm" defaultValue="" name="expected_booking_status"><option value="">No booking-status condition</option><option value="confirmed">Confirmed</option><option value="charter_active">Charter active</option><option value="completed">Completed</option></select></Field></> : <><input name="document_type" type="hidden" value="" /><input name="expected_booking_status" type="hidden" value="" /></>}
+    <Field label="Do not start before"><Input name="not_before_date" type="date" /></Field>
+    <label className="space-y-1.5 text-xs font-medium sm:col-span-2">Note <span className="font-normal text-muted-foreground">(optional)</span><textarea className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" maxLength={5000} name="description" /></label>
+    <div className="flex items-center justify-between gap-3 sm:col-span-2"><Feedback state={state} /><Button disabled={pending} type="submit">{pending ? "Adding…" : "Add task"}</Button></div>
   </form>
 }
 

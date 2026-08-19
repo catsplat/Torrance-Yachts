@@ -4,6 +4,7 @@ import {
   BrainCircuit,
   CircleGauge,
   Clock3,
+  ClipboardPaste,
   FilePenLine,
   FileText,
   GraduationCap,
@@ -54,12 +55,10 @@ export default async function SettingsPage() {
         <h1 className="text-3xl font-semibold">Settings</h1>
       </div>
 
-      <Card className="border-primary/20 bg-primary/[0.025]">
-        <CardContent className="flex flex-col gap-4 pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><BellRing className="size-5" /></div><div><p className="font-medium">My account and alerts</p><p className="mt-1 text-sm text-muted-foreground">Contact details, Telegram and Google Workspace.</p></div></div>
-          <Link className="text-sm font-medium text-primary hover:underline" href="/settings/alerts">Open</Link>
-        </CardContent>
-      </Card>
+      <div className="grid gap-3 md:grid-cols-2">
+        <Card className="border-primary/20 bg-primary/[0.025]"><CardContent className="flex flex-col gap-4 pt-5 sm:flex-row sm:items-center sm:justify-between"><div className="flex gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><BellRing className="size-5" /></div><div><p className="font-medium">My account and alerts</p><p className="mt-1 text-sm text-muted-foreground">Contact details, Telegram and connected mail.</p></div></div><Link className="text-sm font-medium text-primary hover:underline" href="/settings/alerts">Open</Link></CardContent></Card>
+        <Card><CardContent className="flex flex-col gap-4 pt-5 sm:flex-row sm:items-center sm:justify-between"><div className="flex gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><GraduationCap className="size-5" /></div><div><p className="font-medium">Tutorial</p><p className="mt-1 text-sm text-muted-foreground">Practice the workflow with isolated sample data.</p></div></div><Link className="text-sm font-medium text-primary hover:underline" href="/tutorial">Open</Link></CardContent></Card>
+      </div>
 
       {user?.role === "administrator" ? <>
         <section className="space-y-3">
@@ -67,6 +66,7 @@ export default async function SettingsPage() {
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <SettingsLink description="Staff access and roles." href="/settings/users" icon={UsersRound} title="Users" />
             <SettingsLink description="Complete the business configuration." href="/settings/readiness" icon={CircleGauge} title="Business setup" />
+            <SettingsLink description="Load reviewed yachts, templates and workflow drafts." href="/settings/configuration-pack" icon={ClipboardPaste} title="Configuration pack" />
             <SettingsLink description="Search administrative and operational changes." href="/settings/audit" icon={ScrollText} title="Audit log" />
             <SettingsLink description="KYC, captain and follow-up wording." href="/settings/communications" icon={FilePenLine} title="Message templates" />
             <SettingsLink description="Booking workflow and dependencies." href="/tasks/templates" icon={Clock3} title="Task templates" />
@@ -81,7 +81,6 @@ export default async function SettingsPage() {
             <SettingsLink description="Provider, model and processing preference." href="/settings/ai" icon={BrainCircuit} title="AI" />
             <SettingsLink description="Provider connection status." href="/settings/activation" icon={CircleGauge} title="Connection status" />
             <SettingsLink description="Queues, scanner and recovery." href="/settings/operations" icon={ServerCog} title="Operations" />
-            <SettingsLink description="Practice the full workflow." href="/tutorial" icon={GraduationCap} title="Tutorial" />
           </div>
         </section>
 

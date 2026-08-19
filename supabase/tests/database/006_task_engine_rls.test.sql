@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(67);
+select plan(68);
 
 select has_table('public', 'task_templates', 'task templates table exists');
 select has_table('public', 'task_template_steps', 'task template steps table exists');
@@ -131,7 +131,7 @@ select results_eq(
   $$ select status::text || ':' || blocked_reason from public.tasks
      where booking_id = (select id from public.bookings where enquiry_id = '70000000-0000-4000-8000-000000000001')
        and step_code = '0.B' $$,
-  array['blocked:Waiting for prerequisite tasks'],
+  array['blocked:Waiting for a prerequisite task.'],
   'dependent task begins blocked'
 );
 select results_eq(
@@ -433,8 +433,15 @@ select results_eq(
   $$ select count(*) from public.tasks
      where booking_id = (select id from public.bookings where enquiry_id = '70000000-0000-4000-8000-000000000001')
        and status in ('ready', 'blocked') $$,
-  array[0::bigint],
-  'cancelled booking leaves no open tasks'
+  array[1::bigint],
+  'cancelled booking leaves one confirmation task'
+);
+select results_eq(
+  $$ select count(*) from public.tasks
+     where booking_id = (select id from public.bookings where enquiry_id = '70000000-0000-4000-8000-000000000001')
+       and title = 'Confirm cancellation' and status = 'ready' $$,
+  array[1::bigint],
+  'cancellation creates a ready confirmation task'
 );
 
 set local "request.jwt.claim.sub" = '15000000-0000-0000-0000-000000000002';

@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation"
 
 import {
   createMyTelegramPairingAction,
+  disconnectMyImapMailboxAction,
   disconnectMyGmailOauthAction,
+  saveMyImapMailboxAction,
   updateMyAlertPreferencesAction,
   type AlertSettingsActionState,
 } from "@/app/(workspace)/settings/alerts/actions"
@@ -182,4 +184,30 @@ export function GmailOauthDisconnectForm() {
       <Feedback state={state} />
     </form>
   )
+}
+
+export function ImapMailboxForm({
+  connections,
+}: {
+  connections: Array<{ account_email: string; enabled: boolean; folders: string[]; host: string; id: string; port: number; status: string; tls: boolean }>
+}) {
+  const [state, action, pending] = useActionState(saveMyImapMailboxAction, initialState)
+  const [disconnectState, disconnectAction, disconnectPending] = useActionState(disconnectMyImapMailboxAction, initialState)
+  return <div className="space-y-4">
+    {connections.map((connection) => <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm" key={connection.id}>
+      <div><p className="font-medium">{connection.account_email}</p><p className="mt-1 text-xs text-muted-foreground">{connection.host}:{connection.port} · {connection.folders.join(", ")} · {connection.status}</p></div>
+      <form action={disconnectAction}><input name="connectionId" type="hidden" value={connection.id} /><Button disabled={disconnectPending} size="sm" type="submit" variant="outline">Disconnect</Button></form>
+    </div>)}
+    <form action={action} className="grid gap-3 border-t pt-4 md:grid-cols-2">
+      <label className="grid gap-1 text-sm font-medium">Email address<Input name="accountEmail" required type="email" /></label>
+      <label className="grid gap-1 text-sm font-medium">App password<Input autoComplete="new-password" name="appPassword" required type="password" /></label>
+      <label className="grid gap-1 text-sm font-medium">IMAP server<Input name="host" placeholder="imap.example.com" required /></label>
+      <label className="grid gap-1 text-sm font-medium">Port<Input defaultValue="993" name="port" required type="number" /></label>
+      <label className="grid gap-1 text-sm font-medium md:col-span-2">Folders to monitor<Input defaultValue="INBOX" name="folders" required /></label>
+      <label className="flex min-h-10 items-center gap-2 text-sm"><input defaultChecked name="tls" type="checkbox" />TLS encryption</label>
+      <label className="flex min-h-10 items-center gap-2 text-sm"><input name="enabled" type="checkbox" />Start monitoring after saving</label>
+      <div className="md:col-span-2"><Button disabled={pending} type="submit">{pending ? "Testing and saving…" : "Test and save IMAP mailbox"}</Button></div>
+      <div className="md:col-span-2"><Feedback state={state} /><Feedback state={disconnectState} /></div>
+    </form>
+  </div>
 }

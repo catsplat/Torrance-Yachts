@@ -4,6 +4,7 @@ import Link from "next/link"
 import {
   AlertPreferencesForm,
   GmailOauthDisconnectForm,
+  ImapMailboxForm,
   TelegramPairingForm,
 } from "@/components/alerts/alert-settings-forms"
 import { Badge } from "@/components/ui/badge"
@@ -42,12 +43,13 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
   if (!user) return null
   const notices = await searchParams
   const supabase = await createClient()
-  const [profileResult, preferenceResult, oauthResult] = await Promise.all([
+  const [profileResult, preferenceResult, oauthResult, imapResult] = await Promise.all([
     supabase.from("profiles").select("phone, telegram_chat_id").eq("id", user.id).single(),
     supabase.from("user_notification_preferences").select("*").eq("user_id", user.id).single(),
     supabase.rpc("get_my_oauth_connections"),
+    supabase.from("imap_mailbox_connections").select("id,account_email,host,port,tls,folders,enabled,status").order("created_at", { ascending: false }),
   ])
-  if (profileResult.error || preferenceResult.error || oauthResult.error) {
+  if (profileResult.error || preferenceResult.error || oauthResult.error || imapResult.error) {
     throw new Error("Unable to load your personal alert settings.")
   }
   const gmail = oauthResult.data?.find((connection) => connection.provider === "gmail")
@@ -112,6 +114,10 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
           </CardContent>
         </Card>
       </div>
+      <Card>
+        <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><Mail className="size-5 text-primary" />Other mailboxes</CardTitle></CardHeader>
+        <CardContent className="pt-5"><ImapMailboxForm connections={imapResult.data} /></CardContent>
+      </Card>
     </div>
   )
 }

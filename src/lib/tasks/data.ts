@@ -133,6 +133,7 @@ export async function getTaskDetail(id: string) {
           broker:contacts!bookings_broker_contact_id_fkey(id, full_name, email),
           broker_company:companies!bookings_broker_company_id_fkey(name)
         ),
+        enquiry:enquiries!tasks_enquiry_id_fkey(id, reference, yacht:yachts!enquiries_requested_yacht_id_fkey(id, name)),
         assignee:profiles!tasks_assigned_user_id_fkey(display_name)
       `).eq("id", id).single(),
       supabase.from("task_dependencies").select(
@@ -175,4 +176,17 @@ export async function getBookingTaskChecklist(bookingId: string) {
     throw new Error("Unable to load the booking checklist.")
   }
   return { booking: bookingResult.data, tasks: tasksResult.data }
+}
+
+export async function getWorkItemTasks(workType: "booking" | "enquiry", workId: string) {
+  const supabase = await createClient()
+  const column = workType === "booking" ? "booking_id" : "enquiry_id"
+  const { data, error } = await supabase
+    .from("tasks")
+    .select("id, reference, step_code, title, status")
+    .eq(column, workId)
+    .in("status", ["blocked", "ready"])
+    .order("created_at")
+  if (error) throw new Error("Unable to load task prerequisites.")
+  return data
 }

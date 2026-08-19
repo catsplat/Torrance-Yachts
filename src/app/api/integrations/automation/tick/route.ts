@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { generatePendingEmailSuggestionBatch } from "@/lib/ai/service"
 import { reconcileConfiguredGmailMailbox } from "@/lib/emails/gmail-reconciliation"
+import { dispatchPendingImapProviderActions, reconcileConfiguredImapMailboxes } from "@/lib/emails/imap-reconciliation"
 import { hasValidAutomationToken } from "@/lib/integrations/auth"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { consumeRateLimit } from "@/lib/security/rate-limit"
@@ -20,6 +21,19 @@ export async function POST(request: Request) {
       gmailResult = await reconcileConfiguredGmailMailbox()
     } catch {
       gmailError = true
+    }
+    let imapResult: Awaited<ReturnType<typeof reconcileConfiguredImapMailboxes>> | null = null
+    let imapError = false
+    let imapActionsResult: Awaited<ReturnType<typeof dispatchPendingImapProviderActions>> | null = null
+    try {
+      imapResult = await reconcileConfiguredImapMailboxes()
+    } catch {
+      imapError = true
+    }
+    try {
+      imapActionsResult = await dispatchPendingImapProviderActions()
+    } catch {
+      imapError = true
     }
     let aiResult: Awaited<ReturnType<typeof generatePendingEmailSuggestionBatch>> | null = null
     let aiError = false
@@ -45,6 +59,11 @@ export async function POST(request: Request) {
       gmail_messages_processed: gmailResult?.processed ?? 0,
       gmail_reconciliation_failed: gmailError,
       gmail_recovery_used: gmailResult?.recovered ?? false,
+      imap_configured: imapResult?.configured ?? imapError,
+      imap_messages_processed: imapResult?.processed ?? 0,
+      imap_provider_actions_completed: imapActionsResult?.completed ?? 0,
+      imap_provider_actions_failed: imapActionsResult?.failed ?? 0,
+      imap_reconciliation_failed: imapError,
     })
   } catch {
     return NextResponse.json({ error: "Automation is not configured" }, { status: 503 })

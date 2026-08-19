@@ -44,7 +44,7 @@ export async function proxy(request: NextRequest) {
   const trustedApi =
     request.nextUrl.pathname.startsWith("/api/integrations/") ||
     request.nextUrl.pathname.startsWith("/api/health/")
-  const publicAuthCallback = request.nextUrl.pathname === "/auth/callback" || request.nextUrl.pathname === "/auth/confirm"
+  const publicAuthCallback = request.nextUrl.pathname === "/auth/callback" || request.nextUrl.pathname === "/auth/confirm" || request.nextUrl.pathname.startsWith("/auth/setup/")
   const publicInitialSetup = request.nextUrl.pathname === "/setup"
   const response = trustedApi || publicAuthCallback || publicInitialSetup
     ? NextResponse.next({ request: { headers: requestHeaders } })

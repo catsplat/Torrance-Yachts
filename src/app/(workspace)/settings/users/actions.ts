@@ -34,12 +34,8 @@ function passwordSetupRedirectUrl() {
   return `${applicationBaseUrl()}/auth/confirm?next=/account/update-password`
 }
 
-function manualAuthActionLink(type: "invite" | "recovery", tokenHash: string) {
-  const link = new URL("/auth/confirm", applicationBaseUrl())
-  link.searchParams.set("token_hash", tokenHash)
-  link.searchParams.set("type", type)
-  link.searchParams.set("next", "/account/update-password")
-  return link.toString()
+function manualAuthActionLink(linkId: string) {
+  return new URL(`/auth/setup/${linkId}`, applicationBaseUrl()).toString()
 }
 
 // Supabase JS normally exposes generated action data under `properties`, while
@@ -146,8 +142,18 @@ export async function inviteInternalUserAction(
       await admin.auth.admin.deleteUser(details.userId)
       return { message: "The invitation could not be approved safely. No usable account was retained." }
     }
+    const handoff = await admin.rpc("store_manual_auth_link", {
+      p_created_by: context.userId,
+      p_purpose: "invite",
+      p_token_hash: details.tokenHash,
+      p_user_id: details.userId,
+    })
+    if (handoff.error || !handoff.data) {
+      await admin.auth.admin.deleteUser(details.userId)
+      return { message: "The invitation could not be secured for manual delivery. No usable account was retained." }
+    }
     revalidatePath("/settings/users")
-    return { link: manualAuthActionLink("invite", details.tokenHash), message: "Invitation link generated. Send it to the invitee through a secure channel.", success: true }
+    return { link: manualAuthActionLink(handoff.data), message: "Invitation link generated. Send it to the invitee through a secure channel.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }
@@ -170,7 +176,16 @@ export async function sendRecoveryEmailAction(
     })
     const details = generatedAuthLinkDetails(recovery.data)
     if (recovery.error || !details.tokenHash) return { message: "The recovery link could not be generated." }
-    return { link: manualAuthActionLink("recovery", details.tokenHash), message: "Recovery link generated. Send it to the user through a secure channel.", success: true }
+    const userId = details.userId
+    if (!userId) return { message: "The recovery link could not be secured for manual delivery." }
+    const handoff = await admin.rpc("store_manual_auth_link", {
+      p_created_by: context.userId,
+      p_purpose: "recovery",
+      p_token_hash: details.tokenHash,
+      p_user_id: userId,
+    })
+    if (handoff.error || !handoff.data) return { message: "The recovery link could not be secured for manual delivery." }
+    return { link: manualAuthActionLink(handoff.data), message: "Recovery link generated. Send it to the user through a secure channel.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }

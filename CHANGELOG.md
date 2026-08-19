@@ -2,13 +2,33 @@
 
 ## Unreleased
 
+### Added
+
+- Scanner-safe, administrator-issued manual invitation and recovery links that
+  can be shared across devices without exposing a Supabase verification token.
+- TLS IMAP mailbox connections with encrypted app-password storage and the
+  existing private, owner-aware email ingestion boundary.
+- IMAP-specific mark-read and archive handling for circular mail, using the
+  connected mailbox's own encrypted app password rather than Gmail credentials.
+- Early, non-reserving yacht availability review on enquiry work.
+- A unified operational task flow for enquiry and booking work, including
+  prerequisite, approved-document, booking-state and date conditions.
+- A paired, outbound-only Torrance Local AI helper foundation for MacBooks,
+  with short-lived pairing codes and owner-controlled revocation.
+- An administrator-only Configuration Pack importer that validates and imports
+  runtime yacht configuration, draft wording, rates, sales links and booking
+  workflow versions atomically.
+
+### Changed
+
+- Booking cancellation now preserves its completed history, stops outstanding
+  workflow work and creates an auditable `Confirm cancellation` task.
+- Task readiness is re-evaluated in PostgreSQL whenever a prerequisite changes,
+  including enquiry work that is not attached to a booking.
+
 - Added an optional loopback-only, SSH-tunnelled Supabase Studio profile for
   secure VPS administration.
 - Added the production Auth confirmation URL to the self-hosted allow-list.
-
-## Unreleased
-
-- Added administrator-generated, single-use Supabase invitation and recovery links so a private pilot can operate without SMTP.
 
 ## [0.19.3] - 2026-08-17
 
