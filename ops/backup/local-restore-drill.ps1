@@ -11,6 +11,18 @@ $restoreListPath = Join-Path $runDirectory "restore.list"
 $remoteRestoreList = "/tmp/torrance-restore-$stamp.list"
 $restoreDatabase = "torrance_restore_$($stamp.ToLowerInvariant())"
 
+function Get-Sha256Hex([string]$Path) {
+  $stream = [System.IO.File]::OpenRead($Path)
+  $hasher = [System.Security.Cryptography.SHA256]::Create()
+  try {
+    return [System.Convert]::ToHexString($hasher.ComputeHash($stream)).ToLowerInvariant()
+  }
+  finally {
+    $hasher.Dispose()
+    $stream.Dispose()
+  }
+}
+
 New-Item -ItemType Directory -Force -Path $runDirectory | Out-Null
 $databaseContainer = docker ps `
   --filter "label=com.supabase.cli.project=Torrance_Yachts" `
@@ -80,7 +92,7 @@ select json_build_object(
     -U postgres -d $restoreDatabase -At -v ON_ERROR_STOP=1 -c $verificationSql
   if ($LASTEXITCODE -ne 0) { throw "Restored database verification failed." }
 
-  $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $dumpPath).Hash.ToLowerInvariant()
+  $hash = Get-Sha256Hex $dumpPath
   $result = [ordered]@{
     artifact = "database.dump"
     checksumSha256 = $hash
