@@ -42,6 +42,26 @@ function manualAuthActionLink(type: "invite" | "recovery", tokenHash: string) {
   return link.toString()
 }
 
+// Supabase JS normally exposes generated action data under `properties`, while
+// the pinned self-hosted GoTrue release returns the same fields at the top
+// level. Accept both verified response shapes so manual links always use the
+// hash-confirmation route rather than the implicit-flow action URL.
+function generatedAuthLinkDetails(data: unknown) {
+  const result = data as {
+    hashed_token?: unknown
+    id?: unknown
+    properties?: { hashed_token?: unknown }
+    user?: { id?: unknown }
+  } | null
+  const tokenHash = typeof result?.properties?.hashed_token === "string"
+    ? result.properties.hashed_token
+    : typeof result?.hashed_token === "string" ? result.hashed_token : null
+  const userId = typeof result?.user?.id === "string"
+    ? result.user.id
+    : typeof result?.id === "string" ? result.id : null
+  return { tokenHash, userId }
+}
+
 export async function resetUserMfaAction(
   _state: UserAdminActionState,
   formData: FormData,
@@ -114,19 +134,20 @@ export async function inviteInternalUserAction(
       redirectTo: passwordSetupRedirectUrl(),
       },
     })
-    if (invitation.error || !invitation.data.user || !invitation.data.properties?.hashed_token) {
+    const details = generatedAuthLinkDetails(invitation.data)
+    if (invitation.error || !details.userId || !details.tokenHash) {
       return { message: "The invitation link could not be generated. Check that the account does not already exist." }
     }
     const approval = await admin.rpc("approve_internal_user_invitation", {
       p_approved_by: context.userId,
-      p_user_id: invitation.data.user.id,
+      p_user_id: details.userId,
     })
     if (approval.error || !approval.data) {
-      await admin.auth.admin.deleteUser(invitation.data.user.id)
+      await admin.auth.admin.deleteUser(details.userId)
       return { message: "The invitation could not be approved safely. No usable account was retained." }
     }
     revalidatePath("/settings/users")
-    return { link: manualAuthActionLink("invite", invitation.data.properties.hashed_token), message: "Invitation link generated. Send it to the invitee through a secure channel.", success: true }
+    return { link: manualAuthActionLink("invite", details.tokenHash), message: "Invitation link generated. Send it to the invitee through a secure channel.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }
@@ -147,8 +168,9 @@ export async function sendRecoveryEmailAction(
       email: parsed.data.email,
       options: { redirectTo: passwordSetupRedirectUrl() },
     })
-    if (recovery.error || !recovery.data.properties?.hashed_token) return { message: "The recovery link could not be generated." }
-    return { link: manualAuthActionLink("recovery", recovery.data.properties.hashed_token), message: "Recovery link generated. Send it to the user through a secure channel.", success: true }
+    const details = generatedAuthLinkDetails(recovery.data)
+    if (recovery.error || !details.tokenHash) return { message: "The recovery link could not be generated." }
+    return { link: manualAuthActionLink("recovery", details.tokenHash), message: "Recovery link generated. Send it to the user through a secure channel.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }

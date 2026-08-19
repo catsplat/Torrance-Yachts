@@ -26,6 +26,7 @@ const environment = {
   SMTP_PASS: "synthetic-smtp-password",
   SMTP_SENDER_NAME: "Torrance Yachts",
   SUPABASE_SECRET_KEY: "synthetic-server-key",
+  PG_META_CRYPTO_KEY: "synthetic-meta-crypto-key",
   MONITORING_SHARED_SECRET: "m".repeat(32),
 }
 
@@ -56,7 +57,7 @@ const backupTimer = readFileSync("deploy/systemd/torrance-yachts-backup.timer", 
 for (const required of ["gateway:", "app:", "worker:", "clamav:", "cloudflared:", "SUPABASE_INTERNAL_URL: http://kong:8000", "external: true", "torrance-internal"]) {
   if (!compose.includes(required)) throw new Error(`CX23 Compose package is missing: ${required}`)
 }
-for (const memoryContract of ["mem_limit: 384m", "mem_limit: 96m", "mem_limit: 640m", "mem_limit: 64m"]) {
+for (const memoryContract of ["mem_limit: 384m", "mem_limit: 96m", "mem_limit: 1024m", "mem_limit: 64m"]) {
   if (!compose.includes(memoryContract)) throw new Error(`CX23 application memory profile is missing: ${memoryContract}`)
 }
 for (const forbidden of ["n8n:", "ports:", "studio:", "realtime:"]) {
@@ -68,13 +69,13 @@ for (const required of ["auto_https off", "/auth/v1/*", "/rest/v1/*", "kong:8000
 for (const required of ["127.0.0.1:3000:8080", "gateway:"]) {
   if (!tailscalePilot.includes(required)) throw new Error(`Tailscale pilot override is missing: ${required}`)
 }
-for (const required of ["db:", "auth:", "rest:", "storage:", "kong:", "ENABLE_IMAGE_TRANSFORMATION: \"false\"", "torrance-internal"]) {
+for (const required of ["db:", "auth:", "rest:", "storage:", "kong:", "meta:", "studio:", "profiles: [\"studio\"]", "127.0.0.1:54323:3000", "ENABLE_IMAGE_TRANSFORMATION: \"false\"", "torrance-internal"]) {
   if (!supabaseCore.includes(required)) throw new Error(`Self-hosted Supabase core is missing: ${required}`)
 }
 for (const memoryContract of ["mem_limit: 896m", "mem_limit: 192m", "mem_limit: 128m", "mem_limit: 256m"]) {
   if (!supabaseCore.includes(memoryContract)) throw new Error(`CX23 Supabase memory profile is missing: ${memoryContract}`)
 }
-for (const forbidden of ["studio:", "realtime:", "imgproxy:", "functions:", "supavisor:", "ports:"]) {
+for (const forbidden of ["realtime:", "imgproxy:", "functions:", "supavisor:"]) {
   if (supabaseCore.includes(forbidden)) throw new Error(`Self-hosted Supabase core must not contain: ${forbidden}`)
 }
 for (const required of ["dispatch-alerts", "dispatch-google-workspace", "AUTOMATION_SHARED_SECRET", "cycle_completed"]) {

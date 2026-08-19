@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added an optional loopback-only, SSH-tunnelled Supabase Studio profile for
+  secure VPS administration.
+- Added the production Auth confirmation URL to the self-hosted allow-list.
+
+## Unreleased
+
 - Added administrator-generated, single-use Supabase invitation and recovery links so a private pilot can operate without SMTP.
 
 ## [0.19.3] - 2026-08-17

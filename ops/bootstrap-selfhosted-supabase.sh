@@ -57,6 +57,9 @@ anon_key=$(sed -n 's/^ANON_KEY=//p' "$deployment_path/.env" | tail -n 1)
 service_key=$(sed -n 's/^SERVICE_ROLE_KEY=//p' "$deployment_path/.env" | tail -n 1)
 set_value NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY "$anon_key"
 set_value SUPABASE_SECRET_KEY "$service_key"
+if ! grep -q '^PG_META_CRYPTO_KEY=.' "$deployment_path/.env"; then
+  set_value PG_META_CRYPTO_KEY "$(openssl rand -base64 48 | tr -d '\n')"
+fi
 chmod 600 "$deployment_path/.env"
 docker network inspect torrance-internal >/dev/null 2>&1 || docker network create torrance-internal >/dev/null
 
@@ -68,6 +71,7 @@ Secrets were generated only on the protected VPS file where required. Complete
 the real SMTP, hostname, Google and Cloudflare values, then start only the
 reviewed core with:
   docker compose --env-file .env -f supabase-core.compose.yml up -d --wait
-Studio, Realtime, Analytics/Logs, Functions, imgproxy and Supavisor stay
-disabled on this host.
+Realtime, Analytics/Logs, Functions, imgproxy and Supavisor stay disabled on
+this host. Studio is optional and loopback-only; start it only through the
+documented SSH-tunnel administrative procedure.
 EOF

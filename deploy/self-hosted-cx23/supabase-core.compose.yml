@@ -113,7 +113,7 @@ services:
       GOTRUE_DB_DRIVER: postgres
       GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/postgres
       GOTRUE_SITE_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
-      GOTRUE_URI_ALLOW_LIST: https://${APP_DOMAIN:?Set APP_DOMAIN}/auth/callback,https://${APP_DOMAIN:?Set APP_DOMAIN}/account/update-password
+      GOTRUE_URI_ALLOW_LIST: https://${APP_DOMAIN:?Set APP_DOMAIN}/auth/callback,https://${APP_DOMAIN:?Set APP_DOMAIN}/auth/confirm,https://${APP_DOMAIN:?Set APP_DOMAIN}/account/update-password
       GOTRUE_DISABLE_SIGNUP: "true"
       GOTRUE_JWT_ADMIN_ROLES: service_role
       GOTRUE_JWT_AUD: authenticated
@@ -270,6 +270,89 @@ services:
       retries: 5
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=16m
+    logging:
+      driver: local
+      options: { max-file: "3", max-size: "8m" }
+    networks: [torrance_internal]
+
+  # Studio is deliberately opt-in and only publishes to the VPS loopback
+  # interface. It is reached through an authenticated SSH tunnel, never the
+  # app gateway, Tailscale serve, or a public URL.
+  meta:
+    profiles: ["studio"]
+    image: supabase/postgres-meta:v0.96.6
+    restart: unless-stopped
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 96
+    mem_limit: 192m
+    cpus: 0.3
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: postgres
+      PG_META_DB_USER: postgres
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      CRYPTO_KEY: ${PG_META_CRYPTO_KEY:?Set PG_META_CRYPTO_KEY}
+    healthcheck:
+      # postgres-meta's pinned image intentionally has no curl/wget; use its
+      # bundled Node runtime rather than a shell utility that is not present.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    tmpfs: [/tmp]
+    logging:
+      driver: local
+      options: { max-file: "3", max-size: "8m" }
+    networks: [torrance_internal]
+
+  studio:
+    profiles: ["studio"]
+    image: supabase/studio:2026.08.03-sha-022b374
+    restart: unless-stopped
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 128
+    mem_limit: 384m
+    cpus: 0.45
+    depends_on:
+      meta: { condition: service_healthy }
+      kong: { condition: service_healthy }
+    # This is the only Studio port and it intentionally cannot be reached
+    # from the public network or from another Tailnet device directly.
+    ports:
+      - "127.0.0.1:54323:3000"
+    environment:
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PORT: 5432
+      POSTGRES_HOST: db
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_USER_READ_WRITE: postgres
+      PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY:?Set PG_META_CRYPTO_KEY}
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_DB_EXTRA_SEARCH_PATH: public
+      DEFAULT_ORGANIZATION_NAME: Torrance Yachts
+      DEFAULT_PROJECT_NAME: Charter Operations
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_PUBLIC_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
+      SUPABASE_ANON_KEY: ${ANON_KEY:?Set ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY:?Set SERVICE_ROLE_KEY}
+      AUTH_JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      ENABLED_FEATURES_LOGS_ALL: "false"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/platform/profile').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    tmpfs: [/tmp]
     logging:
       driver: local
       options: { max-file: "3", max-size: "8m" }

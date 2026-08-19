@@ -4,8 +4,11 @@
 
 The private pilot may use administrator-generated, single-use Supabase Auth
 invitation and recovery links instead of configuring an outgoing SMTP account.
-The application calls Supabase's server-side `generateLink` API and displays
-the resulting action URL once to the administrator for secure manual delivery.
+The application calls Supabase's server-side `generateLink` API and displays a
+server-generated `/auth/confirm` URL containing the returned token hash once
+to the administrator for secure manual delivery. It deliberately does not
+display GoTrue's `action_link`, because that implicit-flow URL carries its
+session in a URL fragment that the server callback cannot receive.
 
 ## Rationale
 
