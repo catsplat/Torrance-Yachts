@@ -21,6 +21,7 @@ function syntheticEnvironmentFor(environment) {
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "synthetic-publishable-key",
     NEXT_PUBLIC_SUPABASE_URL: `https://${environment}.operations.example.test`,
     POSTGRES_PASSWORD: "synthetic-postgres-password",
+    PG_META_CRYPTO_KEY: "synthetic-meta-crypto-key",
     JWT_SECRET: "synthetic-jwt-secret-that-is-long-enough",
     ANON_KEY: "synthetic-anon-key",
     SERVICE_ROLE_KEY: "synthetic-service-role-key",
@@ -147,9 +148,17 @@ for (const requiredService of ["db:", "auth:", "rest:", "storage:", "kong:"]) {
   if (!coreCompose.includes(requiredService)) throw new Error(`Supabase core Compose is missing: ${requiredService}`)
 }
 for (const forbidden of ["n8n:", "SUPABASE_DB_URL", "ports:"]) {
-  if (applicationCompose.includes(forbidden) || coreCompose.includes(forbidden)) {
+  if (applicationCompose.includes(forbidden)) {
     throw new Error(`CX23 deployment Compose must not contain: ${forbidden}`)
   }
+}
+for (const forbidden of ["n8n:", "SUPABASE_DB_URL", "0.0.0.0:54323", "0.0.0.0:5432"]) {
+  if (coreCompose.includes(forbidden)) {
+    throw new Error(`CX23 Supabase core must not expose: ${forbidden}`)
+  }
+}
+if (!coreCompose.includes('"127.0.0.1:54323:3000"')) {
+  throw new Error("CX23 Supabase Studio must be loopback-only when present.")
 }
 
 for (const requiredWorkflowStep of [
