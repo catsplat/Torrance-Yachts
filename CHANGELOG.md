@@ -21,6 +21,8 @@
 
 ### Changed
 
+- Removed the build-time Google Fonts download so production images can build
+  without relying on an external font service.
 - Booking cancellation now preserves its completed history, stops outstanding
   workflow work and creates an auditable `Confirm cancellation` task.
 - Task readiness is re-evaluated in PostgreSQL whenever a prerequisite changes,
