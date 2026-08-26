@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { bookingConfirmationSchema, bufferedReservationDates } from "./validation"
+import { availabilityBlockSchema, bookingConfirmationSchema, bufferedReservationDates, manualBookingSchema } from "./validation"
 
 const validBooking = {
   enquiry_id: "70000000-0000-4000-8000-000000000001",
@@ -45,5 +45,30 @@ describe("buffered reservation dates", () => {
       reservedFrom: "2026-08-13",
       reservedThrough: "2026-08-22",
     })
+  })
+})
+
+describe("manual calendar entry validation", () => {
+  it("accepts a confirmed manual charter without an enquiry or offer", () => {
+    const result = manualBookingSchema.parse({
+      ...validBooking,
+      enquiry_id: undefined,
+      source_offer_id: undefined,
+      customer_contact_id: "",
+      broker_contact_id: "",
+      broker_company_id: "",
+    })
+    expect(result.customer_contact_id).toBeNull()
+    expect(result.currency).toBe("EUR")
+  })
+
+  it("keeps a non-charter availability hold free of commercial fields", () => {
+    expect(availabilityBlockSchema.parse({
+      yacht_id: validBooking.yacht_id,
+      title: "Owner use",
+      charter_start_date: validBooking.charter_start_date,
+      charter_end_date: validBooking.charter_end_date,
+      notes: "Private operational hold",
+    }).title).toBe("Owner use")
   })
 })

@@ -235,7 +235,9 @@ export async function prepareTaskCommunicationAction(
       values.captain_phone = captain?.contact.phone ?? "Not recorded"
     }
     const subject = renderCommunicationTemplate(template.subject_template, values)
-    body = `${subject}\n\n${renderCommunicationTemplate(template.body_template, values)}`
+    const renderedBody = renderCommunicationTemplate(template.body_template, values)
+    // A blank subject is intentional for templates used inside an existing email thread.
+    body = subject ? `${subject}\n\n${renderedBody}` : renderedBody
   } else if (task.step_code === "2.B") {
     const { data: captain } = await context.supabase
       .from("yacht_contacts")

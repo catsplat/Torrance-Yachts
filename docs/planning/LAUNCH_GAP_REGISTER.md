@@ -19,10 +19,10 @@
 | --- | --- | --- |
 | Operational registers | Cursor contracts, exact counts, URL state and 10,000-record tests | Client UAT with approved imported configuration |
 | Access and MFA | Approved-user guard, AAL2, role separation, reset audit and unapproved isolation | Approve real identities and recovery owner |
-| Gmail and AI | One application-owned OAuth path, history reconciliation, leased queue and fictional five-route proof | Client OAuth consent, provider/data-policy approval |
+| Gmail and AI | Per-user Google OAuth and IMAP paths, private owner-aware ingestion, leased queue, paired-Mac Ollama option and fictional five-route proof | Client mailbox consent and data-policy approval |
 | Booking workflow | Full fictional enquiry-to-follow-up UI path and database edge cases | Staff macOS walkthrough |
 | Documents | Private quarantine/release, ClamAV boundary, retry/reject/reconcile and blocked access | Retention policy and production scanner acceptance |
-| Alerts and mirrors | Fake-provider contracts, retry/back-off and reconciliation | Recipient and destination ownership acceptance |
+| Alerts and mirrors | Telegram bot pairing, fake-provider contracts, retry/back-off and reconciliation | Company bot ownership and recipient acceptance |
 | Recovery | Disposable database restore drill and runbooks | Encrypted off-site schedule and production restore drill |
 | Deployment | Standalone image, hardened Compose, lean CX23 self-hosted Supabase profile, startup validation, separately labelled staging/production GHCR images, protected deployment/rollback workflow and local container smoke proof | Complete private ingress, runtime secrets, backup destination, monitoring and staged provider acceptance |
 

@@ -79,7 +79,7 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
         <CardHeader className="border-b"><CardTitle className="flex items-center gap-2"><BellRing className="size-5 text-primary" />Alerts</CardTitle></CardHeader>
         <CardContent className="pt-6">
           <AlertPreferencesForm
-            gmailConnected={gmailConnected}
+            mailboxConnected={gmailConnected || imapResult.data.some((connection) => connection.enabled && connection.status === "connected")}
             phone={profileResult.data.phone}
             preferences={preferenceResult.data}
             telegramChatId={profileResult.data.telegram_chat_id}

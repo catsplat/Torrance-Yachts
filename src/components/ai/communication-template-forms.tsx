@@ -42,7 +42,7 @@ export function NewCommunicationTemplateForm() {
         </select>
       </label>
       <label className="grid gap-1 text-sm">Name<Input name="name" required /></label>
-      <label className="grid gap-1 text-sm">Subject<Input name="subjectTemplate" required /></label>
+      <label className="grid gap-1 text-sm">Subject <span className="text-xs font-normal text-muted-foreground">(optional for replies in an existing thread)</span><Input name="subjectTemplate" /></label>
       <label className="grid gap-1 text-sm">
         Plain-text body
         <textarea className="min-h-48 rounded-md border bg-background p-3 font-mono text-sm" name="bodyTemplate" required />
@@ -78,7 +78,7 @@ export function CommunicationTemplateVersionForm({
     return (
       <div className="space-y-4">
         <div className="rounded-lg border bg-muted/20 p-4">
-          <p className="text-sm font-medium">{template.subject_template}</p>
+          {template.subject_template ? <p className="text-sm font-medium">{template.subject_template}</p> : <p className="text-sm text-muted-foreground">Uses the existing thread subject</p>}
           <p className="mt-3 whitespace-pre-wrap text-sm">{template.body_template}</p>
         </div>
         <p className="text-xs text-muted-foreground">
@@ -105,7 +105,7 @@ export function CommunicationTemplateVersionForm({
       <form action={updateAction} className="grid gap-3">
         <input name="templateId" type="hidden" value={template.id} />
         <label className="grid gap-1 text-sm">Name<Input defaultValue={template.name} name="name" required /></label>
-        <label className="grid gap-1 text-sm">Subject<Input defaultValue={template.subject_template} name="subjectTemplate" required /></label>
+        <label className="grid gap-1 text-sm">Subject <span className="text-xs font-normal text-muted-foreground">(optional for replies in an existing thread)</span><Input defaultValue={template.subject_template} name="subjectTemplate" /></label>
         <label className="grid gap-1 text-sm">
           Plain-text body
           <textarea className="min-h-48 rounded-md border bg-background p-3 font-mono text-sm" defaultValue={template.body_template} name="bodyTemplate" required />

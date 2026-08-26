@@ -7,6 +7,7 @@ const operationalRoutes = [
   { heading: "Enquiries", path: "/enquiries" },
   { heading: "Offers", path: "/offers" },
   { heading: "Bookings", path: "/bookings" },
+  { heading: "Check yacht availability", path: "/bookings/availability" },
   { heading: "Tasks", path: "/tasks" },
   { heading: "Documents", path: "/documents" },
   { heading: "Calendar", path: "/calendar" },
@@ -28,6 +29,13 @@ test("approved staff can use the core operational workspace", async ({ page }) =
     await expect(page).toHaveURL(new RegExp(`${route.path.replace("/", "\\/")}$`))
     await expect(page.getByRole("heading", { name: route.heading, exact: true })).toBeVisible()
   }
+})
+
+test("staff can open the two safe direct calendar-entry paths", async ({ page }) => {
+  await page.goto("/bookings/new?enquiry=manual")
+  await expect(page.getByRole("heading", { name: "New calendar entry" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Confirmed charter" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Availability block" })).toBeVisible()
 })
 
 test("core pages have no automatically detectable serious accessibility violations", async ({ page }) => {

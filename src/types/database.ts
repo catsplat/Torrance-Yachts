@@ -565,13 +565,14 @@ export type Database = {
           customer_contact_id: string | null
           disembarkation_port: string | null
           embarkation_port: string | null
-          enquiry_id: string
+          enquiry_id: string | null
           guest_count: number | null
           id: string
+          origin: Database["public"]["Enums"]["booking_origin"]
           reference: string
           signed_agreement_confirmed_at: string
           signed_agreement_confirmed_by: string
-          source_offer_id: string
+          source_offer_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           tax_rate: number
           updated_at: string
@@ -591,13 +592,14 @@ export type Database = {
           customer_contact_id?: string | null
           disembarkation_port?: string | null
           embarkation_port?: string | null
-          enquiry_id: string
+          enquiry_id?: string | null
           guest_count?: number | null
           id?: string
+          origin?: Database["public"]["Enums"]["booking_origin"]
           reference?: string
           signed_agreement_confirmed_at?: string
           signed_agreement_confirmed_by: string
-          source_offer_id: string
+          source_offer_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           tax_rate: number
           updated_at?: string
@@ -617,13 +619,14 @@ export type Database = {
           customer_contact_id?: string | null
           disembarkation_port?: string | null
           embarkation_port?: string | null
-          enquiry_id?: string
+          enquiry_id?: string | null
           guest_count?: number | null
           id?: string
+          origin?: Database["public"]["Enums"]["booking_origin"]
           reference?: string
           signed_agreement_confirmed_at?: string
           signed_agreement_confirmed_by?: string
-          source_offer_id?: string
+          source_offer_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           tax_rate?: number
           updated_at?: string
@@ -2612,6 +2615,78 @@ export type Database = {
           },
         ]
       }
+      local_ai_jobs: {
+        Row: {
+          agent_id: string
+          analysis_kind: string
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          input_payload: Json
+          input_tokens: number | null
+          lease_expires_at: string | null
+          output_tokens: number | null
+          owner_user_id: string
+          provider_request_id: string | null
+          result_payload: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          analysis_kind: string
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          input_payload: Json
+          input_tokens?: number | null
+          lease_expires_at?: string | null
+          output_tokens?: number | null
+          owner_user_id: string
+          provider_request_id?: string | null
+          result_payload?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          analysis_kind?: string
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          input_payload?: Json
+          input_tokens?: number | null
+          lease_expires_at?: string | null
+          output_tokens?: number | null
+          owner_user_id?: string
+          provider_request_id?: string | null
+          result_payload?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "local_ai_jobs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "local_ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "local_ai_jobs_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       local_ai_pairing_codes: {
         Row: {
           code_sha256: string
@@ -4233,6 +4308,85 @@ export type Database = {
           },
         ]
       }
+      yacht_availability_blocks: {
+        Row: {
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          id: string
+          last_change_reason: string | null
+          notes: string | null
+          reference: string
+          reservation_period: unknown
+          reserved_from: string
+          reserved_through: string
+          status: Database["public"]["Enums"]["calendar_event_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        Insert: {
+          charter_end_date: string
+          charter_start_date: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_change_reason?: string | null
+          notes?: string | null
+          reference?: string
+          reservation_period?: unknown
+          reserved_from: string
+          reserved_through: string
+          status?: Database["public"]["Enums"]["calendar_event_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          yacht_id: string
+        }
+        Update: {
+          charter_end_date?: string
+          charter_start_date?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_change_reason?: string | null
+          notes?: string | null
+          reference?: string
+          reservation_period?: unknown
+          reserved_from?: string
+          reserved_through?: string
+          status?: Database["public"]["Enums"]["calendar_event_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          yacht_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yacht_availability_blocks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_availability_blocks_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_availability_blocks_yacht_id_fkey"
+            columns: ["yacht_id"]
+            isOneToOne: false
+            referencedRelation: "yachts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       yacht_commercial_profiles: {
         Row: {
           created_at: string
@@ -5013,13 +5167,14 @@ export type Database = {
           customer_contact_id: string | null
           disembarkation_port: string | null
           embarkation_port: string | null
-          enquiry_id: string
+          enquiry_id: string | null
           guest_count: number | null
           id: string
+          origin: Database["public"]["Enums"]["booking_origin"]
           reference: string
           signed_agreement_confirmed_at: string
           signed_agreement_confirmed_by: string
-          source_offer_id: string
+          source_offer_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           tax_rate: number
           updated_at: string
@@ -5029,6 +5184,41 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      amend_yacht_availability_block: {
+        Args: {
+          p_block_id: string
+          p_charter_end_date: string
+          p_charter_start_date: string
+          p_notes: string
+          p_reason: string
+          p_title: string
+          p_yacht_id: string
+        }
+        Returns: {
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          id: string
+          last_change_reason: string | null
+          notes: string | null
+          reference: string
+          reservation_period: unknown
+          reserved_from: string
+          reserved_through: string
+          status: Database["public"]["Enums"]["calendar_event_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "yacht_availability_blocks"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -5216,6 +5406,33 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cancel_yacht_availability_block: {
+        Args: { p_block_id: string; p_reason: string }
+        Returns: {
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          id: string
+          last_change_reason: string | null
+          notes: string | null
+          reference: string
+          reservation_period: unknown
+          reserved_from: string
+          reserved_through: string
+          status: Database["public"]["Enums"]["calendar_event_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "yacht_availability_blocks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       check_yacht_availability: {
         Args: {
           p_charter_end_date: string
@@ -5339,6 +5556,15 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      claim_local_ai_job: {
+        Args: { p_agent_token: string }
+        Returns: {
+          analysis_kind: string
+          input_payload: Json
+          job_id: string
+          model: string
+        }[]
       }
       claim_manual_auth_link: {
         Args: { p_link_id: string }
@@ -5468,6 +5694,17 @@ export type Database = {
           p_external_id: string
           p_external_url: string
           p_worker_id: string
+        }
+        Returns: undefined
+      }
+      complete_local_ai_job: {
+        Args: {
+          p_agent_token: string
+          p_input_tokens?: number
+          p_job_id: string
+          p_output_tokens?: number
+          p_provider_request_id?: string
+          p_result_payload: Json
         }
         Returns: undefined
       }
@@ -5610,13 +5847,14 @@ export type Database = {
           customer_contact_id: string | null
           disembarkation_port: string | null
           embarkation_port: string | null
-          enquiry_id: string
+          enquiry_id: string | null
           guest_count: number | null
           id: string
+          origin: Database["public"]["Enums"]["booking_origin"]
           reference: string
           signed_agreement_confirmed_at: string
           signed_agreement_confirmed_by: string
-          source_offer_id: string
+          source_offer_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           tax_rate: number
           updated_at: string
@@ -5751,6 +5989,57 @@ export type Database = {
         }
         Returns: string
       }
+      create_manual_booking: {
+        Args: {
+          p_broker_company_id: string
+          p_broker_contact_id: string
+          p_charter_end_date: string
+          p_charter_fee: number
+          p_charter_start_date: string
+          p_confirmation_reason: string
+          p_currency: string
+          p_customer_contact_id: string
+          p_disembarkation_port: string
+          p_embarkation_port: string
+          p_guest_count: number
+          p_signed_agreement_confirmed: boolean
+          p_tax_rate: number
+          p_yacht_id: string
+        }
+        Returns: {
+          broker_company_id: string | null
+          broker_contact_id: string | null
+          charter_end_date: string
+          charter_fee: number
+          charter_start_date: string
+          confirmation_reason: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          customer_contact_id: string | null
+          disembarkation_port: string | null
+          embarkation_port: string | null
+          enquiry_id: string | null
+          guest_count: number | null
+          id: string
+          origin: Database["public"]["Enums"]["booking_origin"]
+          reference: string
+          signed_agreement_confirmed_at: string
+          signed_agreement_confirmed_by: string
+          source_offer_id: string | null
+          status: Database["public"]["Enums"]["booking_status"]
+          tax_rate: number
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_my_local_ai_pairing_code: {
         Args: never
         Returns: {
@@ -5833,6 +6122,39 @@ export type Database = {
         Returns: string
       }
       create_rehearsal_run: { Args: { p_label: string }; Returns: string }
+      create_yacht_availability_block: {
+        Args: {
+          p_charter_end_date: string
+          p_charter_start_date: string
+          p_notes: string
+          p_title: string
+          p_yacht_id: string
+        }
+        Returns: {
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          id: string
+          last_change_reason: string | null
+          notes: string | null
+          reference: string
+          reservation_period: unknown
+          reserved_from: string
+          reserved_through: string
+          status: Database["public"]["Enums"]["calendar_event_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "yacht_availability_blocks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_task_template_step: {
         Args: { p_reason: string; p_step_id: string }
         Returns: undefined
@@ -5882,6 +6204,14 @@ export type Database = {
           p_error_message: string
           p_retryable: boolean
           p_worker_id: string
+        }
+        Returns: undefined
+      }
+      fail_local_ai_job: {
+        Args: {
+          p_agent_token: string
+          p_error_message: string
+          p_job_id: string
         }
         Returns: undefined
       }
@@ -7113,13 +7443,14 @@ export type Database = {
           customer_contact_id: string | null
           disembarkation_port: string | null
           embarkation_port: string | null
-          enquiry_id: string
+          enquiry_id: string | null
           guest_count: number | null
           id: string
+          origin: Database["public"]["Enums"]["booking_origin"]
           reference: string
           signed_agreement_confirmed_at: string
           signed_agreement_confirmed_by: string
-          source_offer_id: string
+          source_offer_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           tax_rate: number
           updated_at: string
@@ -7530,6 +7861,7 @@ export type Database = {
         | "superseded"
       ai_work_status: "pending" | "claimed" | "completed" | "permanent_failure"
       backup_verification_status: "started" | "passed" | "failed"
+      booking_origin: "enquiry" | "manual"
       booking_status: "confirmed" | "charter_active" | "completed" | "cancelled"
       calendar_event_kind: "charter" | "payment" | "task"
       calendar_event_status: "active" | "cancelled"
@@ -7833,6 +8165,7 @@ export const Constants = {
       ],
       ai_work_status: ["pending", "claimed", "completed", "permanent_failure"],
       backup_verification_status: ["started", "passed", "failed"],
+      booking_origin: ["enquiry", "manual"],
       booking_status: ["confirmed", "charter_active", "completed", "cancelled"],
       calendar_event_kind: ["charter", "payment", "task"],
       calendar_event_status: ["active", "cancelled"],

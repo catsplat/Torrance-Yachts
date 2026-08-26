@@ -130,14 +130,15 @@ export async function updateMyAlertPreferencesAction(
   if (!context) return expired
   const values = parsed.data
   if (values.emailEnabled) {
-    const { data: connections, error: connectionError } = await context.supabase.rpc(
-      "get_my_oauth_connections",
-    )
+    const [{ data: connections, error: connectionError }, { data: imapConnections, error: imapError }] = await Promise.all([
+      context.supabase.rpc("get_my_oauth_connections"),
+      context.supabase.from("imap_mailbox_connections").select("id").eq("enabled", true).eq("status", "connected").limit(1),
+    ])
     const gmailConnected = connections?.some(
       (connection) => connection.provider === "gmail" && connection.status === "connected",
     )
-    if (connectionError || !gmailConnected) {
-      return { message: "Connect a Google inbox before turning on email alerts." }
+    if (connectionError || imapError || (!gmailConnected && !imapConnections?.length)) {
+      return { message: "Connect a Google or IMAP mailbox before turning on email alerts." }
     }
   }
   const { error } = await context.supabase.rpc("update_my_alert_preferences", {

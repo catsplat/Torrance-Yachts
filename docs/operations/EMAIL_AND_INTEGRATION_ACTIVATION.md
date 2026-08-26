@@ -35,7 +35,10 @@ Choose one account-access delivery mode:
   `AUTH_MANUAL_LINKS_ENABLED=true`. An administrator generates a Supabase
   single-use invitation or recovery link in **Settings > Users**, copies it,
   and sends it to the intended person through a secure channel. The link is
-  displayed only in the response and is never stored or logged by the app.
+  displayed only in the response and is never stored or logged by the app. The
+  app stores only an encrypted Supabase verification hash behind its own
+  one-time, 24-hour confirmation hand-off, so mail-client previews cannot spend
+  the code before the invited person explicitly confirms on their device.
 * **SMTP:** configure SMTP in the approved hosted Supabase Auth project or
   self-hosted GoTrue deployment. Keep credentials in provider/deployment secret
   storage, not in the web interface. Test both a staff invitation and password
@@ -87,6 +90,16 @@ or client secret in the interface. The granted scope permits approved inbox
 routing and controlled Gmail drafts; external recipient operations do not send
 mail automatically.
 
+### Other mail providers
+
+Staff who do not use Google can connect a TLS IMAP mailbox in **Settings >
+Account and alerts > Other mailboxes**. The screen includes iCloud, Outlook /
+Microsoft 365, Yahoo and Zoho presets. It accepts a provider-issued app password
+only; it never accepts or stores a normal mailbox password. IMAP messages follow
+the same private-by-owner ingestion boundary as Gmail. Microsoft 365 OAuth is
+not implemented; where the organisation disallows IMAP app passwords, use the
+approved Google route or defer that mailbox until Microsoft OAuth is added.
+
 ## 5. Telegram
 
 1. Create one company-controlled bot with BotFather.
@@ -127,6 +140,14 @@ the reviewed model in server-only configuration. Confirm the data policy before
 sending email or contract text. Identity documents are excluded. AI output is a
 suggestion and never books a yacht, sends consequential communications, or
 changes authoritative workflow state.
+
+Alternatively, an individual staff member may use **Torrance Local AI** from
+their AI settings. They install Ollama on their Mac, pair the helper with a
+short-lived code, and select a local model. The helper polls outward over HTTPS;
+the hosted service never reaches a MacBook or exposes its Ollama endpoint.
+`qwen3:4b-instruct` is the default recommendation for this workflow. A signed
+macOS helper installer is a later distribution task; the initial helper is a
+reviewed local script.
 
 ## 8. Yachtfolio
 

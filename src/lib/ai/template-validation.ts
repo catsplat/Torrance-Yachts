@@ -10,7 +10,7 @@ export const communicationTemplateDraftSchema = z.object({
   bodyTemplate: z.string().trim().min(20).max(30000),
   kind: z.enum(communicationTemplateKindValues),
   name: z.string().trim().min(2).max(160),
-  subjectTemplate: z.string().trim().min(2).max(300),
+  subjectTemplate: z.string().trim().max(300),
 })
 
 export const communicationTemplateUpdateSchema = communicationTemplateDraftSchema.omit({

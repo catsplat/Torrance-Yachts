@@ -2,6 +2,7 @@ import { AlertTriangle, ArrowLeft, FileSignature } from "lucide-react"
 import Link from "next/link"
 
 import { BookingConfirmationForm } from "@/components/bookings/booking-confirmation-form"
+import { ManualCalendarEntryForm } from "@/components/bookings/booking-confirmation-form"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatBookingMoney } from "@/lib/bookings/options"
@@ -13,10 +14,18 @@ type Props = { searchParams: Promise<{ enquiry?: string; offer?: string }> }
 export default async function NewBookingPage({ searchParams }: Props) {
   const query = await searchParams
   const supabase = await createClient()
+  if (query.enquiry === "manual") {
+    const [{ data: yachts }, { data: contacts }, { data: companies }] = await Promise.all([
+      supabase.from("yachts").select("id,name").eq("status", "active").order("name"),
+      supabase.from("contacts").select("id,full_name").eq("active", true).order("full_name"),
+      supabase.from("companies").select("id,name").eq("active", true).order("name"),
+    ])
+    return <div className="mx-auto max-w-6xl space-y-5"><Link className="inline-flex items-center gap-2 text-sm text-muted-foreground" href="/bookings"><ArrowLeft className="size-4" />Back to bookings</Link><div><h1 className="text-3xl font-semibold">New calendar entry</h1><p className="mt-2 text-sm text-muted-foreground">Choose a confirmed charter or a simple operational availability hold.</p></div><ManualCalendarEntryForm companies={companies?.map((company) => ({ id: company.id, name: company.name })) ?? []} contacts={contacts?.map((contact) => ({ id: contact.id, name: contact.full_name })) ?? []} yachts={yachts ?? []} /></div>
+  }
   if (!query.enquiry) {
     const { data: enquiries } = await supabase.from("enquiries").select(`id,reference,summary,requested_yacht_id,yacht:yachts!enquiries_requested_yacht_id_fkey(name),offers!offers_enquiry_id_fkey(id,reference,status,version_number)`).eq("status", "awaiting_signatures").order("updated_at", { ascending: false })
     const eligible = enquiries?.map((enquiry) => ({ ...enquiry, sentOffers: enquiry.offers.filter((offer) => offer.status === "sent") })).filter((enquiry) => enquiry.requested_yacht_id && enquiry.sentOffers.length) ?? []
-    return <div className="mx-auto max-w-4xl space-y-5"><Link className="inline-flex items-center gap-2 text-sm text-muted-foreground" href="/bookings"><ArrowLeft className="size-4" />Back to bookings</Link><div><h1 className="text-3xl font-semibold">Select an enquiry</h1><p className="mt-2 text-sm text-muted-foreground">Ready for booking confirmation.</p></div><Card><CardContent className="p-0">{eligible.length ? <div className="divide-y">{eligible.map((enquiry) => <Link className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-muted/40" href={`/bookings/new?enquiry=${enquiry.id}&offer=${enquiry.sentOffers[0].id}`} key={enquiry.id}><div><p className="font-medium">{enquiry.reference}</p><p className="mt-1 text-sm text-muted-foreground">{enquiry.summary}</p></div><Badge variant="outline">{enquiry.yacht?.name}</Badge></Link>)}</div> : <p className="px-5 py-12 text-center text-sm text-muted-foreground">No enquiries are ready for booking.</p>}</CardContent></Card></div>
+    return <div className="mx-auto max-w-4xl space-y-5"><Link className="inline-flex items-center gap-2 text-sm text-muted-foreground" href="/bookings"><ArrowLeft className="size-4" />Back to bookings</Link><div className="flex items-start justify-between gap-4"><div><h1 className="text-3xl font-semibold">Select an enquiry</h1><p className="mt-2 text-sm text-muted-foreground">Ready for booking confirmation.</p></div><Link className="rounded-md border px-3 py-2 text-sm font-medium" href="/bookings/new?enquiry=manual">New calendar entry</Link></div><Card><CardContent className="p-0">{eligible.length ? <div className="divide-y">{eligible.map((enquiry) => <Link className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-muted/40" href={`/bookings/new?enquiry=${enquiry.id}&offer=${enquiry.sentOffers[0].id}`} key={enquiry.id}><div><p className="font-medium">{enquiry.reference}</p><p className="mt-1 text-sm text-muted-foreground">{enquiry.summary}</p></div><Badge variant="outline">{enquiry.yacht?.name}</Badge></Link>)}</div> : <p className="px-5 py-12 text-center text-sm text-muted-foreground">No enquiries are ready for booking.</p>}</CardContent></Card></div>
   }
 
   const { data: enquiry } = await supabase.from("enquiries").select(`*,yacht:yachts!enquiries_requested_yacht_id_fkey(id,name),offers!offers_enquiry_id_fkey(*)`).eq("id", query.enquiry).eq("status", "awaiting_signatures").single()

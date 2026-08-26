@@ -4,6 +4,9 @@
 
 ### Added
 
+- Direct calendar entries: staff can now create either a confirmed manual
+  charter with the full booking workflow or a buffered availability hold with
+  no commercial workflow.
 - Scanner-safe, administrator-issued manual invitation and recovery links that
   can be shared across devices without exposing a Supabase verification token.
 - TLS IMAP mailbox connections with encrypted app-password storage and the
@@ -15,18 +18,27 @@
   prerequisite, approved-document, booking-state and date conditions.
 - A paired, outbound-only Torrance Local AI helper foundation for MacBooks,
   with short-lived pairing codes and owner-controlled revocation.
+- An executable paired-Mac analysis path: the helper now claims bounded jobs
+  outbound, runs the selected local Ollama model, and returns only a validated
+  review result to the application.
 - An administrator-only Configuration Pack importer that validates and imports
   runtime yacht configuration, draft wording, rates, sales links and booking
   workflow versions atomically.
 
 ### Changed
 
+- Communication-template subjects are optional for replies in existing email
+  threads; blank subjects preserve the existing conversation subject.
+- Contact-to-yacht links are presented as yacht assignments, with concise
+  clarification of primary and notification eligibility.
 - Removed the build-time Google Fonts download so production images can build
   without relying on an external font service.
 - Booking cancellation now preserves its completed history, stops outstanding
   workflow work and creates an auditable `Confirm cancellation` task.
 - Task readiness is re-evaluated in PostgreSQL whenever a prerequisite changes,
   including enquiry work that is not attached to a booking.
+- Personal email alerts now work with either a connected Google mailbox or a
+  securely stored IMAP mailbox. IMAP setup includes common provider presets.
 
 - Added an optional loopback-only, SSH-tunnelled Supabase Studio profile for
   secure VPS administration.

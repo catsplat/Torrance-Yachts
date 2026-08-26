@@ -177,7 +177,7 @@ export default async function ContactDetailPage({
           <CardHeader className="border-b">
             <CardTitle className="flex items-center gap-2">
               <Ship aria-hidden="true" className="size-4 text-primary" />
-              Yacht responsibilities
+              Yacht assignments
             </CardTitle>
             <CardDescription>
               Operational ownership and notification eligibility by yacht.
@@ -230,7 +230,7 @@ export default async function ContactDetailPage({
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No yacht responsibilities yet.</p>
+              <p className="text-sm text-muted-foreground">No yacht assignments yet.</p>
             )}
             <YachtAssignmentForm contactId={id} yachts={yachtsResult.data} />
           </CardContent>

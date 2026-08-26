@@ -60,9 +60,6 @@ export async function updateMyAiPreferencesAction(
   if (!parsed.success) {
     return { message: parsed.error.issues[0]?.message ?? "Review your AI settings." }
   }
-  if (parsed.data.provider === "ollama" && process.env.APP_ENVIRONMENT === "production") {
-    return { message: "Local Ollama requires the desktop companion and is not available in the hosted application." }
-  }
   const context = await getAuthenticatedRequestContext()
   if (!context) return expired
   const { error } = await context.supabase.rpc("update_my_ai_preferences", {

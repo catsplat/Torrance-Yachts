@@ -3,6 +3,7 @@ import "server-only"
 import type { AiProvider } from "@/lib/ai/provider"
 import { LocalAiProvider } from "@/lib/ai/local-provider"
 import { OllamaProvider } from "@/lib/ai/ollama-provider"
+import { PairedLocalAiProvider } from "@/lib/ai/paired-local-provider"
 import { OpenAiProvider } from "@/lib/ai/openai-provider"
 import { createAdminClient } from "@/lib/supabase/admin"
 
@@ -58,10 +59,13 @@ export async function getUserAiProvider(userId: string): Promise<AiProvider> {
   const summaryStyle = preference?.summary_style === "detailed" ? "detailed" : "concise"
   if (provider === "local") return new LocalAiProvider({ summaryStyle })
   if (provider === "ollama") {
-    if (process.env.APP_ENVIRONMENT === "production") {
-      throw new Error("Local Ollama requires the approved desktop companion in production.")
-    }
-    return new OllamaProvider({ model, summaryStyle })
+    if (process.env.APP_ENVIRONMENT !== "production") return new OllamaProvider({ model, summaryStyle })
+    const { data: agent, error: agentError } = await admin.from("local_ai_agents")
+      .select("id, selected_model, status, last_seen_at").eq("user_id", userId).eq("status", "available")
+      .order("last_seen_at", { ascending: false }).limit(1).maybeSingle()
+    const active = agent?.last_seen_at && new Date(agent.last_seen_at).getTime() >= Date.now() - 5 * 60_000
+    if (agentError || !agent || !active) throw new Error("Your paired Mac is offline. Open Torrance Local AI or choose another provider.")
+    return new PairedLocalAiProvider({ agentId: agent.id, model: agent.selected_model || model, summaryStyle, userId })
   }
   return new OpenAiProvider({
     apiKey: preference?.openai_api_key || process.env.OPENAI_API_KEY,
