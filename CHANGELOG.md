@@ -30,6 +30,9 @@
 
 ### Changed
 
+- Improved the interim macOS local-AI pairing path: the generated setup command
+  now installs the outbound-only helper for the current Mac user and registers
+  it to restart after sign-in. A signed/notarised distribution remains separate.
 - Communication-template subjects are optional for replies in existing email
   threads; blank subjects preserve the existing conversation subject.
 - Contact-to-yacht links are presented as yacht assignments, with concise

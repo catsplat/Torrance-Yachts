@@ -20,7 +20,9 @@ on the server before it can become an AI review record. AI remains advisory.
 
 - Mac users can use their own local model without exposing it to the internet.
 - A helper that has not checked in for five minutes cannot receive work.
-- The first helper is a transparent Node script. A signed macOS installer is a
+- The interim helper is a transparent Node script. The in-product command
+  downloads it from the workspace, pairs it and registers a per-user `launchd`
+  agent after Ollama and Node are installed. A signed macOS installer remains a
   later distribution task because it requires Apple signing/notarisation.
 - The recommended starter model is `qwen3:4b-instruct`; staff may select a
   different installed model through their personal AI settings.

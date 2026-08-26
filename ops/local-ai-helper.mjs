@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* Torrance Local AI is an outbound-only paired helper. It never exposes Ollama. */
 import { randomUUID } from "node:crypto"
-import { chmod, readFile, writeFile } from "node:fs/promises"
+import { chmod, copyFile, mkdir, readFile, writeFile } from "node:fs/promises"
 import { homedir } from "node:os"
-import { join } from "node:path"
+import { join, resolve } from "node:path"
 import { spawn } from "node:child_process"
 
 const values = Object.fromEntries(process.argv.slice(2).flatMap((value, index, all) => value.startsWith("--") ? [[value.slice(2), all[index + 1]]] : []))
@@ -12,6 +12,7 @@ const pairingCode = values.code
 const deviceName = values.name || "MacBook"
 const recommendedModel = values.model || "qwen3:4b-instruct"
 const setup = process.argv.includes("--setup")
+const install = process.argv.includes("--install")
 const tokenPath = join(homedir(), ".torrance-local-ai-token")
 if (!server || !/^https:\/\//.test(server)) throw new Error("Use --server https://your-torrance-address")
 
@@ -27,10 +28,40 @@ async function ensureModel() { let models; try { models = await ollamaModels() }
 async function report(token, status, model) { await request("/api/local-ai/status", { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ status, model }) }) }
 async function completeJob(token, job, model) { const prompt = job.analysis_kind === "email_triage" ? emailInstructions : contractInstructions; const response = await fetch("http://127.0.0.1:11434/api/chat", { method: "POST", headers: { "content-type": "application/json" }, signal: AbortSignal.timeout(60_000), body: JSON.stringify({ model, format: "json", stream: false, think: false, options: { temperature: 0 }, messages: [{ role: "system", content: `${prompt}\nUse a ${job.input_payload.summary_style === "detailed" ? "detailed" : "concise"} factual summary.` }, { role: "user", content: JSON.stringify(job.input_payload.input) }] }) }); const payload = await response.json().catch(() => null); if (!response.ok || !payload?.message?.content) throw new Error("Ollama did not return a structured response"); let result; try { result = JSON.parse(payload.message.content) } catch { throw new Error("Ollama returned invalid JSON") }; await request("/api/local-ai/jobs/complete", { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ jobId: job.job_id, result, providerRequestId: `ollama-${randomUUID()}`, inputTokens: payload.prompt_eval_count ?? null, outputTokens: payload.eval_count ?? null }) }) }
 
+function xml(value) { return value.replace(/[<>&"']/g, (character) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[character]) }
+
+async function installLaunchAgent() {
+  if (process.platform !== "darwin") throw new Error("Automatic background setup is available on macOS only.")
+  const source = process.argv[1]
+  if (!source) throw new Error("The helper script path could not be determined.")
+  const applicationDirectory = join(homedir(), "Library", "Application Support", "Torrance Local AI")
+  const installedScript = join(applicationDirectory, "torrance-local-ai.mjs")
+  const launchDirectory = join(homedir(), "Library", "LaunchAgents")
+  const label = "com.torranceyachts.local-ai"
+  const plistPath = join(launchDirectory, `${label}.plist`)
+  await mkdir(applicationDirectory, { recursive: true })
+  await mkdir(launchDirectory, { recursive: true })
+  if (resolve(source) !== resolve(installedScript)) await copyFile(source, installedScript)
+  await chmod(installedScript, 0o700)
+  const programArguments = [process.execPath, installedScript, "--server", server, "--name", deviceName, "--model", recommendedModel]
+  const plist = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict><key>Label</key><string>${label}</string><key>ProgramArguments</key><array>${programArguments.map((argument) => `<string>${xml(argument)}</string>`).join("")}</array><key>RunAtLoad</key><true/><key>KeepAlive</key><true/><key>StandardOutPath</key><string>${xml(join(applicationDirectory, "helper.log"))}</string><key>StandardErrorPath</key><string>${xml(join(applicationDirectory, "helper-error.log"))}</string></dict></plist>\n`
+  await writeFile(plistPath, plist, { mode: 0o600 })
+  const userId = String(process.getuid?.() ?? "")
+  if (!userId) throw new Error("The macOS user identifier could not be determined.")
+  await run("launchctl", ["bootout", `gui/${userId}`, label]).catch(() => undefined)
+  await run("launchctl", ["bootstrap", `gui/${userId}`, plistPath])
+  await run("launchctl", ["kickstart", "-k", `gui/${userId}/${label}`])
+}
+
 const token = await loadToken() || await pair()
 if (!token) throw new Error("Pair once with --code, then run without it.")
 let model
 try { model = await ensureModel(); await report(token, "available", model); console.log(`Torrance Local AI ready: ${model}`) } catch (error) { await report(token, "offline").catch(() => undefined); throw error }
+if (install) {
+  await installLaunchAgent()
+  console.log("Torrance Local AI is installed for this Mac user and will start after sign-in.")
+  process.exit(0)
+}
 async function work() { const { body, response } = await request("/api/local-ai/jobs/claim", { method: "POST", headers: { authorization: `Bearer ${token}` } }); if (response.status === 204 || !body?.job_id) return; try { await completeJob(token, body, body.model || model) } catch (error) { await request("/api/local-ai/jobs/fail", { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ jobId: body.job_id, error: error instanceof Error ? error.message : "Local analysis failed" }) }).catch(() => undefined) } }
 await work()
 setInterval(() => work().catch((error) => console.error(error.message)), 2_000)

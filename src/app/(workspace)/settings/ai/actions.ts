@@ -11,7 +11,21 @@ export type AiSettingsActionState = {
   models?: string[]
   pairingCode?: string
   pairingExpiresAt?: string
+  workspaceAddress?: string
   success?: boolean
+}
+
+function configuredWorkspaceAddress() {
+  const configured = process.env.APP_BASE_URL?.trim()
+  if (!configured) return ""
+  try {
+    const address = new URL(configured)
+    return address.protocol === "https:" || (address.protocol === "http:" && address.hostname === "localhost")
+      ? address.origin
+      : ""
+  } catch {
+    return ""
+  }
 }
 
 export async function createLocalAiPairingAction(
@@ -25,7 +39,7 @@ export async function createLocalAiPairingAction(
   const { data, error } = await context.supabase.rpc("create_my_local_ai_pairing_code")
   const pairing = data?.[0]
   if (error || !pairing) return { message: "A pairing code could not be created." }
-  return { message: "Enter this code in Torrance Local AI within ten minutes.", pairingCode: pairing.pairing_code, pairingExpiresAt: pairing.expires_at, success: true }
+  return { message: "Enter this code in Torrance Local AI within ten minutes.", pairingCode: pairing.pairing_code, pairingExpiresAt: pairing.expires_at, workspaceAddress: configuredWorkspaceAddress(), success: true }
 }
 
 export async function revokeMyLocalAiAgentAction(
