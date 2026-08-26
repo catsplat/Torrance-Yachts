@@ -18,7 +18,7 @@ export async function previewConfigurationPackAction(_state: ConfigurationPackAc
   if (!context) return { message: "Administrator access is required." }
   const parsed = parseConfigurationPack(String(formData.get("pack") ?? ""))
   if ("error" in parsed) return { message: parsed.error }
-  const { data, error } = await context.supabase.rpc("preview_configuration_pack", { p_payload: parsed.data })
+  const { data, error } = await context.supabase.rpc("preview_configuration_pack_v2", { p_payload: parsed.data })
   if (error || !data || typeof data !== "object" || Array.isArray(data)) return { message: "The pack could not be previewed." }
   return { message: "Review the proposed changes, then import when ready.", preview: data as Record<string, unknown>, success: true }
 }
@@ -28,7 +28,7 @@ export async function importConfigurationPackAction(_state: ConfigurationPackAct
   if (!context) return { message: "Administrator access is required." }
   const parsed = parseConfigurationPack(String(formData.get("pack") ?? ""))
   if ("error" in parsed) return { message: parsed.error }
-  const { data, error } = await context.supabase.rpc("import_configuration_pack", { p_payload: parsed.data })
+  const { data, error } = await context.supabase.rpc("import_configuration_pack_v2", { p_payload: parsed.data })
   if (error) return { message: error.message || "The configuration pack could not be imported." }
   revalidatePath("/settings/readiness")
   revalidatePath("/settings/configuration-pack")

@@ -6351,6 +6351,7 @@ export type Database = {
       }
       get_workspace_dashboard_summary: { Args: never; Returns: Json }
       import_configuration_pack: { Args: { p_payload: Json }; Returns: Json }
+      import_configuration_pack_v2: { Args: { p_payload: Json }; Returns: Json }
       ingest_gmail_message: {
         Args: {
           p_attachments?: Json
@@ -6914,6 +6915,10 @@ export type Database = {
         Returns: undefined
       }
       preview_configuration_pack: { Args: { p_payload: Json }; Returns: Json }
+      preview_configuration_pack_v2: {
+        Args: { p_payload: Json }
+        Returns: Json
+      }
       queue_document_drive_sync: {
         Args: { p_document_id: string; p_reason: string }
         Returns: string

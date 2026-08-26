@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 const optionalText = z.string().trim().max(30_000).optional()
+const optionalSubject = z.string().trim().max(300).optional().default("")
 
 // These names map to reviewed operational records at draft-render time. Keeping
 // the list explicit prevents a configuration import from silently accepting a
@@ -41,11 +42,42 @@ const workflowStepSchema = z.object({
   required: z.boolean().optional(), sort_order: z.number().int().min(0).max(10_000).optional(), title: z.string().trim().min(2).max(240),
 })
 
+const contactRoleValues = ["customer", "charterer", "broker", "captain", "crew", "operations", "supplier", "other"] as const
+const yachtResponsibilityValues = ["captain", "manager", "operations", "notification_recipient", "crew", "other"] as const
+
+const contactSchema = z.object({
+  company_name: optionalText,
+  email: z.email().max(320).optional(),
+  full_name: z.string().trim().min(2).max(160),
+  phone: z.string().trim().min(7).max(32).optional(),
+  roles: z.array(z.enum(contactRoleValues)).min(1).max(8),
+  yacht_assignments: z.array(z.object({
+    is_primary: z.boolean().optional(),
+    notifications_enabled: z.boolean().optional(),
+    notes: optionalText,
+    responsibility: z.enum(yachtResponsibilityValues),
+    yacht_name: z.string().trim().min(2).max(120),
+  })).max(50).optional(),
+})
+
+const invoiceProfileSchema = z.object({
+  issuer_address: z.string().trim().min(2).max(2_000),
+  issuer_name: z.string().trim().min(2).max(200),
+  payment_instructions: z.string().trim().min(2).max(5_000),
+  profile_name: z.string().trim().min(2).max(120),
+  recipient_address: z.string().trim().min(2).max(2_000),
+  recipient_email: z.email().max(320).optional(),
+  recipient_name: z.string().trim().min(2).max(200),
+  service_description_template: z.string().trim().min(2).max(1_000),
+})
+
 export const configurationPackSchema = z.object({
+  contacts: z.array(contactSchema).max(500).optional(),
   communication_templates: z.array(z.object({
     body: z.string().trim().min(20).max(30_000), kind: z.enum(["kyc_request", "captain_contact", "broker_follow_up"]),
-    name: z.string().trim().min(2).max(160), subject: z.string().trim().min(2).max(300),
+    name: z.string().trim().min(2).max(160), subject: optionalSubject,
   })).max(20).optional(),
+  invoice_profile: invoiceProfileSchema.optional(),
   version: z.literal(1),
   workflow: z.object({ description: optionalText, name: z.string().trim().min(2).max(160), steps: z.array(workflowStepSchema).min(1).max(100) }).optional(),
   yachts: z.array(z.object({
@@ -59,7 +91,7 @@ export const configurationPackSchema = z.object({
   })).max(50).optional(),
 }).strict().superRefine((pack, context) => {
   pack.communication_templates?.forEach((template, index) => {
-    validateTemplateVariables(template.subject, context, ["communication_templates", index, "subject"])
+    validateTemplateVariables(template.subject ?? "", context, ["communication_templates", index, "subject"])
     validateTemplateVariables(template.body, context, ["communication_templates", index, "body"])
   })
   pack.yachts?.forEach((yacht, index) => {

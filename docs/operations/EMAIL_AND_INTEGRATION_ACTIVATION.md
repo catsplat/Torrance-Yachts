@@ -162,3 +162,15 @@ Use `/settings/activation` for live configuration/health indicators and
 `/settings/launch` for formal evidence and sign-off. Never mark a check passed
 solely because a credential exists; verify the complete synthetic path and its
 failure handling.
+
+## 10. Operational configuration pack
+
+Before live operation, an administrator opens **Settings > Configuration pack**
+and imports the reviewed runtime data. The pack can contain yachts and rates,
+captain/operations assignments, approved-draft wording, invoice profile details
+and the booking workflow. Preview it first, then import it as drafts and approve
+each template/profile through the normal workflow.
+
+Do not add current rates, captain contacts, payment instructions, bank details
+or client wording to Git, support messages or screenshots. The pack is retained
+only as protected operational configuration and its import is audited.

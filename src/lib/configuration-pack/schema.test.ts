@@ -15,6 +15,28 @@ describe("configuration pack validation", () => {
     }))).toHaveProperty("data")
   })
 
+  it("accepts a reply template without a subject and protected operational setup data", () => {
+    expect(parseConfigurationPack(JSON.stringify({
+      version: 1,
+      contacts: [{
+        full_name: "Synthetic Captain",
+        roles: ["captain"],
+        yacht_assignments: [{ yacht_name: "Synthetic Yacht", responsibility: "captain", is_primary: true }],
+      }],
+      communication_templates: [{
+        body: "Dear {{broker_company_name}}, please review the synthetic information.",
+        kind: "captain_contact",
+        name: "Captain reply",
+        subject: "",
+      }],
+      invoice_profile: {
+        issuer_address: "Synthetic issuer address", issuer_name: "Synthetic issuer", payment_instructions: "Synthetic payment instructions",
+        profile_name: "Synthetic profile", recipient_address: "Synthetic recipient address", recipient_name: "Synthetic recipient",
+        service_description_template: "Synthetic service description",
+      },
+    }))).toHaveProperty("data")
+  })
+
   it("accepts the client workflow's numbered and lettered task codes", () => {
     expect(parseConfigurationPack(JSON.stringify({
       version: 1,

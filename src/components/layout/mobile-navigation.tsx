@@ -33,9 +33,9 @@ export function MobileNavigation() {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-[19rem] border-sidebar-border bg-sidebar text-sidebar-foreground"
+        className="h-dvh max-h-dvh w-[19rem] border-sidebar-border bg-sidebar text-sidebar-foreground"
       >
-        <SheetHeader className="border-b border-sidebar-border px-5 py-5">
+        <SheetHeader className="shrink-0 border-b border-sidebar-border px-5 py-5">
           <SheetTitle className="text-sidebar-foreground">
             Torrance Yachts
           </SheetTitle>
@@ -43,7 +43,7 @@ export function MobileNavigation() {
             Charter operations
           </SheetDescription>
         </SheetHeader>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-6 [padding-bottom:env(safe-area-inset-bottom)]">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch]">
           <PrimaryNavigation onNavigate={() => setOpen(false)} />
         </div>
       </SheetContent>

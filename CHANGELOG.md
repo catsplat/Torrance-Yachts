@@ -24,6 +24,9 @@
 - An administrator-only Configuration Pack importer that validates and imports
   runtime yacht configuration, draft wording, rates, sales links and booking
   workflow versions atomically.
+- Protected operational Configuration Packs can now also create captain/yacht
+  assignments, company links and draft invoice profiles in the operational
+  database.
 
 ### Changed
 
@@ -39,6 +42,8 @@
   including enquiry work that is not attached to a booking.
 - Personal email alerts now work with either a connected Google mailbox or a
   securely stored IMAP mailbox. IMAP setup includes common provider presets.
+- The mobile navigation drawer uses the device viewport and safe-area inset as
+  its scroll boundary, so every navigation item remains reachable on iPhone.
 
 - Added an optional loopback-only, SSH-tunnelled Supabase Studio profile for
   secure VPS administration.
