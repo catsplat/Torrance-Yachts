@@ -113,7 +113,9 @@ core_compose up -d --wait --wait-timeout 240
 
 trap rollback HUP INT TERM
 app_compose config --quiet
-registry_docker compose --env-file .env pull
+# The approved image has already been transferred by GitHub Actions.  Do not
+# contact a registry from the VPS: the deployment path deliberately requires
+# no long-lived registry credential on the host.
 if ! app_compose up -d --remove-orphans --wait --wait-timeout 240; then
   rollback
   echo "Deployment failed health checks and was rolled back." >&2

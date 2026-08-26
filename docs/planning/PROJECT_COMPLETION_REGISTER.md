@@ -14,11 +14,11 @@ build is not evidence of a live service.
 | Access | Approved active accounts, administrator/staff roles, mandatory TOTP AAL2, pending-access isolation, rechecked sensitive commands, RLS and audit history |
 | Registers | Cursor pagination, database search/filter/sort/count contracts, URL state, stable cursors and 10,000-record discoverability tests |
 | Daily workflow | Inbox review, stale enquiries, offers awaiting action, booking preparation, overdue payments and post-charter follow-up views |
-| Email and AI | Application-owned Gmail history reconciliation; idempotent five-route ingestion; leased AI queue with evidence, confidence, corrections, rejection, deadlines and permanent-failure visibility |
+| Email and AI | Owner-isolated Gmail and IMAP ingestion; idempotent five-route routing; leased AI queue with evidence, confidence, corrections, rejection, deadlines and permanent-failure visibility; optional paired-Mac Ollama execution |
 | Enquiries to bookings | Controlled enquiry/offer state, signed-contract review, 24-hour buffer, conflicts, amendments, cancellation and human booking confirmation |
 | Task sequence | Exact dependency-aware sequence 0.A-7, dates, reminders, notes, ad-hoc work, completion/reopen evidence and Yachtfolio manual boundary |
 | Documents and finance | Private quarantine/release stores, signature/MIME/size/hash validation, ClamAV states and recovery, requirements, reviewed contract facts, one-to-three instalments and deterministic invoice PDF |
-| Alerts and mirrors | Personal alert routes; Telegram and Gmail draft adapters; one-way Calendar, Drive and Sheets mirrors; transactional outbox retries and reconciliation |
+| Alerts and mirrors | Personal alert routes; Telegram bot pairing and Gmail draft adapters; one-way Calendar, Drive and Sheets mirrors; transactional outbox retries and reconciliation |
 | Operations | Aggregate health, redacted audit register, business-readiness report, backup/export tooling, disposable restore drill, incident/maintenance/privacy runbooks |
 | Acceptance | Administrator, staff, unapproved-user, MFA, mobile-review, workflow, keyboard and axe coverage across Chromium, Firefox and WebKit using fictional records |
 
@@ -46,7 +46,7 @@ result is the release evidence for v0.19.1; its sanitized report is generated at
 1. Approve hosting, monthly budget, named system/recovery owners and support.
 2. Complete the selected VPS-hosted Supabase, domain and Cloudflare configuration.
 3. Approve staff identities, roles, MFA recovery and production Auth email.
-4. Create/approve Google and Telegram owner accounts, scopes and recipients.
+4. Create/approve the company Google OAuth client, Telegram bot and recipient routing.
 5. Approve yachts, rates, templates, contacts, invoice profile and routing.
 6. Approve the AI provider/data terms and the KYC/passport retention policy.
 7. Accept production scanning, encrypted off-site backup, monitoring and restore.

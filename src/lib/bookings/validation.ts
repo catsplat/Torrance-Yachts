@@ -27,6 +27,31 @@ export const bookingConfirmationSchema = bookingDetailsSchema.extend({
   confirmation_reason: z.string().trim().min(2).max(1000),
 })
 
+export const manualBookingSchema = bookingDetailsSchema.extend({
+  customer_contact_id: z.union([z.uuid(), z.literal("")]).transform((value) => value || null),
+  broker_contact_id: z.union([z.uuid(), z.literal("")]).transform((value) => value || null),
+  broker_company_id: z.union([z.uuid(), z.literal("")]).transform((value) => value || null),
+  signed_agreement_confirmed: z.literal("on", {
+    error: "Confirm that all required parties have signed the agreement.",
+  }),
+  confirmation_reason: z.string().trim().min(2).max(1000),
+})
+
+export const availabilityBlockSchema = z.object({
+  yacht_id: z.uuid(),
+  title: z.string().trim().min(2).max(240),
+  charter_start_date: z.iso.date(),
+  charter_end_date: z.iso.date(),
+  notes: z.string().trim().max(5000).transform((value) => value || null),
+}).refine((data) => data.charter_end_date > data.charter_start_date, {
+  message: "The end date must be after the start date.",
+  path: ["charter_end_date"],
+})
+
+export const availabilityBlockCancellationSchema = z.object({
+  reason: z.string().trim().min(2).max(1000),
+})
+
 export const bookingAmendmentSchema = bookingDetailsSchema.extend({
   reason: z.string().trim().min(2).max(1000),
 })
@@ -71,6 +96,25 @@ export function parseBookingConfirmationFormData(formData: FormData) {
     charter_fee: formData.get("charter_fee"),
     currency: formData.get("currency"),
     tax_rate: formData.get("tax_rate"),
+    signed_agreement_confirmed: formData.get("signed_agreement_confirmed"),
+    confirmation_reason: formData.get("confirmation_reason"),
+  })
+}
+
+export function parseManualBookingFormData(formData: FormData) {
+  return manualBookingSchema.safeParse({
+    yacht_id: formData.get("yacht_id"),
+    charter_start_date: formData.get("charter_start_date"),
+    charter_end_date: formData.get("charter_end_date"),
+    embarkation_port: formData.get("embarkation_port"),
+    disembarkation_port: formData.get("disembarkation_port"),
+    guest_count: nullableNumber(formData.get("guest_count")),
+    charter_fee: formData.get("charter_fee"),
+    currency: formData.get("currency"),
+    tax_rate: formData.get("tax_rate"),
+    customer_contact_id: formData.get("customer_contact_id"),
+    broker_contact_id: formData.get("broker_contact_id"),
+    broker_company_id: formData.get("broker_company_id"),
     signed_agreement_confirmed: formData.get("signed_agreement_confirmed"),
     confirmation_reason: formData.get("confirmation_reason"),
   })

@@ -32,6 +32,26 @@ function run(label, command, args) {
   }
 }
 
+function runWithSingleRetry(label, command, args) {
+  const start = Date.now()
+  process.stdout.write(`\n[release] ${label}\n`)
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      execFileSync(command, args, { stdio: "inherit", env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" } })
+      results.push({ durationMs: Date.now() - start, label, status: "passed" })
+      return
+    } catch (error) {
+      if (attempt === 2) {
+        results.push({ durationMs: Date.now() - start, label, status: "failed" })
+        writeReport("failed")
+        process.exit(typeof error.status === "number" ? error.status : 1)
+      }
+      process.stderr.write(`[release] ${label} failed once; retrying after the local database settles.\n`)
+      execFileSync("powershell.exe", ["-NoProfile", "-Command", "Start-Sleep -Seconds 5"], { stdio: "inherit" })
+    }
+  }
+}
+
 function runNpm(label, args) {
   run(label, process.execPath, [npmCli, ...args])
 }
@@ -67,7 +87,7 @@ run("Clean local database migration", "node", ["ops/reset-local-database-for-rel
 runNpm("Database tests", ["run", "db:test"])
 runNpm("Database lint", ["run", "db:lint"])
 if (process.platform === "win32") {
-  run("Disposable backup and restore drill", "powershell.exe", [
+  runWithSingleRetry("Disposable backup and restore drill", "powershell.exe", [
     "-NoProfile",
     "-ExecutionPolicy", "Bypass",
     "-File", "ops/backup/local-restore-drill.ps1",

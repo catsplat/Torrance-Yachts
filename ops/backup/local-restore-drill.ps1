@@ -7,7 +7,21 @@ $runDirectory = Join-Path $artifactRoot $stamp
 $dumpPath = Join-Path $runDirectory "database.dump"
 $resultPath = Join-Path $runDirectory "restore-result.json"
 $remoteDump = "/tmp/torrance-restore-$stamp.dump"
+$restoreListPath = Join-Path $runDirectory "restore.list"
+$remoteRestoreList = "/tmp/torrance-restore-$stamp.list"
 $restoreDatabase = "torrance_restore_$($stamp.ToLowerInvariant())"
+
+function Get-Sha256Hex([string]$Path) {
+  $stream = [System.IO.File]::OpenRead($Path)
+  $hasher = [System.Security.Cryptography.SHA256]::Create()
+  try {
+    return ([System.BitConverter]::ToString($hasher.ComputeHash($stream)) -replace "-", "").ToLowerInvariant()
+  }
+  finally {
+    $hasher.Dispose()
+    $stream.Dispose()
+  }
+}
 
 New-Item -ItemType Directory -Force -Path $runDirectory | Out-Null
 $databaseContainer = docker ps `
@@ -23,7 +37,7 @@ if (-not $databaseContainer) {
 try {
   docker exec $databaseContainer pg_dump `
     -U postgres -d postgres -Fc --no-owner --no-privileges `
-    --schema public --schema auth --schema storage `
+    --schema public --schema auth --schema storage --schema vault `
     -f $remoteDump
   if ($LASTEXITCODE -ne 0) { throw "Database export failed." }
 
@@ -38,15 +52,30 @@ drop schema public cascade;
 create schema if not exists extensions;
 create extension if not exists btree_gist with schema extensions;
 create extension if not exists pg_trgm with schema extensions;
+create extension if not exists supabase_vault;
 alter database $restoreDatabase set search_path to public, extensions;
 "@
   docker exec $databaseContainer psql `
     -U postgres -d $restoreDatabase -v ON_ERROR_STOP=1 -c $prepareSql | Out-Null
   if ($LASTEXITCODE -ne 0) { throw "Could not prepare the isolated restore database." }
 
+  # Vault is supplied by the extension in the disposable target, while its secret
+  # rows are part of the dump. Exclude only the duplicate CREATE SCHEMA entry so
+  # that foreign keys and encrypted secret records restore in their original order.
+  $restoreList = docker exec $databaseContainer pg_restore -l $remoteDump
+  if ($LASTEXITCODE -ne 0) { throw "Could not prepare the database restore list." }
+  $restoreListEntries = @($restoreList | Where-Object { $_ -notmatch " SCHEMA - vault " })
+  [System.IO.File]::WriteAllLines(
+    $restoreListPath,
+    [string[]]$restoreListEntries,
+    (New-Object System.Text.UTF8Encoding($false))
+  )
+  docker cp $restoreListPath "${databaseContainer}:${remoteRestoreList}"
+  if ($LASTEXITCODE -ne 0) { throw "Could not copy the database restore list." }
+
   docker exec $databaseContainer pg_restore `
-    -U postgres -d $restoreDatabase --no-owner --no-privileges `
-    --exit-on-error $remoteDump
+    -U supabase_admin -d $restoreDatabase --no-owner --no-privileges `
+    --exit-on-error --use-list $remoteRestoreList $remoteDump
   if ($LASTEXITCODE -ne 0) { throw "Database restore failed." }
 
   $verificationSql = @"
@@ -63,7 +92,7 @@ select json_build_object(
     -U postgres -d $restoreDatabase -At -v ON_ERROR_STOP=1 -c $verificationSql
   if ($LASTEXITCODE -ne 0) { throw "Restored database verification failed." }
 
-  $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $dumpPath).Hash.ToLowerInvariant()
+  $hash = Get-Sha256Hex $dumpPath
   $result = [ordered]@{
     artifact = "database.dump"
     checksumSha256 = $hash
@@ -80,4 +109,5 @@ select json_build_object(
 finally {
   docker exec $databaseContainer dropdb -U postgres --if-exists $restoreDatabase | Out-Null
   docker exec $databaseContainer rm -f $remoteDump | Out-Null
+  docker exec $databaseContainer rm -f $remoteRestoreList | Out-Null
 }

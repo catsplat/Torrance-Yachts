@@ -75,6 +75,8 @@ export async function getIntegrationActivationChecks(): Promise<ActivationCheck[
   const ai = getAiConfigurationSummary()
   const production = process.env.APP_ENVIRONMENT === "production"
   const smtpReady = production ? process.env.AUTH_SMTP_CONFIGURED === "true" : true
+  const manualLinksReady = process.env.AUTH_MANUAL_LINKS_ENABLED === "true"
+  const authEmailReady = smtpReady || manualLinksReady
   const telegramReady = Boolean(process.env.TELEGRAM_BOT_TOKEN?.trim()) && Boolean(telegramConnection?.enabled) && snapshot.telegram_user_count > 0
   const aiReady = ai.enabled && (!production || ai.provider !== "local")
 
@@ -102,11 +104,11 @@ export async function getIntegrationActivationChecks(): Promise<ActivationCheck[
     },
     { description: "The application-owned worker processes queues; local n8n remains available only for development rehearsal.", detail: automation.detail, key: "automation", state: automation.state, title: "Automation scheduler" },
     {
-      description: "Supabase Auth sends invitations and password recovery mail.",
-      detail: production ? (smtpReady ? "Production SMTP is operator-confirmed. Complete an invitation and recovery delivery test before approval." : "Configure production SMTP outside the web app, then set AUTH_SMTP_CONFIGURED=true only after delivery is verified.") : "Local Auth mail is captured safely by Mailpit at http://127.0.0.1:54324.",
+      description: "Invitations and recovery use verified Supabase action links.",
+      detail: production ? (manualLinksReady ? "Manual single-use links are enabled. Administrators generate and send them through a secure channel." : smtpReady ? "Production SMTP is operator-confirmed. Complete invitation and recovery delivery tests before approval." : "Enable manual action links or configure production SMTP before inviting staff.") : "Local Auth mail is captured safely by Mailpit at http://127.0.0.1:54324; manual links are also available.",
       key: "auth_email",
-      state: smtpReady ? "ready" : "setup_required",
-      title: "Account email delivery",
+      state: authEmailReady ? "ready" : "setup_required",
+      title: "Account access",
     },
     {
       description: "AI extracts, summarises, and drafts; people approve every consequential action.",

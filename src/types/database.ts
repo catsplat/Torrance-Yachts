@@ -565,13 +565,14 @@ export type Database = {
           customer_contact_id: string | null
           disembarkation_port: string | null
           embarkation_port: string | null
-          enquiry_id: string
+          enquiry_id: string | null
           guest_count: number | null
           id: string
+          origin: Database["public"]["Enums"]["booking_origin"]
           reference: string
           signed_agreement_confirmed_at: string
           signed_agreement_confirmed_by: string
-          source_offer_id: string
+          source_offer_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           tax_rate: number
           updated_at: string
@@ -591,13 +592,14 @@ export type Database = {
           customer_contact_id?: string | null
           disembarkation_port?: string | null
           embarkation_port?: string | null
-          enquiry_id: string
+          enquiry_id?: string | null
           guest_count?: number | null
           id?: string
+          origin?: Database["public"]["Enums"]["booking_origin"]
           reference?: string
           signed_agreement_confirmed_at?: string
           signed_agreement_confirmed_by: string
-          source_offer_id: string
+          source_offer_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           tax_rate: number
           updated_at?: string
@@ -617,13 +619,14 @@ export type Database = {
           customer_contact_id?: string | null
           disembarkation_port?: string | null
           embarkation_port?: string | null
-          enquiry_id?: string
+          enquiry_id?: string | null
           guest_count?: number | null
           id?: string
+          origin?: Database["public"]["Enums"]["booking_origin"]
           reference?: string
           signed_agreement_confirmed_at?: string
           signed_agreement_confirmed_by?: string
-          source_offer_id?: string
+          source_offer_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           tax_rate?: number
           updated_at?: string
@@ -1016,6 +1019,41 @@ export type Database = {
           {
             foreignKeyName: "company_contacts_updated_by_fkey"
             columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      configuration_pack_imports: {
+        Row: {
+          id: string
+          imported_at: string
+          imported_by: string
+          payload: Json
+          summary: Json
+          version: number
+        }
+        Insert: {
+          id?: string
+          imported_at?: string
+          imported_by: string
+          payload: Json
+          summary?: Json
+          version: number
+        }
+        Update: {
+          id?: string
+          imported_at?: string
+          imported_by?: string
+          payload?: Json
+          summary?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "configuration_pack_imports_imported_by_fkey"
+            columns: ["imported_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1430,6 +1468,7 @@ export type Database = {
           error_code: string | null
           id: string
           message_id: string | null
+          owner_user_id: string
           provider_event_id: string
           provider_message_id: string
           received_at: string
@@ -1440,6 +1479,7 @@ export type Database = {
           error_code?: string | null
           id?: string
           message_id?: string | null
+          owner_user_id: string
           provider_event_id: string
           provider_message_id: string
           received_at?: string
@@ -1450,6 +1490,7 @@ export type Database = {
           error_code?: string | null
           id?: string
           message_id?: string | null
+          owner_user_id?: string
           provider_event_id?: string
           provider_message_id?: string
           received_at?: string
@@ -1461,6 +1502,13 @@ export type Database = {
             columns: ["message_id"]
             isOneToOne: false
             referencedRelation: "email_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_ingestion_events_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1479,6 +1527,7 @@ export type Database = {
           has_attachments: boolean
           id: string
           internet_message_id: string | null
+          owner_user_id: string
           processing_status: Database["public"]["Enums"]["email_processing_status"]
           provider: string
           provider_message_id: string
@@ -1503,6 +1552,7 @@ export type Database = {
           has_attachments?: boolean
           id?: string
           internet_message_id?: string | null
+          owner_user_id: string
           processing_status?: Database["public"]["Enums"]["email_processing_status"]
           provider?: string
           provider_message_id: string
@@ -1527,6 +1577,7 @@ export type Database = {
           has_attachments?: boolean
           id?: string
           internet_message_id?: string | null
+          owner_user_id?: string
           processing_status?: Database["public"]["Enums"]["email_processing_status"]
           provider?: string
           provider_message_id?: string
@@ -1542,6 +1593,13 @@ export type Database = {
           {
             foreignKeyName: "email_messages_classified_by_fkey"
             columns: ["classified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_messages_owner_user_id_fkey"
+            columns: ["owner_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1607,9 +1665,12 @@ export type Database = {
           id: string
           last_message_at: string
           message_count: number
+          owner_user_id: string
           participants: string[]
           provider: string
           provider_thread_id: string
+          shared_at: string | null
+          shared_by: string | null
           subject: string
           updated_at: string
         }
@@ -1620,9 +1681,12 @@ export type Database = {
           id?: string
           last_message_at: string
           message_count?: number
+          owner_user_id: string
           participants?: string[]
           provider?: string
           provider_thread_id: string
+          shared_at?: string | null
+          shared_by?: string | null
           subject: string
           updated_at?: string
         }
@@ -1633,9 +1697,12 @@ export type Database = {
           id?: string
           last_message_at?: string
           message_count?: number
+          owner_user_id?: string
           participants?: string[]
           provider?: string
           provider_thread_id?: string
+          shared_at?: string | null
+          shared_by?: string | null
           subject?: string
           updated_at?: string
         }
@@ -1645,6 +1712,20 @@ export type Database = {
             columns: ["enquiry_id"]
             isOneToOne: false
             referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_threads_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_threads_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2074,6 +2155,109 @@ export type Database = {
           },
         ]
       }
+      imap_mailbox_connections: {
+        Row: {
+          account_email: string
+          app_password_secret_id: string
+          created_at: string
+          enabled: boolean
+          folders: string[]
+          host: string
+          id: string
+          last_error: string | null
+          last_failure_at: string | null
+          last_success_at: string | null
+          last_synced_at: string | null
+          last_uid: number | null
+          last_uid_validity: string | null
+          port: number
+          status: string
+          tls: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_email: string
+          app_password_secret_id: string
+          created_at?: string
+          enabled?: boolean
+          folders?: string[]
+          host: string
+          id?: string
+          last_error?: string | null
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          last_synced_at?: string | null
+          last_uid?: number | null
+          last_uid_validity?: string | null
+          port: number
+          status?: string
+          tls?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_email?: string
+          app_password_secret_id?: string
+          created_at?: string
+          enabled?: boolean
+          folders?: string[]
+          host?: string
+          id?: string
+          last_error?: string | null
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          last_synced_at?: string | null
+          last_uid?: number | null
+          last_uid_validity?: string | null
+          port?: number
+          status?: string
+          tls?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imap_mailbox_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      imap_mailbox_folder_sync_states: {
+        Row: {
+          connection_id: string
+          folder: string
+          last_synced_at: string | null
+          last_uid: number | null
+          last_uid_validity: string | null
+        }
+        Insert: {
+          connection_id: string
+          folder: string
+          last_synced_at?: string | null
+          last_uid?: number | null
+          last_uid_validity?: string | null
+        }
+        Update: {
+          connection_id?: string
+          folder?: string
+          last_synced_at?: string | null
+          last_uid?: number | null
+          last_uid_validity?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imap_mailbox_folder_sync_states_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "imap_mailbox_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_connections: {
         Row: {
           configuration_notes: string | null
@@ -2381,6 +2565,207 @@ export type Database = {
           {
             foreignKeyName: "launch_readiness_checks_reviewed_by_fkey"
             columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      local_ai_agents: {
+        Row: {
+          created_at: string
+          device_name: string
+          id: string
+          last_seen_at: string | null
+          selected_model: string | null
+          status: string
+          token_sha256: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_name: string
+          id?: string
+          last_seen_at?: string | null
+          selected_model?: string | null
+          status?: string
+          token_sha256: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_name?: string
+          id?: string
+          last_seen_at?: string | null
+          selected_model?: string | null
+          status?: string
+          token_sha256?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "local_ai_agents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      local_ai_jobs: {
+        Row: {
+          agent_id: string
+          analysis_kind: string
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          input_payload: Json
+          input_tokens: number | null
+          lease_expires_at: string | null
+          output_tokens: number | null
+          owner_user_id: string
+          provider_request_id: string | null
+          result_payload: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          analysis_kind: string
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          input_payload: Json
+          input_tokens?: number | null
+          lease_expires_at?: string | null
+          output_tokens?: number | null
+          owner_user_id: string
+          provider_request_id?: string | null
+          result_payload?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          analysis_kind?: string
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          input_payload?: Json
+          input_tokens?: number | null
+          lease_expires_at?: string | null
+          output_tokens?: number | null
+          owner_user_id?: string
+          provider_request_id?: string | null
+          result_payload?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "local_ai_jobs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "local_ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "local_ai_jobs_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      local_ai_pairing_codes: {
+        Row: {
+          code_sha256: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code_sha256: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code_sha256?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "local_ai_pairing_codes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manual_auth_links: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          purpose: string
+          revoked_at: string | null
+          token_secret_id: string | null
+          updated_at: string
+          user_id: string
+          verification_lease_until: string | null
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          purpose: string
+          revoked_at?: string | null
+          token_secret_id?: string | null
+          updated_at?: string
+          user_id: string
+          verification_lease_until?: string | null
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          purpose?: string
+          revoked_at?: string | null
+          token_secret_id?: string | null
+          updated_at?: string
+          user_id?: string
+          verification_lease_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_auth_links_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -2971,6 +3356,60 @@ export type Database = {
         }
         Relationships: []
       }
+      task_condition_rules: {
+        Row: {
+          condition_type: Database["public"]["Enums"]["task_condition_type"]
+          created_at: string
+          created_by: string | null
+          document_type: Database["public"]["Enums"]["document_type"] | null
+          expected_booking_status:
+            | Database["public"]["Enums"]["booking_status"]
+            | null
+          id: string
+          not_before_date: string | null
+          task_id: string
+        }
+        Insert: {
+          condition_type: Database["public"]["Enums"]["task_condition_type"]
+          created_at?: string
+          created_by?: string | null
+          document_type?: Database["public"]["Enums"]["document_type"] | null
+          expected_booking_status?:
+            | Database["public"]["Enums"]["booking_status"]
+            | null
+          id?: string
+          not_before_date?: string | null
+          task_id: string
+        }
+        Update: {
+          condition_type?: Database["public"]["Enums"]["task_condition_type"]
+          created_at?: string
+          created_by?: string | null
+          document_type?: Database["public"]["Enums"]["document_type"] | null
+          expected_booking_status?:
+            | Database["public"]["Enums"]["booking_status"]
+            | null
+          id?: string
+          not_before_date?: string | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_condition_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_condition_rules_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_dependencies: {
         Row: {
           created_at: string
@@ -3296,7 +3735,7 @@ export type Database = {
         Row: {
           assigned_user_id: string | null
           blocked_reason: string | null
-          booking_id: string
+          booking_id: string | null
           cancelled_at: string | null
           cancelled_by: string | null
           completed_at: string | null
@@ -3308,6 +3747,7 @@ export type Database = {
           due_date: string | null
           due_date_required: boolean
           due_offset_days: number
+          enquiry_id: string | null
           escalation_after_days: number | null
           external_action: Database["public"]["Enums"]["task_external_action"]
           id: string
@@ -3327,7 +3767,7 @@ export type Database = {
         Insert: {
           assigned_user_id?: string | null
           blocked_reason?: string | null
-          booking_id: string
+          booking_id?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
           completed_at?: string | null
@@ -3339,6 +3779,7 @@ export type Database = {
           due_date?: string | null
           due_date_required?: boolean
           due_offset_days?: number
+          enquiry_id?: string | null
           escalation_after_days?: number | null
           external_action?: Database["public"]["Enums"]["task_external_action"]
           id?: string
@@ -3358,7 +3799,7 @@ export type Database = {
         Update: {
           assigned_user_id?: string | null
           blocked_reason?: string | null
-          booking_id?: string
+          booking_id?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
           completed_at?: string | null
@@ -3370,6 +3811,7 @@ export type Database = {
           due_date?: string | null
           due_date_required?: boolean
           due_offset_days?: number
+          enquiry_id?: string | null
           escalation_after_days?: number | null
           external_action?: Database["public"]["Enums"]["task_external_action"]
           id?: string
@@ -3420,6 +3862,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
             referencedColumns: ["id"]
           },
           {
@@ -3855,6 +4304,85 @@ export type Database = {
             columns: ["actor_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      yacht_availability_blocks: {
+        Row: {
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          id: string
+          last_change_reason: string | null
+          notes: string | null
+          reference: string
+          reservation_period: unknown
+          reserved_from: string
+          reserved_through: string
+          status: Database["public"]["Enums"]["calendar_event_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        Insert: {
+          charter_end_date: string
+          charter_start_date: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_change_reason?: string | null
+          notes?: string | null
+          reference?: string
+          reservation_period?: unknown
+          reserved_from: string
+          reserved_through: string
+          status?: Database["public"]["Enums"]["calendar_event_status"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          yacht_id: string
+        }
+        Update: {
+          charter_end_date?: string
+          charter_start_date?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_change_reason?: string | null
+          notes?: string | null
+          reference?: string
+          reservation_period?: unknown
+          reserved_from?: string
+          reserved_through?: string
+          status?: Database["public"]["Enums"]["calendar_event_status"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          yacht_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "yacht_availability_blocks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_availability_blocks_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "yacht_availability_blocks_yacht_id_fkey"
+            columns: ["yacht_id"]
+            isOneToOne: false
+            referencedRelation: "yachts"
             referencedColumns: ["id"]
           },
         ]
@@ -4440,7 +4968,7 @@ export type Database = {
         Returns: {
           assigned_user_id: string | null
           blocked_reason: string | null
-          booking_id: string
+          booking_id: string | null
           cancelled_at: string | null
           cancelled_by: string | null
           completed_at: string | null
@@ -4452,6 +4980,60 @@ export type Database = {
           due_date: string | null
           due_date_required: boolean
           due_offset_days: number
+          enquiry_id: string | null
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reference: string
+          reminder_lead_days: number | null
+          required: boolean
+          source: Database["public"]["Enums"]["task_source"]
+          status: Database["public"]["Enums"]["task_status"]
+          step_code: string | null
+          template_id: string | null
+          template_step_id: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      add_operational_task: {
+        Args: {
+          p_assigned_user_id: string
+          p_booking_id: string
+          p_depends_on_task_ids?: string[]
+          p_description: string
+          p_document_type?: Database["public"]["Enums"]["document_type"]
+          p_due_date: string
+          p_enquiry_id: string
+          p_expected_booking_status?: Database["public"]["Enums"]["booking_status"]
+          p_not_before_date?: string
+          p_priority: Database["public"]["Enums"]["task_priority"]
+          p_title: string
+        }
+        Returns: {
+          assigned_user_id: string | null
+          blocked_reason: string | null
+          booking_id: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date: string | null
+          due_date_required: boolean
+          due_offset_days: number
+          enquiry_id: string | null
           escalation_after_days: number | null
           external_action: Database["public"]["Enums"]["task_external_action"]
           id: string
@@ -4585,13 +5167,14 @@ export type Database = {
           customer_contact_id: string | null
           disembarkation_port: string | null
           embarkation_port: string | null
-          enquiry_id: string
+          enquiry_id: string | null
           guest_count: number | null
           id: string
+          origin: Database["public"]["Enums"]["booking_origin"]
           reference: string
           signed_agreement_confirmed_at: string
           signed_agreement_confirmed_by: string
-          source_offer_id: string
+          source_offer_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           tax_rate: number
           updated_at: string
@@ -4601,6 +5184,41 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      amend_yacht_availability_block: {
+        Args: {
+          p_block_id: string
+          p_charter_end_date: string
+          p_charter_start_date: string
+          p_notes: string
+          p_reason: string
+          p_title: string
+          p_yacht_id: string
+        }
+        Returns: {
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          id: string
+          last_change_reason: string | null
+          notes: string | null
+          reference: string
+          reservation_period: unknown
+          reserved_from: string
+          reserved_through: string
+          status: Database["public"]["Enums"]["calendar_event_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "yacht_availability_blocks"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -4718,6 +5336,15 @@ export type Database = {
         Args: { p_enquiry_ids: string[]; p_reason: string }
         Returns: number
       }
+      authenticate_local_ai_agent: {
+        Args: { p_agent_token: string }
+        Returns: {
+          agent_id: string
+          owner_user_id: string
+          selected_model: string
+          status: string
+        }[]
+      }
       calculate_charter_fee: {
         Args: {
           p_charter_days: number
@@ -4734,12 +5361,16 @@ export type Database = {
         }
         Returns: string
       }
+      can_read_email_message: {
+        Args: { p_message_id: string }
+        Returns: boolean
+      }
       cancel_ad_hoc_task: {
         Args: { p_reason: string; p_task_id: string }
         Returns: {
           assigned_user_id: string | null
           blocked_reason: string | null
-          booking_id: string
+          booking_id: string | null
           cancelled_at: string | null
           cancelled_by: string | null
           completed_at: string | null
@@ -4751,6 +5382,7 @@ export type Database = {
           due_date: string | null
           due_date_required: boolean
           due_offset_days: number
+          enquiry_id: string | null
           escalation_after_days: number | null
           external_action: Database["public"]["Enums"]["task_external_action"]
           id: string
@@ -4770,6 +5402,33 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      cancel_yacht_availability_block: {
+        Args: { p_block_id: string; p_reason: string }
+        Returns: {
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          id: string
+          last_change_reason: string | null
+          notes: string | null
+          reference: string
+          reservation_period: unknown
+          reserved_from: string
+          reserved_through: string
+          status: Database["public"]["Enums"]["calendar_event_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "yacht_availability_blocks"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -4898,6 +5557,22 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      claim_local_ai_job: {
+        Args: { p_agent_token: string }
+        Returns: {
+          analysis_kind: string
+          input_payload: Json
+          job_id: string
+          model: string
+        }[]
+      }
+      claim_manual_auth_link: {
+        Args: { p_link_id: string }
+        Returns: {
+          purpose: string
+          token_hash: string
+        }[]
+      }
       claim_upload_capacity: {
         Args: {
           p_max_bytes_per_hour?: number
@@ -4990,6 +5665,20 @@ export type Database = {
         Args: { p_history_id: string; p_synced_at: string; p_user_id: string }
         Returns: undefined
       }
+      complete_imap_provider_action: {
+        Args: { p_action_id: string }
+        Returns: boolean
+      }
+      complete_imap_reconciliation: {
+        Args: {
+          p_connection_id: string
+          p_folder: string
+          p_last_uid: number
+          p_synced_at: string
+          p_uid_validity: string
+        }
+        Returns: boolean
+      }
       complete_initial_administrator: {
         Args: {
           p_display_name: string
@@ -5008,12 +5697,23 @@ export type Database = {
         }
         Returns: undefined
       }
+      complete_local_ai_job: {
+        Args: {
+          p_agent_token: string
+          p_input_tokens?: number
+          p_job_id: string
+          p_output_tokens?: number
+          p_provider_request_id?: string
+          p_result_payload: Json
+        }
+        Returns: undefined
+      }
       complete_task: {
         Args: { p_reason: string; p_task_id: string }
         Returns: {
           assigned_user_id: string | null
           blocked_reason: string | null
-          booking_id: string
+          booking_id: string | null
           cancelled_at: string | null
           cancelled_by: string | null
           completed_at: string | null
@@ -5025,6 +5725,7 @@ export type Database = {
           due_date: string | null
           due_date_required: boolean
           due_offset_days: number
+          enquiry_id: string | null
           escalation_after_days: number | null
           external_action: Database["public"]["Enums"]["task_external_action"]
           id: string
@@ -5146,13 +5847,14 @@ export type Database = {
           customer_contact_id: string | null
           disembarkation_port: string | null
           embarkation_port: string | null
-          enquiry_id: string
+          enquiry_id: string | null
           guest_count: number | null
           id: string
+          origin: Database["public"]["Enums"]["booking_origin"]
           reference: string
           signed_agreement_confirmed_at: string
           signed_agreement_confirmed_by: string
-          source_offer_id: string
+          source_offer_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           tax_rate: number
           updated_at: string
@@ -5287,6 +5989,64 @@ export type Database = {
         }
         Returns: string
       }
+      create_manual_booking: {
+        Args: {
+          p_broker_company_id: string
+          p_broker_contact_id: string
+          p_charter_end_date: string
+          p_charter_fee: number
+          p_charter_start_date: string
+          p_confirmation_reason: string
+          p_currency: string
+          p_customer_contact_id: string
+          p_disembarkation_port: string
+          p_embarkation_port: string
+          p_guest_count: number
+          p_signed_agreement_confirmed: boolean
+          p_tax_rate: number
+          p_yacht_id: string
+        }
+        Returns: {
+          broker_company_id: string | null
+          broker_contact_id: string | null
+          charter_end_date: string
+          charter_fee: number
+          charter_start_date: string
+          confirmation_reason: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          customer_contact_id: string | null
+          disembarkation_port: string | null
+          embarkation_port: string | null
+          enquiry_id: string | null
+          guest_count: number | null
+          id: string
+          origin: Database["public"]["Enums"]["booking_origin"]
+          reference: string
+          signed_agreement_confirmed_at: string
+          signed_agreement_confirmed_by: string
+          source_offer_id: string | null
+          status: Database["public"]["Enums"]["booking_status"]
+          tax_rate: number
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_my_local_ai_pairing_code: {
+        Args: never
+        Returns: {
+          expires_at: string
+          pairing_code: string
+        }[]
+      }
       create_my_telegram_pairing_request: {
         Args: { p_token_hash: string }
         Returns: string
@@ -5362,6 +6122,39 @@ export type Database = {
         Returns: string
       }
       create_rehearsal_run: { Args: { p_label: string }; Returns: string }
+      create_yacht_availability_block: {
+        Args: {
+          p_charter_end_date: string
+          p_charter_start_date: string
+          p_notes: string
+          p_title: string
+          p_yacht_id: string
+        }
+        Returns: {
+          charter_end_date: string
+          charter_start_date: string
+          created_at: string
+          created_by: string | null
+          id: string
+          last_change_reason: string | null
+          notes: string | null
+          reference: string
+          reservation_period: unknown
+          reserved_from: string
+          reserved_through: string
+          status: Database["public"]["Enums"]["calendar_event_status"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          yacht_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "yacht_availability_blocks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_task_template_step: {
         Args: { p_reason: string; p_step_id: string }
         Returns: undefined
@@ -5369,6 +6162,10 @@ export type Database = {
       disconnect_my_gmail_oauth: {
         Args: { p_reason: string }
         Returns: undefined
+      }
+      disconnect_my_imap_mailbox_connection: {
+        Args: { p_connection_id: string }
+        Returns: boolean
       }
       email_domain: { Args: { value: string }; Returns: string }
       fail_ai_analysis: {
@@ -5392,6 +6189,14 @@ export type Database = {
         Args: { p_error: string; p_failed_at: string; p_user_id: string }
         Returns: undefined
       }
+      fail_imap_provider_action: {
+        Args: { p_action_id: string; p_error: string }
+        Returns: boolean
+      }
+      fail_imap_reconciliation: {
+        Args: { p_connection_id: string; p_error: string; p_failed_at: string }
+        Returns: boolean
+      }
       fail_integration_delivery: {
         Args: {
           p_delivery_id: string
@@ -5401,6 +6206,18 @@ export type Database = {
           p_worker_id: string
         }
         Returns: undefined
+      }
+      fail_local_ai_job: {
+        Args: {
+          p_agent_token: string
+          p_error_message: string
+          p_job_id: string
+        }
+        Returns: undefined
+      }
+      finish_manual_auth_link: {
+        Args: { p_link_id: string; p_succeeded: boolean }
+        Returns: boolean
       }
       generate_booking_tasks: {
         Args: { p_booking_id: string; p_template_id?: string }
@@ -5453,6 +6270,21 @@ export type Database = {
           summary_style: string
         }[]
       }
+      get_enabled_imap_mailbox_credentials: {
+        Args: never
+        Returns: {
+          account_email: string
+          app_password: string
+          connection_id: string
+          folders: string[]
+          host: string
+          last_uid: number
+          last_uid_validity: string
+          port: number
+          tls: boolean
+          user_id: string
+        }[]
+      }
       get_initial_setup_profile_count: { Args: never; Returns: number }
       get_integration_queue_health: {
         Args: never
@@ -5466,6 +6298,13 @@ export type Database = {
         }[]
       }
       get_launch_readiness_summary: { Args: never; Returns: Json }
+      get_manual_auth_link_status: {
+        Args: { p_link_id: string }
+        Returns: {
+          expires_at: string
+          purpose: string
+        }[]
+      }
       get_my_oauth_connections: {
         Args: never
         Returns: {
@@ -5485,6 +6324,21 @@ export type Database = {
         Returns: Json
       }
       get_operations_health: { Args: never; Returns: Json }
+      get_pending_imap_provider_actions: {
+        Args: never
+        Returns: {
+          account_email: string
+          action_id: string
+          action_type: Database["public"]["Enums"]["email_provider_action_type"]
+          app_password: string
+          connection_id: string
+          folder: string
+          host: string
+          port: number
+          tls: boolean
+          uid: number
+        }[]
+      }
       get_user_google_workspace_credentials: {
         Args: { p_user_id: string }
         Returns: {
@@ -5496,6 +6350,8 @@ export type Database = {
         }[]
       }
       get_workspace_dashboard_summary: { Args: never; Returns: Json }
+      import_configuration_pack: { Args: { p_payload: Json }; Returns: Json }
+      import_configuration_pack_v2: { Args: { p_payload: Json }; Returns: Json }
       ingest_gmail_message: {
         Args: {
           p_attachments?: Json
@@ -5507,6 +6363,54 @@ export type Database = {
           p_has_list_unsubscribe: boolean
           p_internet_message_id: string
           p_is_bulk: boolean
+          p_provider_event_id: string
+          p_provider_message_id: string
+          p_provider_thread_id: string
+          p_received_at: string
+          p_recipient_emails: string[]
+          p_sender_email: string
+          p_sender_name: string
+          p_snippet: string
+          p_subject: string
+        }
+        Returns: string
+      }
+      ingest_gmail_message_for_owner: {
+        Args: {
+          p_attachments?: Json
+          p_body_text: string
+          p_cc_emails: string[]
+          p_gmail_label_ids: string[]
+          p_has_attachments: boolean
+          p_has_list_id: boolean
+          p_has_list_unsubscribe: boolean
+          p_internet_message_id: string
+          p_is_bulk: boolean
+          p_owner_user_id: string
+          p_provider_event_id: string
+          p_provider_message_id: string
+          p_provider_thread_id: string
+          p_received_at: string
+          p_recipient_emails: string[]
+          p_sender_email: string
+          p_sender_name: string
+          p_snippet: string
+          p_subject: string
+        }
+        Returns: string
+      }
+      ingest_imap_message_for_owner: {
+        Args: {
+          p_attachments?: Json
+          p_body_text: string
+          p_cc_emails: string[]
+          p_folder_flags: string[]
+          p_has_attachments: boolean
+          p_has_list_id: boolean
+          p_has_list_unsubscribe: boolean
+          p_internet_message_id: string
+          p_is_bulk: boolean
+          p_owner_user_id: string
           p_provider_event_id: string
           p_provider_message_id: string
           p_provider_thread_id: string
@@ -6010,6 +6914,11 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      preview_configuration_pack: { Args: { p_payload: Json }; Returns: Json }
+      preview_configuration_pack_v2: {
+        Args: { p_payload: Json }
+        Returns: Json
+      }
       queue_document_drive_sync: {
         Args: { p_document_id: string; p_reason: string }
         Returns: string
@@ -6082,11 +6991,64 @@ export type Database = {
         Returns: undefined
       }
       redact_audit_json: { Args: { p_value: Json }; Returns: Json }
+      redeem_local_ai_pairing_code: {
+        Args: { p_device_name: string; p_pairing_code: string }
+        Returns: {
+          agent_id: string
+          agent_token: string
+          owner_user_id: string
+        }[]
+      }
       refresh_booking_task_states: {
         Args: { p_booking_id: string }
         Returns: undefined
       }
       refresh_operational_calendar: { Args: never; Returns: number }
+      refresh_task_readiness: {
+        Args: { p_task_id: string }
+        Returns: {
+          assigned_user_id: string | null
+          blocked_reason: string | null
+          booking_id: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_anchor: Database["public"]["Enums"]["task_due_anchor"]
+          due_date: string | null
+          due_date_required: boolean
+          due_offset_days: number
+          enquiry_id: string | null
+          escalation_after_days: number | null
+          external_action: Database["public"]["Enums"]["task_external_action"]
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          reference: string
+          reminder_lead_days: number | null
+          required: boolean
+          source: Database["public"]["Enums"]["task_source"]
+          status: Database["public"]["Enums"]["task_status"]
+          step_code: string | null
+          template_id: string | null
+          template_step_id: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      refresh_task_readiness_for_booking: {
+        Args: { p_booking_id: string }
+        Returns: number
+      }
       register_booking_document: {
         Args: {
           p_booking_id: string
@@ -6197,7 +7159,7 @@ export type Database = {
         Returns: {
           assigned_user_id: string | null
           blocked_reason: string | null
-          booking_id: string
+          booking_id: string | null
           cancelled_at: string | null
           cancelled_by: string | null
           completed_at: string | null
@@ -6209,6 +7171,7 @@ export type Database = {
           due_date: string | null
           due_date_required: boolean
           due_offset_days: number
+          enquiry_id: string | null
           escalation_after_days: number | null
           external_action: Database["public"]["Enums"]["task_external_action"]
           id: string
@@ -6235,6 +7198,10 @@ export type Database = {
       replace_task_template_dependencies: {
         Args: { p_depends_on_step_ids: string[]; p_step_id: string }
         Returns: number
+      }
+      report_local_ai_agent_status: {
+        Args: { p_agent_token: string; p_model?: string; p_status: string }
+        Returns: undefined
       }
       request_ai_analysis: {
         Args: {
@@ -6301,6 +7268,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      revoke_my_local_ai_agent: {
+        Args: { p_agent_id: string }
+        Returns: undefined
+      }
       run_automation_tick: { Args: { p_as_of?: string }; Returns: Json }
       save_contract_review: {
         Args: {
@@ -6328,6 +7299,43 @@ export type Database = {
           p_scopes: string[]
         }
         Returns: undefined
+      }
+      save_my_imap_mailbox_connection: {
+        Args: {
+          p_account_email: string
+          p_app_password: string
+          p_enabled: boolean
+          p_folders: string[]
+          p_host: string
+          p_port: number
+          p_tls: boolean
+        }
+        Returns: {
+          account_email: string
+          app_password_secret_id: string
+          created_at: string
+          enabled: boolean
+          folders: string[]
+          host: string
+          id: string
+          last_error: string | null
+          last_failure_at: string | null
+          last_success_at: string | null
+          last_synced_at: string | null
+          last_uid: number | null
+          last_uid_validity: string | null
+          port: number
+          status: string
+          tls: boolean
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "imap_mailbox_connections"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       save_my_openai_api_key: {
         Args: { p_api_key: string; p_reason: string }
@@ -6400,9 +7408,26 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      store_manual_auth_link: {
+        Args: {
+          p_created_by: string
+          p_expires_in_minutes?: number
+          p_purpose: string
+          p_token_hash: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       sync_booking_anchored_task_dates: {
         Args: { p_booking_id: string; p_reason: string }
         Returns: number
+      }
+      task_readiness: {
+        Args: { p_task_id: string }
+        Returns: {
+          blocked_reason: string
+          is_ready: boolean
+        }[]
       }
       transition_booking_status: {
         Args: {
@@ -6423,13 +7448,14 @@ export type Database = {
           customer_contact_id: string | null
           disembarkation_port: string | null
           embarkation_port: string | null
-          enquiry_id: string
+          enquiry_id: string | null
           guest_count: number | null
           id: string
+          origin: Database["public"]["Enums"]["booking_origin"]
           reference: string
           signed_agreement_confirmed_at: string
           signed_agreement_confirmed_by: string
-          source_offer_id: string
+          source_offer_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           tax_rate: number
           updated_at: string
@@ -6740,7 +7766,7 @@ export type Database = {
         Returns: {
           assigned_user_id: string | null
           blocked_reason: string | null
-          booking_id: string
+          booking_id: string | null
           cancelled_at: string | null
           cancelled_by: string | null
           completed_at: string | null
@@ -6752,6 +7778,7 @@ export type Database = {
           due_date: string | null
           due_date_required: boolean
           due_offset_days: number
+          enquiry_id: string | null
           escalation_after_days: number | null
           external_action: Database["public"]["Enums"]["task_external_action"]
           id: string
@@ -6839,6 +7866,7 @@ export type Database = {
         | "superseded"
       ai_work_status: "pending" | "claimed" | "completed" | "permanent_failure"
       backup_verification_status: "started" | "passed" | "failed"
+      booking_origin: "enquiry" | "manual"
       booking_status: "confirmed" | "charter_active" | "completed" | "cancelled"
       calendar_event_kind: "charter" | "payment" | "task"
       calendar_event_status: "active" | "cancelled"
@@ -6961,6 +7989,10 @@ export type Database = {
         | "specifications"
         | "deck_plan"
         | "other"
+      task_condition_type:
+        | "approved_document"
+        | "booking_status"
+        | "not_before_date"
       task_due_anchor:
         | "none"
         | "booking_confirmed"
@@ -7138,6 +8170,7 @@ export const Constants = {
       ],
       ai_work_status: ["pending", "claimed", "completed", "permanent_failure"],
       backup_verification_status: ["started", "passed", "failed"],
+      booking_origin: ["enquiry", "manual"],
       booking_status: ["confirmed", "charter_active", "completed", "cancelled"],
       calendar_event_kind: ["charter", "payment", "task"],
       calendar_event_status: ["active", "cancelled"],
@@ -7274,6 +8307,11 @@ export const Constants = {
         "specifications",
         "deck_plan",
         "other",
+      ],
+      task_condition_type: [
+        "approved_document",
+        "booking_status",
+        "not_before_date",
       ],
       task_due_anchor: [
         "none",

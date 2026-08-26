@@ -35,7 +35,7 @@ export default async function CalendarPage({ searchParams }: {
           <CardContent className="divide-y p-0">
             {monthEvents.map((event) => {
               const Icon = icons[event.kind]
-              const href = event.source_type === "booking" ? `/bookings/${event.source_id}` : event.source_type === "task" ? `/tasks/${event.source_id}` : "/tasks"
+              const href = event.source_type === "booking" ? `/bookings/${event.source_id}` : event.source_type === "availability_block" ? "/bookings/availability" : event.source_type === "task" ? `/tasks/${event.source_id}` : "/tasks"
               return <Link className="grid gap-3 px-5 py-4 hover:bg-muted/40 sm:grid-cols-[2rem_8rem_minmax(0,1fr)_8rem]" href={href} key={event.id}><Icon className="mt-0.5 size-4 text-primary" /><p className="text-sm font-medium">{formatDate(event.start_at)}</p><div><p className="font-medium">{event.title}</p><p className="mt-1 text-xs text-muted-foreground">{event.description}</p></div><div className="flex flex-col items-start gap-1"><Badge variant="outline">{event.kind}</Badge><span className="text-xs text-muted-foreground">{event.sync_status.replace("_", " ")}</span></div></Link>
             })}
           </CardContent>

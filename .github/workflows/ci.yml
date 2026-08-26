@@ -177,7 +177,11 @@ jobs:
         run: npm run test:e2e
 
       - name: Publish browser failure evidence
-        if: ${{ !cancelled() }}
+        # Successful browser runs do not need a report.  Keeping the report for
+        # a real failure is useful, but CI must not fail merely because GitHub's
+        # optional artifact quota is temporarily exhausted.
+        if: ${{ failure() && !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: browser-acceptance-report
@@ -270,6 +274,11 @@ jobs:
           npm run desktop:build
 
       - name: Publish unsigned test installer
+        # The unsigned installer is already produced and tested locally. Keep
+        # this optional CI convenience limited to explicit manual builds so a
+        # free-account artifact quota cannot block application changes.
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        continue-on-error: true
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: windows-tauri-test-installer

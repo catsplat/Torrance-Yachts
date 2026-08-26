@@ -4,6 +4,8 @@ import { useActionState } from "react"
 
 import {
   clearMyOpenAiKeyAction,
+  createLocalAiPairingAction,
+  revokeMyLocalAiAgentAction,
   saveMyOpenAiKeyAction,
   testMyAiConnectionAction,
   updateMyAiPreferencesAction,
@@ -91,5 +93,25 @@ export function AiConnectionTestForm() {
         </p>
       </div>
     ) : null}
+  </form>
+}
+
+export function LocalAiPairingForm() {
+  const [state, action, pending] = useActionState(createLocalAiPairingAction, initialState)
+  const recommendedModel = "qwen3:4b-instruct"
+  return <form action={action} className="space-y-3">
+    <p className="text-sm text-muted-foreground">Use your Mac’s own Ollama installation. It stays on the Mac; the workspace only sends it review requests.</p>
+    <div className="rounded-lg border bg-muted/20 p-3 text-sm"><p className="font-medium">Recommended: Qwen3 4B Instruct</p><p className="mt-1 text-muted-foreground">A balanced local model for email summaries and structured review.</p></div>
+    <Button disabled={pending} type="submit" variant="outline">{pending ? "Creating code…" : "Set up this Mac"}</Button>
+    <Feedback state={state} />
+    {state.pairingCode ? <div className="space-y-3 rounded-lg border bg-muted/40 p-3"><div><p className="text-xs text-muted-foreground">One-time pairing code</p><p className="mt-1 font-mono text-lg font-semibold tracking-widest">{state.pairingCode}</p></div><ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground"><li>Install and open <a className="text-primary underline" href="https://ollama.com/download" rel="noreferrer" target="_blank">Ollama for macOS</a>.</li><li>On the Mac, run the setup command below once. It downloads the recommended model and keeps the helper running.</li></ol><code className="block overflow-x-auto rounded bg-background p-2 text-xs text-foreground">node local-ai-helper.mjs --server https://your-workspace --code {state.pairingCode} --setup --model {recommendedModel}</code><p className="text-xs text-muted-foreground">Replace <code>https://your-workspace</code> with this site’s address. Expires {new Intl.DateTimeFormat("en-GB", { timeStyle: "short" }).format(new Date(state.pairingExpiresAt!))}. The helper only makes outbound connections.</p></div> : null}
+  </form>
+}
+
+export function RevokeLocalAiAgentForm({ agentId }: { agentId: string }) {
+  const [state, action, pending] = useActionState(revokeMyLocalAiAgentAction.bind(null, agentId), initialState)
+  return <form action={action} className="flex items-center gap-2">
+    <Button disabled={pending} size="sm" type="submit" variant="outline">{pending ? "Revoking…" : "Remove"}</Button>
+    <Feedback state={state} />
   </form>
 }

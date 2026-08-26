@@ -24,7 +24,8 @@ const googleUserInfoSchema = z.object({
 })
 
 function settingsRedirect(request: NextRequest, notice: string) {
-  const url = new URL("/settings/alerts", request.url)
+  const applicationOrigin = process.env.APP_BASE_URL?.trim() || request.nextUrl.origin
+  const url = new URL("/settings/alerts", applicationOrigin)
   url.searchParams.set("google", notice)
   return url
 }

@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { z } from "zod"
 
 import {
   alertPreferencesSchema,
@@ -9,6 +10,7 @@ import {
   googleSpreadsheetSelectionSchema,
 } from "@/lib/alerts/validation"
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
+import { testImapMailboxConnection } from "@/lib/emails/imap"
 import {
   listGoogleSpreadsheets,
   safeGoogleConnectionMessage,
@@ -28,6 +30,66 @@ export type AlertSettingsActionState = {
 }
 
 const expired = { message: "Your session has expired. Sign in again." }
+
+const imapConnectionSchema = z.object({
+  accountEmail: z.email().transform((value) => value.toLowerCase()),
+  appPassword: z.string().min(8).max(512),
+  enabled: z.literal("on").optional().transform(Boolean),
+  folders: z.string().trim().min(1).max(1_000).transform((value) =>
+    [...new Set(value.split(",").map((folder) => folder.trim()).filter(Boolean))].slice(0, 12),
+  ),
+  host: z.string().trim().toLowerCase().regex(/^[a-z0-9.-]{3,253}$/),
+  port: z.coerce.number().int().min(1).max(65_535),
+  tls: z.literal("on").optional().transform(Boolean),
+})
+
+export async function saveMyImapMailboxAction(
+  _state: AlertSettingsActionState,
+  formData: FormData,
+): Promise<AlertSettingsActionState> {
+  const parsed = imapConnectionSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { message: "Review the IMAP account, app password, server and folder details." }
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return expired
+  try {
+    const tested = await testImapMailboxConnection({
+      accountEmail: parsed.data.accountEmail,
+      appPassword: parsed.data.appPassword,
+      host: parsed.data.host,
+      port: parsed.data.port,
+      tls: parsed.data.tls,
+    })
+    if (!tested.ok) return { message: tested.detail }
+    const { error } = await context.supabase.rpc("save_my_imap_mailbox_connection", {
+      p_account_email: parsed.data.accountEmail,
+      p_app_password: parsed.data.appPassword,
+      p_enabled: parsed.data.enabled,
+      p_folders: parsed.data.folders,
+      p_host: parsed.data.host,
+      p_port: parsed.data.port,
+      p_tls: parsed.data.tls,
+    })
+    if (error) return { message: "The mailbox could not be saved securely." }
+    revalidatePath("/settings/alerts")
+    return { message: `Secure IMAP connection saved (${tested.latencyMs} ms).`, success: true }
+  } catch {
+    return { message: "The IMAP server could not be reached. Check the provider’s app-password and IMAP settings." }
+  }
+}
+
+export async function disconnectMyImapMailboxAction(
+  _state: AlertSettingsActionState,
+  formData: FormData,
+): Promise<AlertSettingsActionState> {
+  const connectionId = z.uuid().safeParse(formData.get("connectionId"))
+  if (!connectionId.success) return { message: "The mailbox reference is invalid." }
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return expired
+  const { error } = await context.supabase.rpc("disconnect_my_imap_mailbox_connection", { p_connection_id: connectionId.data })
+  if (error) return { message: "The IMAP mailbox could not be disconnected." }
+  revalidatePath("/settings/alerts")
+  return { message: "IMAP mailbox disconnected and its app password removed.", success: true }
+}
 
 export async function createMyTelegramPairingAction(
   _state: AlertSettingsActionState,
@@ -68,14 +130,15 @@ export async function updateMyAlertPreferencesAction(
   if (!context) return expired
   const values = parsed.data
   if (values.emailEnabled) {
-    const { data: connections, error: connectionError } = await context.supabase.rpc(
-      "get_my_oauth_connections",
-    )
+    const [{ data: connections, error: connectionError }, { data: imapConnections, error: imapError }] = await Promise.all([
+      context.supabase.rpc("get_my_oauth_connections"),
+      context.supabase.from("imap_mailbox_connections").select("id").eq("enabled", true).eq("status", "connected").limit(1),
+    ])
     const gmailConnected = connections?.some(
       (connection) => connection.provider === "gmail" && connection.status === "connected",
     )
-    if (connectionError || !gmailConnected) {
-      return { message: "Connect a Google inbox before turning on email alerts." }
+    if (connectionError || imapError || (!gmailConnected && !imapConnections?.length)) {
+      return { message: "Connect a Google or IMAP mailbox before turning on email alerts." }
     }
   }
   const { error } = await context.supabase.rpc("update_my_alert_preferences", {

@@ -9,7 +9,40 @@ import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 export type AiSettingsActionState = {
   message?: string
   models?: string[]
+  pairingCode?: string
+  pairingExpiresAt?: string
   success?: boolean
+}
+
+export async function createLocalAiPairingAction(
+  _state: AiSettingsActionState,
+  _formData: FormData,
+): Promise<AiSettingsActionState> {
+  void _state
+  void _formData
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return expired
+  const { data, error } = await context.supabase.rpc("create_my_local_ai_pairing_code")
+  const pairing = data?.[0]
+  if (error || !pairing) return { message: "A pairing code could not be created." }
+  return { message: "Enter this code in Torrance Local AI within ten minutes.", pairingCode: pairing.pairing_code, pairingExpiresAt: pairing.expires_at, success: true }
+}
+
+export async function revokeMyLocalAiAgentAction(
+  agentId: string,
+  _state: AiSettingsActionState,
+  _formData: FormData,
+): Promise<AiSettingsActionState> {
+  void _state
+  void _formData
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return expired
+  const { error } = await context.supabase.rpc("revoke_my_local_ai_agent", {
+    p_agent_id: agentId,
+  })
+  if (error) return { message: "That local AI helper could not be revoked." }
+  revalidatePath("/settings/ai")
+  return { message: "Local AI helper revoked. It can no longer contact this workspace.", success: true }
 }
 
 const expired = { message: "Your session has expired. Sign in again." }
@@ -26,9 +59,6 @@ export async function updateMyAiPreferencesAction(
   })
   if (!parsed.success) {
     return { message: parsed.error.issues[0]?.message ?? "Review your AI settings." }
-  }
-  if (parsed.data.provider === "ollama" && process.env.APP_ENVIRONMENT === "production") {
-    return { message: "Local Ollama requires the desktop companion and is not available in the hosted application." }
   }
   const context = await getAuthenticatedRequestContext()
   if (!context) return expired

@@ -3,10 +3,16 @@
 # ops/bootstrap-selfhosted-supabase.sh from the exact pinned upstream revision.
 services:
   db:
-    image: supabase/postgres:17.6.1.136
+    # Matches the official Supabase PostgreSQL image used by this project's
+    # local stack and includes the required `supabase_vault` extension for
+    # encrypted per-user integration credentials.
+    image: public.ecr.aws/supabase/postgres:17.6.1.143
     restart: unless-stopped
-    cap_drop: ["ALL"]
-    security_opt: ["no-new-privileges:true"]
+    # The vendor PostgreSQL entrypoint performs initial ownership, permission
+    # and user-switching work before the database process starts. It cannot
+    # run under the capability-stripped profile used by the stateless services;
+    # this stateful service is instead protected by the private Docker network,
+    # no published port and a resource/PID limit below.
     pids_limit: 256
     mem_limit: 896m
     cpus: 1.0
@@ -41,6 +47,55 @@ services:
       options: { max-file: "3", max-size: "8m" }
     networks: [torrance_internal]
 
+  bootstrap:
+    # Establishes the service-only database roles and Vault before any adapter
+    # can connect. This avoids first-boot races while preserving PostgreSQL as
+    # the only operational source of truth.
+    image: public.ecr.aws/supabase/postgres:17.6.1.143
+    restart: "no"
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 96m
+    cpus: 0.2
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        psql -h db -U postgres -d postgres -v ON_ERROR_STOP=1 -v db_password="$$PGPASSWORD" <<'SQL'
+        ALTER USER authenticator WITH PASSWORD :'db_password';
+        ALTER USER supabase_auth_admin WITH PASSWORD :'db_password';
+        ALTER USER supabase_storage_admin WITH PASSWORD :'db_password';
+        CREATE SCHEMA IF NOT EXISTS vault;
+        CREATE EXTENSION IF NOT EXISTS supabase_vault WITH SCHEMA vault;
+        -- The official Supabase Postgres image provides baseline auth helper
+        -- functions. GoTrue owns and migrates that schema, so give its service
+        -- role ownership before GoTrue starts its own migrations.
+        DO $$$$
+        DECLARE item record;
+        BEGIN
+          IF to_regnamespace('auth') IS NOT NULL THEN
+            FOR item IN
+              SELECT p.oid::regprocedure AS signature
+              FROM pg_proc AS p
+              JOIN pg_namespace AS n ON n.oid = p.pronamespace
+              WHERE n.nspname = 'auth'
+            LOOP
+              EXECUTE format('ALTER FUNCTION %s OWNER TO supabase_auth_admin', item.signature);
+            END LOOP;
+          END IF;
+        END $$$$;
+        SQL
+    tmpfs: [/tmp]
+    logging:
+      driver: local
+      options: { max-file: "3", max-size: "8m" }
+    networks: [torrance_internal]
+
   auth:
     image: supabase/gotrue:v2.189.0
     restart: unless-stopped
@@ -50,7 +105,7 @@ services:
     mem_limit: 192m
     cpus: 0.4
     depends_on:
-      db: { condition: service_healthy }
+      bootstrap: { condition: service_completed_successfully }
     environment:
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
@@ -58,7 +113,7 @@ services:
       GOTRUE_DB_DRIVER: postgres
       GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/postgres
       GOTRUE_SITE_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
-      GOTRUE_URI_ALLOW_LIST: https://${APP_DOMAIN:?Set APP_DOMAIN}/auth/callback,https://${APP_DOMAIN:?Set APP_DOMAIN}/account/update-password
+      GOTRUE_URI_ALLOW_LIST: https://${APP_DOMAIN:?Set APP_DOMAIN}/auth/callback,https://${APP_DOMAIN:?Set APP_DOMAIN}/auth/confirm,https://${APP_DOMAIN:?Set APP_DOMAIN}/account/update-password
       GOTRUE_DISABLE_SIGNUP: "true"
       GOTRUE_JWT_ADMIN_ROLES: service_role
       GOTRUE_JWT_AUD: authenticated
@@ -79,6 +134,7 @@ services:
       GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
       GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
       GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /auth/v1/verify
+      GOTRUE_MFA_ENABLED: "true"
       GOTRUE_EXTERNAL_GOOGLE_ENABLED: ${GOOGLE_SIGN_IN_ENABLED:-false}
       GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
       GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
@@ -105,10 +161,12 @@ services:
     mem_limit: 128m
     cpus: 0.3
     depends_on:
-      db: { condition: service_healthy }
+      bootstrap: { condition: service_completed_successfully }
     environment:
       PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/postgres
-      PGRST_DB_SCHEMAS: public,graphql_public
+      # This deployment does not run the optional GraphQL service, so exposing
+      # its absent companion schema would keep PostgREST permanently unhealthy.
+      PGRST_DB_SCHEMAS: public
       PGRST_DB_MAX_ROWS: 1000
       PGRST_DB_EXTRA_SEARCH_PATH: public
       PGRST_DB_ANON_ROLE: anon
@@ -138,7 +196,7 @@ services:
     mem_limit: 256m
     cpus: 0.45
     depends_on:
-      db: { condition: service_healthy }
+      bootstrap: { condition: service_completed_successfully }
       rest: { condition: service_healthy }
     environment:
       ANON_KEY: ${ANON_KEY:?Set ANON_KEY}
@@ -158,7 +216,9 @@ services:
       S3_PROTOCOL_ACCESS_KEY_ID: ${S3_PROTOCOL_ACCESS_KEY_ID:?Set S3_PROTOCOL_ACCESS_KEY_ID}
       S3_PROTOCOL_ACCESS_KEY_SECRET: ${S3_PROTOCOL_ACCESS_KEY_SECRET:?Set S3_PROTOCOL_ACCESS_KEY_SECRET}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/status"]
+      # Storage listens on IPv4 in the pinned image; `localhost` can resolve to
+      # IPv6 first and produce a false-negative health result.
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5000/status"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -173,7 +233,10 @@ services:
   kong:
     image: kong/kong:3.9.3
     restart: unless-stopped
-    read_only: true
+    # The pinned Kong image writes generated configuration beside bundled Lua
+    # libraries under /usr/local/kong. A tmpfs over that directory hides those
+    # libraries, so retain the private network and capability controls rather
+    # than making the image filesystem read-only.
     cap_drop: ["ALL"]
     security_opt: ["no-new-privileges:true"]
     pids_limit: 160
@@ -205,7 +268,91 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    tmpfs: [/tmp, /usr/local/kong]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    logging:
+      driver: local
+      options: { max-file: "3", max-size: "8m" }
+    networks: [torrance_internal]
+
+  # Studio is deliberately opt-in and only publishes to the VPS loopback
+  # interface. It is reached through an authenticated SSH tunnel, never the
+  # app gateway, Tailscale serve, or a public URL.
+  meta:
+    profiles: ["studio"]
+    image: supabase/postgres-meta:v0.96.6
+    restart: unless-stopped
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 96
+    mem_limit: 192m
+    cpus: 0.3
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: postgres
+      PG_META_DB_USER: postgres
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      CRYPTO_KEY: ${PG_META_CRYPTO_KEY:?Set PG_META_CRYPTO_KEY}
+    healthcheck:
+      # postgres-meta's pinned image intentionally has no curl/wget; use its
+      # bundled Node runtime rather than a shell utility that is not present.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    tmpfs: [/tmp]
+    logging:
+      driver: local
+      options: { max-file: "3", max-size: "8m" }
+    networks: [torrance_internal]
+
+  studio:
+    profiles: ["studio"]
+    image: supabase/studio:2026.08.03-sha-022b374
+    restart: unless-stopped
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 128
+    mem_limit: 384m
+    cpus: 0.45
+    depends_on:
+      meta: { condition: service_healthy }
+      kong: { condition: service_healthy }
+    # This is the only Studio port and it intentionally cannot be reached
+    # from the public network or from another Tailnet device directly.
+    ports:
+      - "127.0.0.1:54323:3000"
+    environment:
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PORT: 5432
+      POSTGRES_HOST: db
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_USER_READ_WRITE: postgres
+      PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY:?Set PG_META_CRYPTO_KEY}
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_DB_EXTRA_SEARCH_PATH: public
+      DEFAULT_ORGANIZATION_NAME: Torrance Yachts
+      DEFAULT_PROJECT_NAME: Charter Operations
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_PUBLIC_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
+      SUPABASE_ANON_KEY: ${ANON_KEY:?Set ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY:?Set SERVICE_ROLE_KEY}
+      AUTH_JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      ENABLED_FEATURES_LOGS_ALL: "false"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/platform/profile').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    tmpfs: [/tmp]
     logging:
       driver: local
       options: { max-file: "3", max-size: "8m" }

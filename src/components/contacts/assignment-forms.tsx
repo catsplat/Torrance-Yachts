@@ -115,7 +115,7 @@ export function YachtAssignmentForm({
       </div>
       <div className="space-y-1.5">
         <label className="text-xs font-medium" htmlFor="responsibility">
-          Responsibility
+          Yacht assignment
         </label>
         <select
           className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-sm"
@@ -152,11 +152,14 @@ export function YachtAssignmentForm({
           name="notes"
         />
       </div>
-      <div className="flex items-center justify-between gap-3 sm:col-span-2">
-        <FormMessage state={state} />
-        <Button disabled={pending || yachts.length === 0} type="submit">
-          {pending ? "Adding…" : "Add yacht responsibility"}
-        </Button>
+      <div className="space-y-3 sm:col-span-2">
+        <p className="text-xs text-muted-foreground">Links this person to this yacht. Primary is the default contact for that assignment; notification eligibility allows operational alerts.</p>
+        <div className="flex items-center justify-between gap-3">
+          <FormMessage state={state} />
+          <Button disabled={pending || yachts.length === 0} type="submit">
+            {pending ? "Adding…" : "Add yacht assignment"}
+          </Button>
+        </div>
       </div>
     </form>
   )

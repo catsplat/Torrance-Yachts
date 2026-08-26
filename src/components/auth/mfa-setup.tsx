@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
+import { enrollMfaAction, listMfaFactorsAction, unenrollMfaAction, verifyMfaAction } from "@/app/account/mfa/actions"
 
 type Factor = { id: string; friendly_name?: string; status: string }
 type Enrolment = { factorId: string; qrCode: string; secret: string }
@@ -24,34 +25,45 @@ export function MfaSetup() {
     const supabase = createClient()
     void (async () => {
       const listed = await supabase.auth.mfa.listFactors()
-      if (listed.error) {
+      const serverListed = listed.error ? await listMfaFactorsAction() : null
+      if (listed.error && !serverListed?.ok) {
         setMessage("Authenticator setup could not be loaded. Sign out and try again.")
         setPending(false)
         return
       }
-      const verified = listed.data.totp.find((item) => item.status === "verified")
+      const allFactors = serverListed?.ok ? serverListed.factors : listed.data?.all ?? []
+      const verified = allFactors.find((item) => item.status === "verified")
       if (verified) {
         setFactor(verified)
         setMessage("Enter the current code from your authenticator app.")
         setPending(false)
         return
       }
-      for (const item of listed.data.all.filter((candidate) => candidate.status !== "verified")) {
-        await supabase.auth.mfa.unenroll({ factorId: item.id })
+      for (const item of allFactors.filter((candidate) => candidate.status !== "verified")) {
+        const removed = await supabase.auth.mfa.unenroll({ factorId: item.id })
+        if (removed.error) await unenrollMfaAction(item.id)
       }
-      const enrolled = await supabase.auth.mfa.enroll({
-        factorType: "totp",
-        friendlyName: "Torrance Yachts",
-      })
-      if (enrolled.error) {
+      const enrolled = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Torrance Yachts" })
+      const serverEnrolled = enrolled.error ? await enrollMfaAction() : null
+      if (enrolled.error && !serverEnrolled?.ok) {
+        setMessage("Authenticator setup could not be started. Sign out and try again.")
+        setPending(false)
+        return
+      }
+      const setup = serverEnrolled?.ok
+        ? serverEnrolled
+        : enrolled.data
+          ? { ok: true as const, factorId: enrolled.data.id, qrCode: enrolled.data.totp.qr_code, secret: enrolled.data.totp.secret }
+          : null
+      if (!setup) {
         setMessage("Authenticator setup could not be started. Sign out and try again.")
         setPending(false)
         return
       }
       setEnrolment({
-        factorId: enrolled.data.id,
-        qrCode: enrolled.data.totp.qr_code,
-        secret: enrolled.data.totp.secret,
+        factorId: setup.factorId,
+        qrCode: setup.qrCode,
+        secret: setup.secret,
       })
       setMessage("Scan the QR code, then enter the six-digit code.")
       setPending(false)
@@ -66,8 +78,9 @@ export function MfaSetup() {
       return
     }
     setPending(true)
-    const { error } = await createClient().auth.mfa.challengeAndVerify({ factorId, code })
-    if (error) {
+    const clientResult = await createClient().auth.mfa.challengeAndVerify({ factorId, code })
+    const result = clientResult.error ? await verifyMfaAction(factorId, code) : { ok: true as const }
+    if (!result.ok) {
       setMessage("That code was not accepted. Wait for a new code and try again.")
       setPending(false)
       return

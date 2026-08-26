@@ -7,8 +7,11 @@ import { z } from "zod"
 import { getAuthenticatedRequestContext } from "@/lib/auth/request-context"
 import {
   bookingTransitionSchema,
+  availabilityBlockSchema,
+  availabilityBlockCancellationSchema,
   parseBookingAmendmentFormData,
   parseBookingConfirmationFormData,
+  parseManualBookingFormData,
   yachtfolioTransitionSchema,
 } from "@/lib/bookings/validation"
 
@@ -61,6 +64,84 @@ export async function confirmBookingAction(
   revalidatePath(`/enquiries/${parsed.data.enquiry_id}`)
   revalidatePath(`/yachts/${parsed.data.yacht_id}`)
   redirect(`/bookings/${data.id}?created=1`)
+}
+
+export async function createManualBookingAction(
+  _previousState: BookingActionState,
+  formData: FormData,
+): Promise<BookingActionState> {
+  const parsed = parseManualBookingFormData(formData)
+  if (!parsed.success) return validationState(parsed.error)
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return { message: "Your session has expired. Sign in again." }
+  const { data, error } = await context.supabase.rpc("create_manual_booking", {
+    p_yacht_id: parsed.data.yacht_id,
+    p_charter_start_date: parsed.data.charter_start_date,
+    p_charter_end_date: parsed.data.charter_end_date,
+    p_embarkation_port: parsed.data.embarkation_port as unknown as string,
+    p_disembarkation_port: parsed.data.disembarkation_port as unknown as string,
+    p_guest_count: parsed.data.guest_count as unknown as number,
+    p_charter_fee: parsed.data.charter_fee,
+    p_currency: parsed.data.currency,
+    p_tax_rate: parsed.data.tax_rate,
+    p_customer_contact_id: parsed.data.customer_contact_id as unknown as string,
+    p_broker_contact_id: parsed.data.broker_contact_id as unknown as string,
+    p_broker_company_id: parsed.data.broker_company_id as unknown as string,
+    p_signed_agreement_confirmed: true,
+    p_confirmation_reason: parsed.data.confirmation_reason,
+  })
+  if (error || !data) return { message: error?.code === "23P01" ? "These buffered dates conflict with an existing booking or availability hold." : "The manual booking could not be confirmed. Review the details and availability." }
+  revalidatePath("/")
+  revalidatePath("/bookings")
+  revalidatePath("/bookings/availability")
+  revalidatePath("/calendar")
+  redirect(`/bookings/${data.id}?created=1`)
+}
+
+export async function createAvailabilityBlockAction(
+  _previousState: BookingActionState,
+  formData: FormData,
+): Promise<BookingActionState> {
+  const parsed = availabilityBlockSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return validationState(parsed.error)
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return { message: "Your session has expired. Sign in again." }
+  const { error } = await context.supabase.rpc("create_yacht_availability_block", {
+    p_yacht_id: parsed.data.yacht_id,
+    p_title: parsed.data.title,
+    p_charter_start_date: parsed.data.charter_start_date,
+    p_charter_end_date: parsed.data.charter_end_date,
+    p_notes: parsed.data.notes as unknown as string,
+  })
+  if (error) return { message: error.code === "23P01" ? "These buffered dates conflict with an existing booking or availability hold." : "The availability block could not be created." }
+  revalidatePath("/")
+  revalidatePath("/bookings")
+  revalidatePath("/bookings/availability")
+  revalidatePath("/calendar")
+  return { message: "Availability block created and buffered dates protected.", success: true }
+}
+
+export async function cancelAvailabilityBlockAction(
+  blockId: string,
+  _previousState: BookingActionState,
+  formData: FormData,
+): Promise<BookingActionState> {
+  const validId = idSchema.safeParse(blockId)
+  const parsed = availabilityBlockCancellationSchema.safeParse(Object.fromEntries(formData))
+  if (!validId.success) return { message: "The availability block reference is invalid." }
+  if (!parsed.success) return validationState(parsed.error)
+  const context = await getAuthenticatedRequestContext()
+  if (!context) return { message: "Your session has expired. Sign in again." }
+  const { error } = await context.supabase.rpc("cancel_yacht_availability_block", {
+    p_block_id: validId.data,
+    p_reason: parsed.data.reason,
+  })
+  if (error) return { message: "This availability block is no longer active. Refresh and review the calendar." }
+  revalidatePath("/")
+  revalidatePath("/bookings")
+  revalidatePath("/bookings/availability")
+  revalidatePath("/calendar")
+  return { message: "Availability block cancelled and retained in the audit history.", success: true }
 }
 
 export async function amendBookingAction(

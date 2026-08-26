@@ -24,7 +24,7 @@ export async function reconcileConfiguredGmailMailbox() {
   try {
     const result = await reconcileGoogleGmail({
       credentials,
-      ingest: ingestGmailMessage,
+      ingest: (payload) => ingestGmailMessage(payload, selected.user_id),
       lastHistoryId: selected.last_history_id,
     })
     const completion = await supabase.rpc("complete_gmail_reconciliation", {

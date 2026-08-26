@@ -6,9 +6,12 @@ import { createAdminClient } from "@/lib/supabase/admin"
 
 import type { gmailIngestionSchema } from "./validation"
 
-export async function ingestGmailMessage(payload: z.infer<typeof gmailIngestionSchema>) {
+export async function ingestGmailMessage(
+  payload: z.infer<typeof gmailIngestionSchema>,
+  ownerUserId: string,
+) {
   const supabase = createAdminClient()
-  const { data, error } = await supabase.rpc("ingest_gmail_message", {
+  const { data, error } = await supabase.rpc("ingest_gmail_message_for_owner", {
     p_attachments: payload.attachments,
     p_body_text: payload.body_text,
     p_cc_emails: payload.cc_emails,
@@ -18,6 +21,7 @@ export async function ingestGmailMessage(payload: z.infer<typeof gmailIngestionS
     p_has_list_unsubscribe: payload.has_list_unsubscribe,
     p_internet_message_id: payload.internet_message_id,
     p_is_bulk: payload.is_bulk,
+    p_owner_user_id: ownerUserId,
     p_provider_event_id: payload.provider_event_id,
     p_provider_message_id: payload.provider_message_id,
     p_provider_thread_id: payload.provider_thread_id,

@@ -12,6 +12,7 @@ import {
 } from "@/lib/users/validation"
 
 export type UserAdminActionState = {
+  link?: string
   message?: string
   success?: boolean
 }
@@ -31,6 +32,30 @@ function applicationBaseUrl() {
 
 function passwordSetupRedirectUrl() {
   return `${applicationBaseUrl()}/auth/confirm?next=/account/update-password`
+}
+
+function manualAuthActionLink(linkId: string) {
+  return new URL(`/auth/setup/${linkId}`, applicationBaseUrl()).toString()
+}
+
+// Supabase JS normally exposes generated action data under `properties`, while
+// the pinned self-hosted GoTrue release returns the same fields at the top
+// level. Accept both verified response shapes so manual links always use the
+// hash-confirmation route rather than the implicit-flow action URL.
+function generatedAuthLinkDetails(data: unknown) {
+  const result = data as {
+    hashed_token?: unknown
+    id?: unknown
+    properties?: { hashed_token?: unknown }
+    user?: { id?: unknown }
+  } | null
+  const tokenHash = typeof result?.properties?.hashed_token === "string"
+    ? result.properties.hashed_token
+    : typeof result?.hashed_token === "string" ? result.hashed_token : null
+  const userId = typeof result?.user?.id === "string"
+    ? result.user.id
+    : typeof result?.id === "string" ? result.id : null
+  return { tokenHash, userId }
 }
 
 export async function resetUserMfaAction(
@@ -97,23 +122,38 @@ export async function inviteInternalUserAction(
   if ("message" in context) return context
   try {
     const admin = createAdminClient()
-    const invitation = await admin.auth.admin.inviteUserByEmail(parsed.data.email, {
+    const invitation = await admin.auth.admin.generateLink({
+      type: "invite",
+      email: parsed.data.email,
+      options: {
       data: { display_name: parsed.data.displayName },
       redirectTo: passwordSetupRedirectUrl(),
+      },
     })
-    if (invitation.error || !invitation.data.user) {
-      return { message: "The invitation could not be sent. Check SMTP and whether the account already exists." }
+    const details = generatedAuthLinkDetails(invitation.data)
+    if (invitation.error || !details.userId || !details.tokenHash) {
+      return { message: "The invitation link could not be generated. Check that the account does not already exist." }
     }
     const approval = await admin.rpc("approve_internal_user_invitation", {
       p_approved_by: context.userId,
-      p_user_id: invitation.data.user.id,
+      p_user_id: details.userId,
     })
     if (approval.error || !approval.data) {
-      await admin.auth.admin.deleteUser(invitation.data.user.id)
+      await admin.auth.admin.deleteUser(details.userId)
       return { message: "The invitation could not be approved safely. No usable account was retained." }
     }
+    const handoff = await admin.rpc("store_manual_auth_link", {
+      p_created_by: context.userId,
+      p_purpose: "invite",
+      p_token_hash: details.tokenHash,
+      p_user_id: details.userId,
+    })
+    if (handoff.error || !handoff.data) {
+      await admin.auth.admin.deleteUser(details.userId)
+      return { message: "The invitation could not be secured for manual delivery. No usable account was retained." }
+    }
     revalidatePath("/settings/users")
-    return { message: "Invitation sent.", success: true }
+    return { link: manualAuthActionLink(handoff.data), message: "Invitation link generated. Send it to the invitee through a secure channel.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }
@@ -129,11 +169,23 @@ export async function sendRecoveryEmailAction(
   if ("message" in context) return context
   try {
     const admin = createAdminClient()
-    const { error } = await admin.auth.resetPasswordForEmail(parsed.data.email, {
-      redirectTo: passwordSetupRedirectUrl(),
+    const recovery = await admin.auth.admin.generateLink({
+      type: "recovery",
+      email: parsed.data.email,
+      options: { redirectTo: passwordSetupRedirectUrl() },
     })
-    if (error) return { message: "The recovery email could not be requested. Check SMTP and rate limits." }
-    return { message: "Recovery email requested without revealing account status.", success: true }
+    const details = generatedAuthLinkDetails(recovery.data)
+    if (recovery.error || !details.tokenHash) return { message: "The recovery link could not be generated." }
+    const userId = details.userId
+    if (!userId) return { message: "The recovery link could not be secured for manual delivery." }
+    const handoff = await admin.rpc("store_manual_auth_link", {
+      p_created_by: context.userId,
+      p_purpose: "recovery",
+      p_token_hash: details.tokenHash,
+      p_user_id: userId,
+    })
+    if (handoff.error || !handoff.data) return { message: "The recovery link could not be secured for manual delivery." }
+    return { link: manualAuthActionLink(handoff.data), message: "Recovery link generated. Send it to the user through a secure channel.", success: true }
   } catch {
     return { message: "The production Auth administrator is not configured." }
   }

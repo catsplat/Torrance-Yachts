@@ -108,7 +108,7 @@ export default async function DashboardPage() {
             return {
               id: task.id,
               title: task.title,
-              context: `${task.booking.reference} · ${task.booking.yacht.name}`,
+              context: task.booking ? `${task.booking.reference} · ${task.booking.yacht.name}` : "Enquiry preparation",
               due: formatTaskDate(task.due_date),
               status: taskStatusLabels[task.status],
               tone: dueState === "overdue"

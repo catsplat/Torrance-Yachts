@@ -16,6 +16,8 @@ import { notFound } from "next/navigation"
 import { EnquiryForm } from "@/components/enquiries/enquiry-form"
 import { EnquiryNoteForm } from "@/components/enquiries/enquiry-note-form"
 import { EnquiryTransitionForm } from "@/components/enquiries/enquiry-transition-form"
+import { AvailabilitySummary } from "@/components/bookings/availability-summary"
+import { OperationalTaskForm } from "@/components/tasks/task-forms"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import {
@@ -27,6 +29,7 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { getEnquiryFormOptions } from "@/lib/enquiries/form-options"
+import { getActiveTaskAssignees, getWorkItemTasks } from "@/lib/tasks/data"
 import {
   enquiryNoteKindLabels,
   enquiryPriorityLabels,
@@ -78,6 +81,8 @@ export default async function EnquiryDetailPage({
     offersResult,
     bookingsResult,
     options,
+    assignees,
+    enquiryTasks,
   ] = await Promise.all([
     supabase
       .from("enquiries")
@@ -126,6 +131,8 @@ export default async function EnquiryDetailPage({
       .eq("enquiry_id", id)
       .order("created_at", { ascending: false }),
     getEnquiryFormOptions(),
+    getActiveTaskAssignees(),
+    getWorkItemTasks("enquiry", id),
   ])
 
   if (enquiryResult.error || !enquiryResult.data) notFound()
@@ -218,6 +225,19 @@ export default async function EnquiryDetailPage({
             <div><p className="text-xs text-muted-foreground">Internal owner</p><p className="mt-1 font-medium">{enquiry.owner?.display_name || "Unassigned"}</p></div>
           </div>
         </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="border-b"><CardTitle>Enquiry tasks</CardTitle><CardDescription>Keep follow-ups and preparation work with the enquiry until a booking is confirmed.</CardDescription></CardHeader>
+        <CardContent className="space-y-5 pt-5">
+          {enquiryTasks.length ? <div className="divide-y rounded-lg border">{enquiryTasks.map((task) => <Link className="flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-muted/40" href={`/tasks/${task.id}`} key={task.id}><span>{task.step_code ? `${task.step_code} · ` : ""}{task.title}</span><Badge variant={task.status === "ready" ? "default" : "outline"}>{task.status === "ready" ? "Ready" : "Blocked"}</Badge></Link>)}</div> : null}
+          <OperationalTaskForm assignees={assignees} prerequisites={enquiryTasks} workId={enquiry.id} workType="enquiry" />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="border-b"><CardTitle>Availability before offer</CardTitle><CardDescription>Check the requested yacht and dates before preparing an offer. This does not reserve the yacht.</CardDescription></CardHeader>
+        <CardContent className="pt-5"><AvailabilitySummary charterEndDate={enquiry.charter_end_date} charterStartDate={enquiry.charter_start_date} yachtId={enquiry.requested_yacht_id} yachtName={enquiry.yacht?.name ?? null} /></CardContent>
       </Card>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_22rem]">

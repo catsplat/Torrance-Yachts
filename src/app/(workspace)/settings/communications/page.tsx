@@ -78,7 +78,7 @@ export default async function CommunicationTemplatesPage() {
                 <CommunicationTemplateVersionForm template={template} />
               ) : (
                 <div className="rounded-lg border bg-muted/20 p-4">
-                  <p className="text-sm font-medium">{template.subject_template}</p>
+                  <p className="text-sm font-medium">{template.subject_template || "Uses the existing thread subject"}</p>
                   <p className="mt-3 whitespace-pre-wrap text-sm">{template.body_template}</p>
                 </div>
               )}

@@ -13,6 +13,7 @@ import {
   cloneTemplateSchema,
   newTemplateStepSchema,
   optionalTaskNoteSchema,
+  operationalTaskSchema,
   parseForm,
   taskNoteSchema,
   taskReasonSchema,
@@ -75,7 +76,7 @@ async function runTaskReasonCommand(
         : "The task changed elsewhere or is not in the required state.",
     }
   }
-  revalidateTask(validId.data, data.booking_id)
+  revalidateTask(validId.data, data.booking_id ?? undefined)
   return {
     message: command === "complete_task"
       ? "Task completed and dependent work re-evaluated."
@@ -129,7 +130,7 @@ export async function updateTaskScheduleAction(
     p_reason: "Task schedule updated",
   })
   if (error || !data) return { message: "The task schedule could not be updated." }
-  revalidateTask(validId.data, data.booking_id)
+  revalidateTask(validId.data, data.booking_id ?? undefined)
   return { message: "Schedule, assignment, and priority updated.", success: true }
 }
 
@@ -177,7 +178,7 @@ export async function prepareTaskCommunicationAction(
     `)
     .eq("id", validId.data)
     .single()
-  if (taskError || !task?.step_code) {
+  if (taskError || !task?.step_code || !task.booking) {
     return { message: "The task context could not be loaded." }
   }
 
@@ -234,7 +235,9 @@ export async function prepareTaskCommunicationAction(
       values.captain_phone = captain?.contact.phone ?? "Not recorded"
     }
     const subject = renderCommunicationTemplate(template.subject_template, values)
-    body = `${subject}\n\n${renderCommunicationTemplate(template.body_template, values)}`
+    const renderedBody = renderCommunicationTemplate(template.body_template, values)
+    // A blank subject is intentional for templates used inside an existing email thread.
+    body = subject ? `${subject}\n\n${renderedBody}` : renderedBody
   } else if (task.step_code === "2.B") {
     const { data: captain } = await context.supabase
       .from("yacht_contacts")
@@ -303,8 +306,39 @@ export async function addAdHocTaskAction(
     p_assigned_user_id: parsed.data.assigned_user_id as unknown as string,
   })
   if (error || !data) return { message: "The ad-hoc task could not be created." }
-  revalidateTask(data.id, data.booking_id)
+  revalidateTask(data.id, data.booking_id ?? undefined)
   redirect(`/tasks/${data.id}?created=1`)
+}
+
+export async function addOperationalTaskAction(
+  _state: TaskActionState,
+  formData: FormData,
+): Promise<TaskActionState> {
+  const parsed = parseForm(operationalTaskSchema, formData)
+  if (!parsed.success) return validationState(parsed.error)
+  const dependencyIds = formData.getAll("depends_on_task_ids")
+    .map((value) => z.uuid().safeParse(value))
+    .filter((value) => value.success)
+    .map((value) => value.data)
+  const context = await contextOrMessage()
+  if ("message" in context) return context
+  const { data, error } = await context.supabase.rpc("add_operational_task", {
+    p_assigned_user_id: parsed.data.assigned_user_id as unknown as string,
+    p_booking_id: (parsed.data.work_type === "booking" ? parsed.data.work_id : null) as unknown as string,
+    p_depends_on_task_ids: dependencyIds,
+    p_description: parsed.data.description as unknown as string,
+    p_document_type: parsed.data.document_type as never,
+    p_due_date: parsed.data.due_date as unknown as string,
+    p_enquiry_id: (parsed.data.work_type === "enquiry" ? parsed.data.work_id : null) as unknown as string,
+    p_expected_booking_status: parsed.data.expected_booking_status as never,
+    p_not_before_date: parsed.data.not_before_date as unknown as string,
+    p_priority: parsed.data.priority,
+    p_title: parsed.data.title,
+  })
+  if (error || !data) return { message: "The task could not be added. Check its dependencies and conditions." }
+  revalidateTask(data.id, data.booking_id ?? undefined)
+  if (data.enquiry_id) revalidatePath(`/enquiries/${data.enquiry_id}`)
+  return { message: data.status === "ready" ? "Task added and ready." : "Task added with its conditions recorded.", success: true }
 }
 
 export async function generateBookingTasksAction(

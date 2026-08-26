@@ -34,6 +34,19 @@ export const adHocTaskSchema = z.object({
   assigned_user_id: optionalUuid,
 })
 
+export const operationalTaskSchema = z.object({
+  description: z.string().trim().max(5000).transform((value) => value || null),
+  due_date: optionalDate,
+  document_type: z.string().trim().transform((value) => value || null),
+  expected_booking_status: z.string().trim().transform((value) => value || null),
+  not_before_date: optionalDate,
+  priority: z.enum(taskPriorityValues),
+  assigned_user_id: optionalUuid,
+  title: z.string().trim().min(2).max(240),
+  work_id: z.uuid(),
+  work_type: z.enum(["booking", "enquiry"]),
+})
+
 export const taskNoteSchema = z.object({
   body: z.string().trim().min(2).max(10000),
 })

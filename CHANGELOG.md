@@ -1,5 +1,61 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Direct calendar entries: staff can now create either a confirmed manual
+  charter with the full booking workflow or a buffered availability hold with
+  no commercial workflow.
+- Scanner-safe, administrator-issued manual invitation and recovery links that
+  can be shared across devices without exposing a Supabase verification token.
+- TLS IMAP mailbox connections with encrypted app-password storage and the
+  existing private, owner-aware email ingestion boundary.
+- IMAP-specific mark-read and archive handling for circular mail, using the
+  connected mailbox's own encrypted app password rather than Gmail credentials.
+- Early, non-reserving yacht availability review on enquiry work.
+- A unified operational task flow for enquiry and booking work, including
+  prerequisite, approved-document, booking-state and date conditions.
+- A paired, outbound-only Torrance Local AI helper foundation for MacBooks,
+  with short-lived pairing codes and owner-controlled revocation.
+- An executable paired-Mac analysis path: the helper now claims bounded jobs
+  outbound, runs the selected local Ollama model, and returns only a validated
+  review result to the application.
+- An administrator-only Configuration Pack importer that validates and imports
+  runtime yacht configuration, draft wording, rates, sales links and booking
+  workflow versions atomically.
+- Protected operational Configuration Packs can now also create captain/yacht
+  assignments, company links and draft invoice profiles in the operational
+  database.
+
+### Changed
+
+- Communication-template subjects are optional for replies in existing email
+  threads; blank subjects preserve the existing conversation subject.
+- Contact-to-yacht links are presented as yacht assignments, with concise
+  clarification of primary and notification eligibility.
+- Removed the build-time Google Fonts download so production images can build
+  without relying on an external font service.
+- Booking cancellation now preserves its completed history, stops outstanding
+  workflow work and creates an auditable `Confirm cancellation` task.
+- Task readiness is re-evaluated in PostgreSQL whenever a prerequisite changes,
+  including enquiry work that is not attached to a booking.
+- Personal email alerts now work with either a connected Google mailbox or a
+  securely stored IMAP mailbox. IMAP setup includes common provider presets.
+- The mobile navigation drawer uses the device viewport and safe-area inset as
+  its scroll boundary, so every navigation item remains reachable on iPhone.
+
+- Added an optional loopback-only, SSH-tunnelled Supabase Studio profile for
+  secure VPS administration.
+- Added the production Auth confirmation URL to the self-hosted allow-list.
+
+## [0.19.3] - 2026-08-17
+
+### Fixed
+
+- Corrected the token-free VPS deployment path so the host uses the image
+  transferred by GitHub Actions and never attempts a registry operation.
+
 ## [0.19.2] - 2026-08-17
 
 ### Added
@@ -18,8 +74,25 @@ All notable project changes are recorded here. The format follows Keep a Changel
 
 ## [Unreleased]
 
+### Changed
+
+- Isolated imported Gmail mailboxes by connected-account owner, scoped email
+  reads and AI-derived content through RLS, and made explicit operational
+  linking the point at which an email thread becomes shared company data.
+- Prevented notification materialisation from exposing private email content
+  to unrelated staff while preserving per-user encrypted OAuth credentials.
+
 ### Fixed
 
+- Aligned the self-hosted database image with the official local Supabase
+  runtime so the required `supabase_vault` encryption extension is available
+  for per-user integration credentials.
+- Restored the vendor PostgreSQL initialisation profile in self-hosted Compose;
+  the database can now initialise an empty volume and drop privileges to the
+  `postgres` account while all stateless containers retain their stricter
+  runtime boundary.
+- Increased the bounded hosted ClamAV memory allowance to accommodate the
+  current signature set during scanner start-up on the resized CX33 host.
 - Corrected hosted automation readiness so production reports the
   application-owned worker rather than incorrectly requiring local development
   n8n. The Operations and integration screens now describe the actual CX23

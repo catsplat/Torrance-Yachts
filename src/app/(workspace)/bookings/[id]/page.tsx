@@ -98,7 +98,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
         <CardHeader className="border-b">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="font-mono text-xs font-semibold text-primary">{booking.reference}</p>
+              <p className="font-mono text-xs font-semibold text-primary">{booking.reference}{booking.origin === "manual" ? " · manual charter" : ""}</p>
               <h1 className="mt-1 text-2xl font-semibold">{booking.yacht.name} charter</h1>
               <div className="mt-3 flex gap-2">
                 <Badge>{bookingStatusLabels[booking.status]}</Badge>
@@ -126,11 +126,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
           <Card>
             <CardHeader className="border-b">
               <CardTitle>Booking details</CardTitle>
-              <CardDescription>
-                <Link className="text-primary underline" href={`/enquiries/${booking.enquiry.id}`}>{booking.enquiry.reference}</Link>
-                {" · "}
-                <Link className="text-primary underline" href={`/offers/${booking.offer.id}`}>{booking.offer.reference} v{booking.offer.version_number}</Link>
-              </CardDescription>
+              <CardDescription>{booking.enquiry && booking.offer ? <><Link className="text-primary underline" href={`/enquiries/${booking.enquiry.id}`}>{booking.enquiry.reference}</Link>{" · "}<Link className="text-primary underline" href={`/offers/${booking.offer.id}`}>{booking.offer.reference} v{booking.offer.version_number}</Link></> : "Created directly as a confirmed charter."}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 pt-5 sm:grid-cols-2">
               <Detail label="Route" value={`${booking.embarkation_port ?? "To be agreed"} → ${booking.disembarkation_port ?? "To be agreed"}`} />

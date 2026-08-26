@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 import { isSupabaseAuthCookie } from "@/lib/supabase/auth-cookies"
-import { getSupabaseConfig } from "@/lib/supabase/config"
+import { getServerSupabaseConfig } from "@/lib/supabase/config"
 import type { Database } from "@/types/database"
 
 function clearSupabaseAuthCookies(response: NextResponse, request: NextRequest) {
@@ -13,7 +13,7 @@ function clearSupabaseAuthCookies(response: NextResponse, request: NextRequest) 
 }
 
 export async function updateSession(request: NextRequest, requestHeaders = request.headers) {
-  const { publishableKey, url } = getSupabaseConfig()
+  const { publishableKey, url } = getServerSupabaseConfig()
   let response = NextResponse.next({ request: { headers: requestHeaders } })
 
   const supabase = createServerClient<Database>(url, publishableKey, {

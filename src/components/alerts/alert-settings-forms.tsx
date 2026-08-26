@@ -1,11 +1,13 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import {
   createMyTelegramPairingAction,
+  disconnectMyImapMailboxAction,
   disconnectMyGmailOauthAction,
+  saveMyImapMailboxAction,
   updateMyAlertPreferencesAction,
   type AlertSettingsActionState,
 } from "@/app/(workspace)/settings/alerts/actions"
@@ -92,12 +94,12 @@ type Preferences = {
 }
 
 export function AlertPreferencesForm({
-  gmailConnected,
+  mailboxConnected,
   phone,
   preferences,
   telegramChatId,
 }: {
-  gmailConnected: boolean
+  mailboxConnected: boolean
   phone: string | null
   preferences: Preferences
   telegramChatId: string | null
@@ -137,7 +139,7 @@ export function AlertPreferencesForm({
         />
         <Toggle
           defaultChecked={preferences.email_enabled}
-          disabled={!gmailConnected}
+          disabled={!mailboxConnected}
           label="Email"
           name="emailEnabled"
         />
@@ -182,4 +184,43 @@ export function GmailOauthDisconnectForm() {
       <Feedback state={state} />
     </form>
   )
+}
+
+export function ImapMailboxForm({
+  connections,
+}: {
+  connections: Array<{ account_email: string; enabled: boolean; folders: string[]; host: string; id: string; port: number; status: string; tls: boolean }>
+}) {
+  const [preset, setPreset] = useState("custom")
+  const presetValues: Record<string, { host: string; port: string }> = {
+    "icloud": { host: "imap.mail.me.com", port: "993" },
+    "outlook": { host: "outlook.office365.com", port: "993" },
+    "yahoo": { host: "imap.mail.yahoo.com", port: "993" },
+    "zoho": { host: "imap.zoho.eu", port: "993" },
+    "custom": { host: "", port: "993" },
+  }
+  const [state, action, pending] = useActionState(saveMyImapMailboxAction, initialState)
+  const [disconnectState, disconnectAction, disconnectPending] = useActionState(disconnectMyImapMailboxAction, initialState)
+  return <div className="space-y-4">
+    {connections.map((connection) => <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm" key={connection.id}>
+      <div><p className="font-medium">{connection.account_email}</p><p className="mt-1 text-xs text-muted-foreground">{connection.host}:{connection.port} · {connection.folders.join(", ")} · {connection.status}</p></div>
+      <form action={disconnectAction}><input name="connectionId" type="hidden" value={connection.id} /><Button disabled={disconnectPending} size="sm" type="submit" variant="outline">Disconnect</Button></form>
+    </div>)}
+    <form action={action} className="grid gap-3 border-t pt-4 md:grid-cols-2">
+      <label className="grid gap-1 text-sm font-medium md:col-span-2">Email provider
+        <select className="h-9 rounded-lg border bg-background px-3 text-sm" onChange={(event) => setPreset(event.target.value)} value={preset}>
+          <option value="custom">Other IMAP provider</option><option value="icloud">iCloud Mail</option><option value="outlook">Outlook / Microsoft 365</option><option value="yahoo">Yahoo Mail</option><option value="zoho">Zoho Mail</option>
+        </select>
+      </label>
+      <label className="grid gap-1 text-sm font-medium">Email address<Input name="accountEmail" required type="email" /></label>
+      <label className="grid gap-1 text-sm font-medium">App password<Input autoComplete="new-password" name="appPassword" required type="password" /><span className="text-xs font-normal text-muted-foreground">Create this in your mail provider; never use your normal mailbox password.</span></label>
+      <label className="grid gap-1 text-sm font-medium">IMAP server<Input key={`${preset}-host`} defaultValue={presetValues[preset].host} name="host" placeholder="imap.example.com" required /></label>
+      <label className="grid gap-1 text-sm font-medium">Port<Input key={`${preset}-port`} defaultValue={presetValues[preset].port} name="port" required type="number" /></label>
+      <label className="grid gap-1 text-sm font-medium md:col-span-2">Folders to monitor<Input defaultValue="INBOX" name="folders" required /></label>
+      <label className="flex min-h-10 items-center gap-2 text-sm"><input defaultChecked name="tls" type="checkbox" />TLS encryption</label>
+      <label className="flex min-h-10 items-center gap-2 text-sm"><input name="enabled" type="checkbox" />Start monitoring after saving</label>
+      <div className="md:col-span-2"><Button disabled={pending} type="submit">{pending ? "Testing and saving…" : "Test and save IMAP mailbox"}</Button></div>
+      <div className="md:col-span-2"><Feedback state={state} /><Feedback state={disconnectState} /></div>
+    </form>
+  </div>
 }
