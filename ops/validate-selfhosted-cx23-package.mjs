@@ -57,7 +57,7 @@ const backupTimer = readFileSync("deploy/systemd/torrance-yachts-backup.timer", 
 for (const required of ["gateway:", "app:", "worker:", "clamav:", "cloudflared:", "SUPABASE_INTERNAL_URL: http://kong:8000", "external: true", "torrance-internal"]) {
   if (!compose.includes(required)) throw new Error(`CX23 Compose package is missing: ${required}`)
 }
-for (const memoryContract of ["mem_limit: 384m", "mem_limit: 96m", "mem_limit: 1024m", "mem_limit: 64m"]) {
+for (const memoryContract of ["mem_limit: 384m", "mem_limit: 96m", "mem_limit: 2048m", "mem_limit: 64m"]) {
   if (!compose.includes(memoryContract)) throw new Error(`CX23 application memory profile is missing: ${memoryContract}`)
 }
 for (const forbidden of ["n8n:", "ports:", "studio:", "realtime:"]) {

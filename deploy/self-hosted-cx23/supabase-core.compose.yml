@@ -329,6 +329,7 @@ services:
       - "127.0.0.1:54323:3000"
     environment:
       STUDIO_PG_META_URL: http://meta:8080
+      HOSTNAME: 0.0.0.0
       POSTGRES_PORT: 5432
       POSTGRES_HOST: db
       POSTGRES_DB: postgres

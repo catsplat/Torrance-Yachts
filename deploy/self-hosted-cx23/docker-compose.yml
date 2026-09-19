@@ -66,6 +66,7 @@ services:
       SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY:?Set SUPABASE_SECRET_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      TELEGRAM_RECEIVE_MODE: ${TELEGRAM_RECEIVE_MODE:-polling}
       TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-}
@@ -127,10 +128,9 @@ services:
     # first boot. It remains unexposed on the private Docker network with
     # explicit resource and PID limits.
     pids_limit: 256
-    # The current ClamAV signature set exceeds a 640 MiB cgroup during first
-    # load. The CX33 has headroom; retain a bounded 1 GiB limit rather than
-    # letting the kernel repeatedly terminate the scanner.
-    mem_limit: 1024m
+    # Signature loading/reloading exceeded 1 GiB on the CX33 and killed clamd
+    # while freshclam remained alive. Allow bounded reload headroom.
+    mem_limit: 2048m
     cpus: 0.75
     healthcheck:
       test: ["CMD-SHELL", "clamdscan --ping 1 >/dev/null 2>&1"]

@@ -24,7 +24,7 @@ describe("configuration pack validation", () => {
         yacht_assignments: [{ yacht_name: "Synthetic Yacht", responsibility: "captain", is_primary: true }],
       }],
       communication_templates: [{
-        body: "Dear {{broker_company_name}}, please review the synthetic information.",
+        body: "Dear {{broker_name}}, please review the synthetic information.",
         kind: "captain_contact",
         name: "Captain reply",
         subject: "",
@@ -63,5 +63,23 @@ describe("configuration pack validation", () => {
         subject: "KYC review",
       }],
     }))).toMatchObject({ error: expect.stringContaining("Unknown template variable") })
+  })
+
+  it("uses the actual offer renderer variables and allows reply subjects", () => {
+    expect(parseConfigurationPack(JSON.stringify({ version: 1, yachts: [{ name: "Synthetic Yacht", offer_template: { name: "Offer", body: "Dear {{customer_name}}, please offer {{yacht_name}} at {{weekly_rate}}." } }] }))).toHaveProperty("data")
+  })
+  it("rejects variables belonging to a different communication kind", () => {
+    expect(parseConfigurationPack(JSON.stringify({ version: 1, communication_templates: [{ kind: "kyc_request", name: "KYC", body: "Dear {{captain_name}}, please send compliance documents." }] }))).toHaveProperty("error")
+  })
+  it("retains the automatic start milestone", () => {
+    const result = parseConfigurationPack(JSON.stringify({ version: 1, workflow: { name: "Synthetic workflow", steps: [{ code: "0.0", title: "Start workflow", auto_complete_on_generation: true }] } }))
+    expect(result).toHaveProperty("data.workflow.steps.0.auto_complete_on_generation", true)
+  })
+  it.each([
+    [{ code: "1", title: "First task", after: ["2"] }, { code: "2", title: "Second task" }],
+    [{ code: "1", title: "First task", after: ["1"] }],
+    [{ code: "1", title: "First task" }, { code: "1", title: "Duplicate task" }],
+  ])("rejects unresolved or duplicate dependencies before import", (...steps) => {
+    expect(parseConfigurationPack(JSON.stringify({ version: 1, workflow: { name: "Synthetic workflow", steps } }))).toHaveProperty("error")
   })
 })

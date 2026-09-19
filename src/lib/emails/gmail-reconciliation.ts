@@ -10,8 +10,9 @@ export async function reconcileConfiguredGmailMailbox() {
   const supabase = createAdminClient()
   const { data, error } = await supabase.rpc("get_active_gmail_ingestion_credentials")
   if (error) throw new Error("The configured Gmail inbox could not be loaded.")
-  const selected = data?.[0]
-  if (!selected) return { configured: false, initialized: false, processed: 0, recovered: false }
+  const summary = { configured: Boolean(data?.length), initialized: false, processed: 0, recovered: false, failed: 0 }
+  // The database leases at most two owner-bound mailboxes, oldest first.
+  for (const selected of data ?? []) {
 
   const credentials: GoogleWorkspaceCredentials = {
     account_email: selected.account_email,
@@ -38,9 +39,11 @@ export async function reconcileConfiguredGmailMailbox() {
       p_succeeded: true,
       p_user_id: selected.user_id,
     })
-    return { configured: true, ...result }
+    summary.initialized ||= result.initialized
+    summary.recovered ||= result.recovered
+    summary.processed += result.processed
   } catch (error) {
-    const message = error instanceof Error ? error.message.slice(0, 500) : "Gmail reconciliation failed."
+    const message = "Gmail reconciliation failed. Reconnect if access was revoked, otherwise retry."
     await supabase.rpc("fail_gmail_reconciliation", {
       p_error: message,
       p_failed_at: now,
@@ -54,6 +57,8 @@ export async function reconcileConfiguredGmailMailbox() {
         p_user_id: selected.user_id,
       })
     }
-    throw error
+    summary.failed += 1
   }
+  }
+  return summary
 }

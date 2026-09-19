@@ -26,21 +26,24 @@ set active = true, role = 'administrator', access_approved_at = now(), access_ap
 where id = '23000000-0000-4000-8000-000000000001';
 
 set local role service_role;
-select public.ingest_gmail_message(
+select public.ingest_gmail_message_for_owner(
+    '23000000-0000-4000-8000-000000000001',
   'inbox-pagination-event-1', 'inbox-pagination-message-1', 'inbox-pagination-thread-1',
   '<inbox-pagination-1@example.test>', now() - interval '1 minute',
   'Inbox Fixture', 'fixture@example.test', array['operations@example.test'], '{}'::text[],
   'Historic inbox rehearsal one', 'Historic inbox rehearsal one',
   'First synthetic historical inbox record.', array['INBOX'], false, false, false, false, '[]'::jsonb
 );
-select public.ingest_gmail_message(
+select public.ingest_gmail_message_for_owner(
+    '23000000-0000-4000-8000-000000000001',
   'inbox-pagination-event-2', 'inbox-pagination-message-2', 'inbox-pagination-thread-2',
   '<inbox-pagination-2@example.test>', now() - interval '2 minutes',
   'Inbox Fixture', 'fixture@example.test', array['operations@example.test'], '{}'::text[],
   'Historic inbox rehearsal two', 'Historic inbox rehearsal two',
   'Second synthetic historical inbox record.', array['INBOX'], false, false, false, false, '[]'::jsonb
 );
-select public.ingest_gmail_message(
+select public.ingest_gmail_message_for_owner(
+    '23000000-0000-4000-8000-000000000001',
   'inbox-pagination-event-3', 'inbox-pagination-message-3', 'inbox-pagination-thread-3',
   '<inbox-pagination-3@example.test>', now() - interval '3 minutes',
   'Inbox Fixture', 'fixture@example.test', array['operations@example.test'], '{}'::text[],

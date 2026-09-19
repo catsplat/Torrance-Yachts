@@ -3755,6 +3755,7 @@ export type Database = {
           reference: string
           reminder_lead_days: number | null
           required: boolean
+          schedule_inapplicable: boolean
           source: Database["public"]["Enums"]["task_source"]
           status: Database["public"]["Enums"]["task_status"]
           step_code: string | null
@@ -3787,6 +3788,7 @@ export type Database = {
           reference?: string
           reminder_lead_days?: number | null
           required?: boolean
+          schedule_inapplicable?: boolean
           source: Database["public"]["Enums"]["task_source"]
           status?: Database["public"]["Enums"]["task_status"]
           step_code?: string | null
@@ -3819,6 +3821,7 @@ export type Database = {
           reference?: string
           reminder_lead_days?: number | null
           required?: boolean
+          schedule_inapplicable?: boolean
           source?: Database["public"]["Enums"]["task_source"]
           status?: Database["public"]["Enums"]["task_status"]
           step_code?: string | null
@@ -3928,6 +3931,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      telegram_poll_state: {
+        Row: {
+          bot_key: string
+          last_error: string | null
+          last_success_at: string | null
+          lease_id: string | null
+          leased_until: string | null
+          next_offset: number
+        }
+        Insert: {
+          bot_key: string
+          last_error?: string | null
+          last_success_at?: string | null
+          lease_id?: string | null
+          leased_until?: string | null
+          next_offset?: number
+        }
+        Update: {
+          bot_key?: string
+          last_error?: string | null
+          last_success_at?: string | null
+          lease_id?: string | null
+          leased_until?: string | null
+          next_offset?: number
+        }
+        Relationships: []
       }
       tutorial_history: {
         Row: {
@@ -4100,6 +4130,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "user_ai_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_gmail_monitoring: {
+        Row: {
+          enabled: boolean
+          last_claimed_at: string | null
+          leased_until: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          enabled?: boolean
+          last_claimed_at?: string | null
+          leased_until?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          enabled?: boolean
+          last_claimed_at?: string | null
+          leased_until?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_gmail_monitoring_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
@@ -4988,6 +5050,7 @@ export type Database = {
           reference: string
           reminder_lead_days: number | null
           required: boolean
+          schedule_inapplicable: boolean
           source: Database["public"]["Enums"]["task_source"]
           status: Database["public"]["Enums"]["task_status"]
           step_code: string | null
@@ -5041,6 +5104,7 @@ export type Database = {
           reference: string
           reminder_lead_days: number | null
           required: boolean
+          schedule_inapplicable: boolean
           source: Database["public"]["Enums"]["task_source"]
           status: Database["public"]["Enums"]["task_status"]
           step_code: string | null
@@ -5390,6 +5454,7 @@ export type Database = {
           reference: string
           reminder_lead_days: number | null
           required: boolean
+          schedule_inapplicable: boolean
           source: Database["public"]["Enums"]["task_source"]
           status: Database["public"]["Enums"]["task_status"]
           step_code: string | null
@@ -5573,6 +5638,13 @@ export type Database = {
           token_hash: string
         }[]
       }
+      claim_telegram_poll: {
+        Args: { p_bot_key: string }
+        Returns: {
+          lease_id: string
+          next_offset: number
+        }[]
+      }
       claim_upload_capacity: {
         Args: {
           p_max_bytes_per_hour?: number
@@ -5733,6 +5805,7 @@ export type Database = {
           reference: string
           reminder_lead_days: number | null
           required: boolean
+          schedule_inapplicable: boolean
           source: Database["public"]["Enums"]["task_source"]
           status: Database["public"]["Enums"]["task_status"]
           step_code: string | null
@@ -6217,6 +6290,15 @@ export type Database = {
       }
       finish_manual_auth_link: {
         Args: { p_link_id: string; p_succeeded: boolean }
+        Returns: boolean
+      }
+      finish_telegram_poll: {
+        Args: {
+          p_bot_key: string
+          p_error?: string
+          p_lease_id: string
+          p_next_offset: number
+        }
         Returns: boolean
       }
       generate_booking_tasks: {
@@ -7029,6 +7111,7 @@ export type Database = {
           reference: string
           reminder_lead_days: number | null
           required: boolean
+          schedule_inapplicable: boolean
           source: Database["public"]["Enums"]["task_source"]
           status: Database["public"]["Enums"]["task_status"]
           step_code: string | null
@@ -7179,6 +7262,7 @@ export type Database = {
           reference: string
           reminder_lead_days: number | null
           required: boolean
+          schedule_inapplicable: boolean
           source: Database["public"]["Enums"]["task_source"]
           status: Database["public"]["Enums"]["task_status"]
           step_code: string | null
@@ -7786,6 +7870,7 @@ export type Database = {
           reference: string
           reminder_lead_days: number | null
           required: boolean
+          schedule_inapplicable: boolean
           source: Database["public"]["Enums"]["task_source"]
           status: Database["public"]["Enums"]["task_status"]
           step_code: string | null

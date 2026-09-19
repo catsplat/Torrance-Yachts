@@ -81,17 +81,18 @@ export async function configureGmailIngestionAction(
     enabled: Boolean(formData.get("enabled")),
     userId: formData.get("userId") ?? "",
   })
-  if (!parsed.success || (parsed.data.enabled && !parsed.data.userId)) {
+  if (!parsed.success) {
     return { message: "Choose the inbox to monitor." }
   }
   const context = await contextOrMessage()
   if ("message" in context) return context
   const { error } = await context.supabase.rpc("configure_gmail_ingestion", {
     p_enabled: parsed.data.enabled,
-    p_user_id: parsed.data.userId || context.userId,
+    p_user_id: context.userId,
   })
   if (error) return { message: "The Gmail inbox could not be updated." }
   refreshIntegrations()
+  revalidatePath("/settings/alerts")
   return { message: parsed.data.enabled ? "Incoming Gmail enabled." : "Incoming Gmail paused.", success: true }
 }
 

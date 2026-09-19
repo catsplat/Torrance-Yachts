@@ -2,7 +2,34 @@
 
 ## Unreleased
 
+### Fixed
+
+- Payment tasks absent from an approved schedule are marked not applicable,
+  without deleting history; later schedule changes restore them. Manual due-date
+  overrides remain intact and all task refresh paths honour dependencies.
+- Hosted backups retain Vault and database permissions, encrypt recovery
+  configuration, prevent overlapping exports and verify offsite uploads before
+  recording success. Staging restore no longer removes neighbouring services.
+
+- Configuration packs now validate variables against the actual template kind,
+  reject unresolved task dependencies and retain automatic workflow milestones.
+- Offer-template subjects are optional; offer preparation uses the linked
+  conversation subject when no template subject is supplied.
+
+- Restored hosted document scanning after a scanner memory-limit kill and
+  corrected private Studio binding without widening its network exposure.
+- Allowed the Mac helper to reach its own token-authenticated endpoints;
+  bounded and serialised its work, scoped credentials by workspace, honoured
+  re-pairing, and retired unfinished jobs when the requesting analysis ends.
+
 ### Added
+
+- Outbound Telegram pairing receiver for private Tailscale deployments, with
+  database leases, durable update offsets and private-chat-only pairing.
+  A failing automation adapter no longer prevents subsequent adapters running.
+
+- Owner-controlled Gmail monitoring in personal settings, with two-mailbox
+  leased reconciliation batches and owner-bound archive/mark-read credentials.
 
 - Direct calendar entries: staff can now create either a confirmed manual
   charter with the full booking workflow or a buffered availability hold with

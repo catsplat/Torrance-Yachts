@@ -43,10 +43,14 @@ export async function proxy(request: NextRequest) {
 
   const trustedApi =
     request.nextUrl.pathname.startsWith("/api/integrations/") ||
+    request.nextUrl.pathname.startsWith("/api/local-ai/") ||
     request.nextUrl.pathname.startsWith("/api/health/")
   const publicAuthCallback = request.nextUrl.pathname === "/auth/callback" || request.nextUrl.pathname === "/auth/confirm" || request.nextUrl.pathname.startsWith("/auth/setup/")
   const publicInitialSetup = request.nextUrl.pathname === "/setup"
-  const response = trustedApi || publicAuthCallback || publicInitialSetup
+  // This static script contains no credentials. Helper APIs authenticate their
+  // pairing code / agent bearer token, not a browser session cookie.
+  const publicHelper = request.nextUrl.pathname === "/torrance-local-ai.mjs"
+  const response = trustedApi || publicAuthCallback || publicInitialSetup || publicHelper
     ? NextResponse.next({ request: { headers: requestHeaders } })
     : await updateSession(request, requestHeaders)
   response.headers.set("Content-Security-Policy", contentSecurityPolicy)

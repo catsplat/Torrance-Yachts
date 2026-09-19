@@ -25,28 +25,28 @@ select lives_ok(
   ) $$,
   'staff can connect their own fictional Gmail account'
 );
-select throws_ok(
+select lives_ok(
   $$ select * from public.list_google_mailbox_candidates() $$,
-  '42501', 'Administrator access is required',
-  'staff cannot list other connected mailboxes'
+  'staff can list their own connected mailbox'
 );
-select throws_ok(
+select lives_ok(
   $$ select public.configure_gmail_ingestion('28000000-0000-4000-8000-000000000002', true) $$,
-  '42501', 'Administrator access is required',
-  'staff cannot select the operational inbox'
+  'staff can enable their own mailbox'
 );
 
 set local "request.jwt.claim.sub" = '28000000-0000-4000-8000-000000000001';
 select results_eq(
-  $$ select account_email from public.list_google_mailbox_candidates()
+  $$ select count(*) from public.list_google_mailbox_candidates()
      where user_id = '28000000-0000-4000-8000-000000000002' $$,
-  array['gmail.staff@example.test'],
-  'administrator sees only connected active mailbox candidates'
+  array[0::bigint],
+  'administrator cannot see another users private connection'
 );
-select lives_ok(
+select throws_ok(
   $$ select public.configure_gmail_ingestion('28000000-0000-4000-8000-000000000002', true) $$,
-  'administrator can select the connected inbox'
+  '42501', 'Only the mailbox owner may change monitoring',
+  'administrator cannot change another users mailbox'
 );
+set local "request.jwt.claim.sub" = '28000000-0000-4000-8000-000000000002';
 select results_eq(
   $$ select ingestion_enabled from public.list_google_mailbox_candidates()
      where user_id = '28000000-0000-4000-8000-000000000002' $$,

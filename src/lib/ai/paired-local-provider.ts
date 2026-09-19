@@ -11,8 +11,10 @@ type JobRow = { status: "completed" | "failed" | "pending" | "claimed"; result_p
 
 async function pause(ms: number, signal?: AbortSignal) {
   await new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(resolve, ms)
-    signal?.addEventListener("abort", () => { clearTimeout(timer); reject(signal.reason) }, { once: true })
+    const abort = () => { clearTimeout(timer); reject(signal?.reason) }
+    const timer = setTimeout(() => { signal?.removeEventListener("abort", abort); resolve() }, ms)
+    signal?.addEventListener("abort", abort, { once: true })
+    if (signal?.aborted) abort()
   })
 }
 
@@ -35,6 +37,7 @@ export class PairedLocalAiProvider implements AiProvider {
     const admin = createAdminClient()
     const { data: inserted, error } = await admin.from("local_ai_jobs").insert({ agent_id: this.options.agentId, analysis_kind: analysisKind, input_payload: { input, summary_style: this.options.summaryStyle } as Json, owner_user_id: this.options.userId }).select("id").single()
     if (error || !inserted) throw new Error("A local AI job could not be queued.")
+    try {
     const deadline = Date.now() + 45_000
     while (Date.now() < deadline) {
       if (signal?.aborted) throw signal.reason
@@ -45,6 +48,12 @@ export class PairedLocalAiProvider implements AiProvider {
       await pause(500, signal)
     }
     throw new Error("The paired Mac did not return an analysis in time. The request remains reviewable and can be retried.")
+    } finally {
+      // A parent timeout/abort must not leave work available for a later claim.
+      // Conditional update also makes a late helper completion fail closed.
+      const cleanup = await admin.from("local_ai_jobs").update({ status: "failed", error_message: "The analysis request ended before a result was accepted.", lease_expires_at: null }).eq("id", inserted.id).in("status", ["pending", "claimed"])
+      if (cleanup.error) throw new Error("Local AI job cleanup failed. Review the queue before retrying.")
+    }
   }
 
   analyzeEmail(input: EmailAiInput, _safetyIdentifier: string, signal?: AbortSignal): Promise<ProviderResult<EmailAiSuggestion>> { return this.request("email_triage", input, emailAiSuggestionSchema, signal) }

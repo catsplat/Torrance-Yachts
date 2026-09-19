@@ -1,6 +1,10 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(58);
+select plan(60);
+-- Isolate the seeded template state even after local interactive rehearsal.
+select set_config('app.task_template_update_authorised','yes',true);
+update public.task_templates set status='draft',is_default=false,approved_by=null,approved_at=null where id='90000000-0000-4000-8000-000000000001';
+select set_config('app.task_template_update_authorised','',true);
 
 select has_table('public', 'booking_document_requirements', 'document requirements table exists');
 select has_table('public', 'documents', 'documents table exists');
@@ -337,5 +341,8 @@ select throws_ok(
   'inactive users cannot run payment commands'
 );
 
+reset role;
+select is((select count(*) from public.tasks where due_anchor='contract_payment_3' and schedule_inapplicable and status='cancelled'),1::bigint,'absent third instalment is not an actionable task');
+select is((select count(*) from public.task_history where metadata @> '{"schedule_inapplicable":true}'::jsonb),1::bigint,'omitted instalment retains audit evidence');
 select * from finish();
 rollback;

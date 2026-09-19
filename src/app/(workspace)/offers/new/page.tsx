@@ -79,7 +79,12 @@ export default async function NewOfferPage({ searchParams }: NewOfferPageProps) 
     sales_materials: bulletList(materials?.map((material) => `${material.label}: ${material.public_url}`) ?? []),
     references: profile.reference_notes ?? "Available on request.",
   }
-  const renderedSubject = renderOfferTemplate(template.subject_template, values)
+  const { data: conversation } = await supabase.from("email_threads")
+    .select("subject").eq("enquiry_id", enquiry.id)
+    .order("last_message_at", { ascending: false }).limit(1).maybeSingle()
+  const renderedSubject = template.subject_template.trim()
+    ? renderOfferTemplate(template.subject_template, values)
+    : conversation?.subject ?? `${enquiry.yacht.name} charter enquiry`
   const renderedBody = renderOfferTemplate(template.body_template, values)
   const proposedFee = suggestedFee
 

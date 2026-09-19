@@ -1,0 +1,15 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+set local search_path=public,extensions;
+select plan(6);
+create temp table poll_claim as select * from public.claim_telegram_poll(repeat('a',64));
+select is((select count(*) from poll_claim),1::bigint,'receiver obtains lease');
+select is((select count(*) from public.claim_telegram_poll(repeat('a',64))),0::bigint,'overlapping receiver cannot claim');
+select is(public.finish_telegram_poll(repeat('a',64),gen_random_uuid(),100,null),false,'wrong lease cannot advance cursor');
+select is(public.finish_telegram_poll(repeat('a',64),(select lease_id from poll_claim),12,null),true,'lease holder saves progress');
+select is((select next_offset from public.claim_telegram_poll(repeat('a',64))),12::bigint,'next receiver resumes saved cursor');
+set local role authenticated;
+select throws_ok($$select * from public.claim_telegram_poll(repeat('a',64))$$,'42501',null,'staff cannot claim worker lease');
+reset role;
+select * from finish();
+rollback;
