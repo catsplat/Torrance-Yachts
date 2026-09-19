@@ -53,6 +53,12 @@ tar -C "$temporary" -xf "$temporary/backup.tar"
 test -f "$temporary/database.dump" || { echo "Artifact does not contain database.dump." >&2; exit 2; }
 test -f "$temporary/storage.tar" || { echo "Artifact does not contain storage.tar." >&2; exit 2; }
 test -f "$temporary/backup-metadata.json" || { echo "Artifact does not contain backup metadata." >&2; exit 2; }
+# This entry point is for fictional staging only, not a route for copying live
+# identities, credentials and private mail into a development environment.
+grep -Eq '"environment"[[:space:]]*:[[:space:]]*"staging"' "$temporary/backup-metadata.json" || {
+  echo "Refusing a non-staging artifact. Use the separately authorised disaster recovery procedure." >&2
+  exit 2
+}
 
 database_hash=$(sha256sum "$temporary/database.dump" | awk '{print $1}')
 storage_hash=$(sha256sum "$temporary/storage.tar" | awk '{print $1}')
