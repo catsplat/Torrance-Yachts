@@ -29,7 +29,8 @@ export function hasValidTelegramWebhookSecret(request: Request) {
 export function getTelegramPairingConfiguration() {
   const botUsername = process.env.TELEGRAM_BOT_USERNAME?.trim().replace(/^@/, "")
   const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET?.trim()
-  if (!botUsername || !/^[A-Za-z0-9_]{5,32}bot$/iu.test(botUsername) || !webhookSecret) {
+  const polling = process.env.TELEGRAM_RECEIVE_MODE === "polling"
+  if (!botUsername || !/^[A-Za-z0-9_]{5,32}bot$/iu.test(botUsername) || !process.env.TELEGRAM_BOT_TOKEN?.trim() || (!polling && !webhookSecret)) {
     return { configured: false as const }
   }
   return { botUsername, configured: true as const }

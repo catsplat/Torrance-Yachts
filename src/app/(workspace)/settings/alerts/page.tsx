@@ -18,6 +18,7 @@ import { getCurrentUser } from "@/lib/auth/current-user"
 import { getGoogleOAuthConfiguration } from "@/lib/integrations/google-oauth-server"
 import { getTelegramPairingConfiguration } from "@/lib/integrations/telegram-pairing"
 import { createClient } from "@/lib/supabase/server"
+import { GmailIngestionForm } from "@/components/integrations/integration-forms"
 
 type PageProps = { searchParams: Promise<{ google?: string }> }
 
@@ -43,13 +44,14 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
   if (!user) return null
   const notices = await searchParams
   const supabase = await createClient()
-  const [profileResult, preferenceResult, oauthResult, imapResult] = await Promise.all([
+  const [profileResult, preferenceResult, oauthResult, imapResult, mailboxResult] = await Promise.all([
     supabase.from("profiles").select("phone, telegram_chat_id").eq("id", user.id).single(),
     supabase.from("user_notification_preferences").select("*").eq("user_id", user.id).single(),
     supabase.rpc("get_my_oauth_connections"),
     supabase.from("imap_mailbox_connections").select("id,account_email,host,port,tls,folders,enabled,status").order("created_at", { ascending: false }),
+    supabase.rpc("list_google_mailbox_candidates"),
   ])
-  if (profileResult.error || preferenceResult.error || oauthResult.error || imapResult.error) {
+  if (profileResult.error || preferenceResult.error || oauthResult.error || imapResult.error || mailboxResult.error) {
     throw new Error("Unable to load your personal alert settings.")
   }
   const gmail = oauthResult.data?.find((connection) => connection.provider === "gmail")
@@ -100,6 +102,7 @@ export default async function PersonalAlertsSettingsPage({ searchParams }: PageP
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-5 pt-5">
+            {gmailConnected ? <GmailIngestionForm candidates={mailboxResult.data ?? []} /> : null}
             {gmailConnected || gmailNeedsReconnect ? (
               <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/25 p-3 text-sm">
                 <Badge variant={gmailNeedsReconnect ? "destructive" : "default"}>{gmailNeedsReconnect ? "Reconnect required" : "Connected"}</Badge><span>{gmail?.account_email}</span>

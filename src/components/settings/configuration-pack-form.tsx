@@ -13,7 +13,7 @@ const starter = JSON.stringify({
   communication_templates: [{ kind: "kyc_request", name: "KYC request", subject: "", body: "Dear {{broker_company_name}},\n\n[Paste the approved wording here.]" }],
   workflow: {
     name: "Booking workflow", description: "Review and publish when the operating team approves it.", steps: [
-      { code: "0.0", title: "Start booking task sequence", due_anchor: "booking_confirmed", required: true },
+      { code: "0.0", title: "Start booking task sequence", due_anchor: "booking_confirmed", required: true, auto_complete_on_generation: true },
       { code: "0.A", title: "Request KYC statement and client passport", after: ["0.0"], due_anchor: "booking_confirmed", due_date_required: true, priority: "high" },
       { code: "0.B", title: "Upload KYC, passport and CDD check", after: ["0.A"], priority: "high" },
       { code: "1.A", title: "Upload fully signed contract", after: ["0.B"], priority: "high" },

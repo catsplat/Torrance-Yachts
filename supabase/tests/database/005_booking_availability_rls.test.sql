@@ -1,4 +1,8 @@
 begin;
+-- Transaction-local fixture: independent of prior interactive template approval.
+select set_config('app.task_template_update_authorised','yes',true);
+update public.task_templates set status='draft',is_default=false,approved_by=null,approved_at=null where id='90000000-0000-4000-8000-000000000001';
+select set_config('app.task_template_update_authorised','',true);
 create extension if not exists pgtap with schema extensions;
 select plan(34);
 

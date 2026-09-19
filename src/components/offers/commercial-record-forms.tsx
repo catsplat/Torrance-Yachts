@@ -48,7 +48,7 @@ export function OfferTemplateForm({ yachtId }: { yachtId: string }) {
   return <form action={action} className="space-y-3 rounded-xl border bg-muted/20 p-4">
     <input name="yacht_id" type="hidden" value={yachtId} />
     <Field htmlFor="template_name" label="Template name" error={state.fieldErrors?.name?.[0]}><Input id="template_name" name="name" required /></Field>
-    <Field htmlFor="subject_template" label="Subject template" error={state.fieldErrors?.subject_template?.[0]}><Input id="subject_template" name="subject_template" required /></Field>
+    <Field htmlFor="subject_template" label="Subject (optional)" error={state.fieldErrors?.subject_template?.[0]}><Input id="subject_template" name="subject_template" maxLength={300} placeholder="Use the existing conversation subject" /></Field>
     <Field htmlFor="body_template" label="Plain-text body template" error={state.fieldErrors?.body_template?.[0]}><textarea className="min-h-64 w-full rounded-lg border border-input bg-background px-3 py-2 font-mono text-sm" id="body_template" name="body_template" required /></Field>
     <p className="text-xs leading-5 text-muted-foreground">Allowed placeholders: {offerTemplatePlaceholderValues.map((value) => `{{${value}}}`).join(", ")}</p>
     <div className="flex items-center justify-between gap-3"><p aria-live="polite" className={state.success ? "text-xs text-emerald-700" : "text-xs text-destructive"}>{state.message}</p><Button disabled={pending} type="submit">{pending ? "Creating…" : "Create template draft"}</Button></div>

@@ -169,7 +169,7 @@ export async function getBookingTaskChecklist(bookingId: string) {
       "id, reference, charter_start_date, charter_end_date, yacht:yachts!bookings_yacht_id_fkey(name)",
     ).eq("id", bookingId).single(),
     supabase.from("tasks").select(
-      "id, reference, step_code, title, status, priority, required, due_date, blocked_reason, source, assigned_user_id, assignee:profiles!tasks_assigned_user_id_fkey(display_name)",
+      "id, reference, step_code, title, status, schedule_inapplicable, priority, required, due_date, blocked_reason, source, assigned_user_id, assignee:profiles!tasks_assigned_user_id_fkey(display_name)",
     ).eq("booking_id", bookingId).order("step_code").order("created_at"),
   ])
   if (bookingResult.error || tasksResult.error) {

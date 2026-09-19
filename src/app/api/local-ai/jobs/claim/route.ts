@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   if (!token) return NextResponse.json({ error: "Unauthorised helper request." }, { status: 401 })
   const admin = createAdminClient()
   const { data, error } = await admin.rpc("claim_local_ai_job", { p_agent_token: token })
-  if (error) return NextResponse.json({ error: "No local analysis job is available." }, { status: 204 })
+  if (error) return NextResponse.json({ error: "Local analysis claim failed." }, { status: 503 })
   const job = data?.[0]
   return job ? NextResponse.json(job) : new NextResponse(null, { status: 204 })
 }

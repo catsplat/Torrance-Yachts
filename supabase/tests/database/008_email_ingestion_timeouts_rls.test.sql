@@ -73,7 +73,8 @@ select throws_ok(
 
 set local role service_role;
 select lives_ok(
-  $$ select public.ingest_gmail_message(
+  $$ select public.ingest_gmail_message_for_owner(
+    '17000000-0000-0000-0000-000000000001',
     'event-unknown-1', 'gmail-message-unknown-1', 'gmail-thread-unknown-1', '<unknown-1@example.test>',
     '2026-07-16T09:00:00Z', 'Synthetic Broker', 'broker@example.test',
     array['charter@example.test'], '{}'::text[], 'Charter request',
@@ -94,7 +95,8 @@ select results_eq(
   'ingestion emits one durable event'
 );
 select lives_ok(
-  $$ select public.ingest_gmail_message(
+  $$ select public.ingest_gmail_message_for_owner(
+    '17000000-0000-0000-0000-000000000001',
     'event-unknown-1', 'gmail-message-unknown-1', 'gmail-thread-unknown-1', '<unknown-1@example.test>',
     '2026-07-16T09:00:00Z', 'Synthetic Broker', 'broker@example.test',
     array['charter@example.test'], '{}'::text[], 'Charter request',
@@ -109,7 +111,8 @@ select results_eq(
   'same event does not duplicate the message'
 );
 select lives_ok(
-  $$ select public.ingest_gmail_message(
+  $$ select public.ingest_gmail_message_for_owner(
+    '17000000-0000-0000-0000-000000000001',
     'event-unknown-retry', 'gmail-message-unknown-1', 'gmail-thread-unknown-1', '<unknown-1@example.test>',
     '2026-07-16T09:00:00Z', 'Synthetic Broker', 'broker@example.test',
     array['charter@example.test'], '{}'::text[], 'Charter request',
@@ -124,7 +127,8 @@ select results_eq(
   'provider retries are recorded without duplicating business data'
 );
 select lives_ok(
-  $$ select public.ingest_gmail_message(
+  $$ select public.ingest_gmail_message_for_owner(
+    '17000000-0000-0000-0000-000000000001',
     'event-circular-1', 'gmail-message-circular-1', 'gmail-thread-circular-1', '<circular-1@example.test>',
     '2026-07-16T09:05:00Z', 'Synthetic Newsletter', 'news@example.test',
     array['charter@example.test'], '{}'::text[], 'Monthly newsletter',
@@ -147,7 +151,8 @@ select results_eq(
   'circular requests mark-read and archive provider actions'
 );
 select lives_ok(
-  $$ select public.ingest_gmail_message(
+  $$ select public.ingest_gmail_message_for_owner(
+    '17000000-0000-0000-0000-000000000001',
     'event-internal-1', 'gmail-message-internal-1', 'gmail-thread-internal-1', '<internal-1@example.test>',
     '2026-07-16T09:10:00Z', 'Synthetic Colleague', 'staff@internal.example.test',
     array['charter@example.test'], '{}'::text[], 'Internal operations note',
@@ -163,7 +168,8 @@ select results_eq(
   'configured domain routes internal mail'
 );
 select lives_ok(
-  $$ select public.ingest_gmail_message(
+  $$ select public.ingest_gmail_message_for_owner(
+    '17000000-0000-0000-0000-000000000001',
     'event-attachment-1', 'gmail-message-attachment-1', 'gmail-thread-attachment-1', '<attachment-1@example.test>',
     '2026-07-16T09:15:00Z', 'Synthetic Sender', 'files@example.test',
     array['charter@example.test'], '{}'::text[], 'Document attached',
@@ -215,7 +221,8 @@ select results_eq(
 
 set local role service_role;
 select lives_ok(
-  $$ select public.ingest_gmail_message(
+  $$ select public.ingest_gmail_message_for_owner(
+    '17000000-0000-0000-0000-000000000001',
     'event-follow-up-1', 'gmail-message-follow-up-1', 'gmail-thread-unknown-1', '<follow-up-1@example.test>',
     '2026-07-17T09:00:00Z', 'Synthetic Broker', 'broker@example.test',
     array['charter@example.test'], '{}'::text[], 'Re: Charter request',

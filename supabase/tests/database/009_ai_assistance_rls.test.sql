@@ -262,7 +262,8 @@ select throws_ok(
 set local role service_role;
 set local "request.jwt.claim.role" = 'service_role';
 select lives_ok(
-  $$ select public.ingest_gmail_message(
+  $$ select public.ingest_gmail_message_for_owner(
+    '18000000-0000-0000-0000-000000000001',
     'phase10-event-1', 'phase10-message-1', 'phase10-thread-1',
     '<phase10-message-1@example.test>', '2026-07-16T12:00:00Z',
     'Synthetic Charterer', 'charterer@example.test',

@@ -11,6 +11,7 @@ if (!secret || secret.length < 32) {
 }
 
 const endpoints = [
+  "/api/integrations/automation/poll-telegram",
   "/api/integrations/automation/tick",
   "/api/integrations/automation/dispatch-alerts",
   "/api/integrations/automation/dispatch-google-workspace",
@@ -36,7 +37,15 @@ async function recordHeartbeat() {
 }
 
 async function runCycle() {
-  for (const endpoint of endpoints) await callEndpoint(endpoint)
+  let failed = false
+  for (const endpoint of endpoints) {
+    try { await callEndpoint(endpoint) }
+    catch (error) {
+      failed = true
+      console.error(JSON.stringify({ component: "automation-worker", event: "endpoint_failed", message: error instanceof Error ? error.message : "Worker request failed" }))
+    }
+  }
+  if (failed) throw new Error("One or more automation endpoints failed")
   await recordHeartbeat()
   console.log(JSON.stringify({ component: "automation-worker", event: "cycle_completed", at: new Date().toISOString() }))
 }

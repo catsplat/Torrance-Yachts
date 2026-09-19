@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 set -eu
+umask 077
 
 # Restores an encrypted artifact only into the disposable temporal-staging host.
 # Production restoration remains a separately authorised incident procedure.
@@ -64,7 +65,9 @@ grep --fixed-strings --quiet "$storage_hash" "$temporary/backup-metadata.json" |
   exit 2
 }
 
-app_compose down --remove-orphans
+# Stop only application services: both Compose files share a project/network.
+# Removing orphans here would remove the Storage container needed below.
+app_compose stop
 core_compose up -d db --wait --wait-timeout 240
 db_container=$(core_compose ps -q db)
 test -n "$db_container" || { echo "Private database container could not be identified." >&2; exit 1; }
@@ -75,13 +78,19 @@ drop schema if exists public cascade;
 drop schema if exists auth cascade;
 drop schema if exists storage cascade;
 drop schema if exists supabase_migrations cascade;
-create schema public;
+truncate table vault.secrets;
 SQL
 docker cp "$temporary/database.dump" "$db_container:/tmp/torrance-restore.dump"
+core_compose exec -T db pg_restore --list /tmp/torrance-restore.dump > "$temporary/restore.list"
+# Vault objects are supplied by its extension; restore its secret rows, not a
+# duplicate schema. Preserve ACLs and object ownership from the matched stack.
+sed '/ SCHEMA - vault /d' "$temporary/restore.list" > "$temporary/filtered.list"
+docker cp "$temporary/filtered.list" "$db_container:/tmp/torrance-restore.list"
 core_compose exec -T db pg_restore \
-  -U postgres -d postgres --no-owner --no-privileges --exit-on-error \
+  -U postgres -d postgres --exit-on-error --use-list /tmp/torrance-restore.list \
   /tmp/torrance-restore.dump
 core_compose exec -T db rm -f /tmp/torrance-restore.dump
+core_compose exec -T db rm -f /tmp/torrance-restore.list
 
 storage_container=$(core_compose ps -aq storage)
 test -n "$storage_container" || { echo "Private storage container could not be identified." >&2; exit 1; }
@@ -91,7 +100,7 @@ docker run --rm --volumes-from "$storage_container" \
   sh -ec 'find /var/lib/storage -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +; tar -C /var/lib/storage -xf /backup/storage.tar'
 
 core_compose up -d --wait --wait-timeout 240
-app_compose up -d --remove-orphans --wait --wait-timeout 240
+app_compose up -d --wait --wait-timeout 240
 printf '%s %s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(basename "$artifact")" "$database_hash" > .staging-restore-evidence
 chmod 600 .staging-restore-evidence
 echo "Synthetic staging restore completed. Verify operational counts before any promotion."

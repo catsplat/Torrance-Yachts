@@ -71,7 +71,7 @@ export const salesMaterialSchema = z.object({
 export const offerTemplateSchema = z.object({
   yacht_id: uuid,
   name: z.string().trim().min(2).max(120),
-  subject_template: z.string().trim().min(2).max(300),
+  subject_template: z.string().trim().max(300),
   body_template: z.string().trim().min(20).max(30000),
 }).superRefine((value, context) => {
   const unknown = findUnknownOfferPlaceholders(`${value.subject_template}\n${value.body_template}`)

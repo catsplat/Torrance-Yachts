@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       gmail_configured: gmailResult?.configured ?? gmailError,
       gmail_cursor_initialized: gmailResult?.initialized ?? false,
       gmail_messages_processed: gmailResult?.processed ?? 0,
-      gmail_reconciliation_failed: gmailError,
+      gmail_reconciliation_failed: gmailError || Boolean(gmailResult?.failed),
       gmail_recovery_used: gmailResult?.recovered ?? false,
       imap_configured: imapResult?.configured ?? imapError,
       imap_messages_processed: imapResult?.processed ?? 0,
