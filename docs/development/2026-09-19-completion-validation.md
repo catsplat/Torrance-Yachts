@@ -17,3 +17,7 @@ Secrets in the encrypted archive must not be imported into a synthetic environme
 Live backup activation remains blocked by the absent recipient and offsite remote.
 Fresh-host credential decryption/restore and real Mac/provider acceptance remain
 unverified. Source changes are not evidence of deployment.
+
+The local disposable database restore also passed with ownership and ACLs
+preserved; it checks mailbox RLS, authenticated read grants and anonymous denial.
+This is not an offsite or fresh-host encryption-key recovery acceptance.

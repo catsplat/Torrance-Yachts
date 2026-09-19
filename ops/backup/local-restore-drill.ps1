@@ -36,7 +36,7 @@ if (-not $databaseContainer) {
 
 try {
   docker exec $databaseContainer pg_dump `
-    -U postgres -d postgres -Fc --no-owner --no-privileges `
+    -U postgres -d postgres -Fc `
     --schema public --schema auth --schema storage --schema vault `
     -f $remoteDump
   if ($LASTEXITCODE -ne 0) { throw "Database export failed." }
@@ -74,7 +74,7 @@ alter database $restoreDatabase set search_path to public, extensions;
   if ($LASTEXITCODE -ne 0) { throw "Could not copy the database restore list." }
 
   docker exec $databaseContainer pg_restore `
-    -U supabase_admin -d $restoreDatabase --no-owner --no-privileges `
+    -U supabase_admin -d $restoreDatabase `
     --exit-on-error --use-list $remoteRestoreList $remoteDump
   if ($LASTEXITCODE -ne 0) { throw "Database restore failed." }
 
@@ -85,12 +85,19 @@ select json_build_object(
   'enquiries', (select count(*) from public.enquiries),
   'bookings', (select count(*) from public.bookings),
   'launch_checks', (select count(*) from public.launch_readiness_checks),
-  'storage_metadata', (select count(*) from storage.objects)
+  'storage_metadata', (select count(*) from storage.objects),
+  'rls_enabled', (select relrowsecurity from pg_class where oid='public.email_messages'::regclass),
+  'authenticated_can_read_emails', has_table_privilege('authenticated','public.email_messages','SELECT'),
+  'anon_cannot_read_emails', not has_table_privilege('anon','public.email_messages','SELECT')
 )::text;
 "@
   $verification = docker exec $databaseContainer psql `
     -U postgres -d $restoreDatabase -At -v ON_ERROR_STOP=1 -c $verificationSql
   if ($LASTEXITCODE -ne 0) { throw "Restored database verification failed." }
+  $verified = $verification | ConvertFrom-Json
+  if (-not $verified.rls_enabled -or -not $verified.authenticated_can_read_emails -or -not $verified.anon_cannot_read_emails) {
+    throw "Restored database did not preserve mailbox RLS and access grants."
+  }
 
   $hash = Get-Sha256Hex $dumpPath
   $result = [ordered]@{
@@ -98,7 +105,7 @@ select json_build_object(
     checksumSha256 = $hash
     completedAt = (Get-Date).ToUniversalTime().ToString("o")
     restoreDatabase = $restoreDatabase
-    verification = $verification | ConvertFrom-Json
+    verification = $verified
   }
   $result | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 -LiteralPath $resultPath
   Write-Output "Restore drill passed."
